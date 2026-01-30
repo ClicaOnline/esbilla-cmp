@@ -1,20 +1,39 @@
 ---
 import LanguagePicker from './LanguagePicker.astro';
+import Panoya from './icons/Panoya.astro'; // <--- 1. IMPORTAMOS LA PANOYA
 import { useTranslations } from '../i18n/utils';
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---
-<header class="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-  <nav class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-    <div class="flex items-center gap-10">
-      <a href={`/${lang}/`} class="text-xl font-black tracking-tighter text-indigo-600">
-        ESBILLA<span class="text-slate-400 font-light">CMP</span>
+<header class="sticky top-0 z-50 w-full bg-fondu/80 backdrop-blur-md border-b border-stone-200">
+  <nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between" aria-label="Navegación principal">
+    <div class="flex items-center gap-12">
+      <a href={`/${lang}/`} class="flex items-center gap-3 group">
+        <img 
+          src="/logo-esbilla.png" 
+          alt="Esbilla Logo" 
+          class="w-10 h-10 object-contain transition-transform group-hover:rotate-6"
+        />
+        
+        <span class="text-2xl font-black tracking-tighter text-madera uppercase">
+          Esbilla<span class="text-maiz transition-colors group-hover:text-amber-600">CMP</span>
+        </span>
       </a>
-      <div class="hidden md:flex gap-6 text-sm font-medium text-slate-500">
-        <a href={`/${lang}/saas/`} class="hover:text-indigo-600 transition-colors">{t('nav.saas')}</a>
-        <a href={`/${lang}/comunidad/`} class="hover:text-indigo-600 transition-colors">{t('nav.community')}</a>
-      </div>
+      
+      <ul class="hidden md:flex items-center gap-8">
+        <li>
+          <a href={`/${lang}/saas/`} class="text-sm font-bold text-stone-500 hover:text-madera transition-colors">
+            {t('nav.saas')}
+          </a>
+        </li>
+        <li>
+          <a href={`/${lang}/comunidad/`} class="text-sm font-bold text-stone-500 hover:text-madera transition-colors">
+            {t('nav.community')}
+          </a>
+        </li>
+      </ul>
     </div>
+
     <LanguagePicker />
   </nav>
 </header>

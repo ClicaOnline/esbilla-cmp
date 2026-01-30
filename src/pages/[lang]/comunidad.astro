@@ -11,18 +11,28 @@ const { lang } = Astro.params;
 const t = useTranslations(lang as any);
 ---
 <BaseLayout title="Comunidad" lang={lang}>
-  <div class="py-12">
-    <h1 class="text-4xl font-bold mb-6 text-slate-900">{t('community.title')}</h1>
-    <p class="text-lg text-slate-600 mb-12 max-w-2xl">{t('community.desc')}</p>
-    
-    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-8 flex items-center justify-between">
-      <div>
-        <h3 class="font-bold text-indigo-900 mb-1">Códigu Fonte</h3>
-        <p class="text-indigo-700/70">Revisa'l nuesu repositoriu y unvia la to andecha.</p>
-      </div>
-      <a href="https://github.com/ClicaOnline/esbilla-cmp" target="_blank" class="bg-white border border-indigo-200 text-indigo-600 px-6 py-2 rounded-lg font-bold hover:shadow-md transition-all">
-        Ver en GitHub
-      </a>
+  <section class="relative min-h-[60vh] flex items-center overflow-hidden rounded-[3rem] mx-4 my-4">
+    <div class="absolute inset-0 z-0">
+      <img src="/images/esbilla-pueblu.png" class="w-full h-full object-cover" alt="Andecha Background" />
+      <div class="absolute inset-0 bg-gradient-to-r from-[#2D3426]/95 via-[#2D3426]/70 to-transparent"></div>
     </div>
-  </div>
+
+    <div class="relative z-10 max-w-5xl mx-auto px-8 w-full">
+      <div class="max-w-2xl space-y-6">
+        <h1 class="text-5xl md:text-7xl font-artesana text-white">
+          {t('community.hero.title')} <br/>
+          <span class="text-maiz italic">{t('community.hero.highlight')}</span>
+        </h1>
+        <p class="text-xl text-stone-200 leading-relaxed">
+          {t('community.hero.desc')}
+        </p>
+        <div class="flex gap-4">
+          <a href="https://github.com/ClicaOnline/esbilla-cmp" class="bg-white text-madera px-8 py-4 rounded-xl font-black flex items-center gap-3 hover:bg-maiz transition-colors">
+             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+             {t('community.link')}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
