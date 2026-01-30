@@ -10,6 +10,7 @@ export const ui = {
   en: {
     'nav.saas': 'SaaS Solutions',
     'nav.community': 'Community',
+    'only.in.english': 'English Text',
   },
   es: {
     'nav.saas': 'Soluciones SaaS',
