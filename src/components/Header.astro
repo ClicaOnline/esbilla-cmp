@@ -1,0 +1,20 @@
+---
+import LanguagePicker from './LanguagePicker.astro';
+import { useTranslations } from '../i18n/utils';
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+<header class="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+  <nav class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-10">
+      <a href={`/${lang}/`} class="text-xl font-black tracking-tighter text-indigo-600">
+        ESBILLA<span class="text-slate-400 font-light">CMP</span>
+      </a>
+      <div class="hidden md:flex gap-6 text-sm font-medium text-slate-500">
+        <a href={`/${lang}/saas/`} class="hover:text-indigo-600 transition-colors">{t('nav.saas')}</a>
+        <a href={`/${lang}/comunidad/`} class="hover:text-indigo-600 transition-colors">{t('nav.community')}</a>
+      </div>
+    </div>
+    <LanguagePicker />
+  </nav>
+</header>

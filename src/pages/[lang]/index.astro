@@ -1,25 +1,30 @@
 ---
-// src/pages/[lang]/index.astro
-import { getEsbillaSchema } from '../../seo/schema';
-const { lang } = Astro.params;
-const schema = getEsbillaSchema(lang);
-
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/utils';
 import { languages } from '../../i18n/ui';
 
-// 2. Esportamos obligatoriamente getStaticPaths pa que Astro sepa qué rutes crear
 export function getStaticPaths() {
-  return Object.keys(languages).map((lang) => ({
-    params: { lang },
-  }));
+  return Object.keys(languages).map((lang) => ({ params: { lang } }));
 }
 
+const { lang } = Astro.params;
+const t = useTranslations(lang as keyof typeof languages);
 ---
 
-<html lang={lang}>
-  <head>
-    <title>Esbilla CMP - {lang}</title>
-  </head>
-  <body>
-    <h1>Bienveníos a Esbilla CMP ({lang})</h1>
-  </body>
-</html>
+<BaseLayout title={t('nav.home')} lang={lang}>
+  <section class="py-16 md:py-24">
+    <div class="max-w-3xl">
+      <h1 class="text-5xl font-black text-slate-900 leading-tight mb-6">
+        {t('home.title')}
+      </h1>
+      <p class="text-xl text-slate-600 leading-relaxed mb-10">
+        {t('home.desc')}
+      </p>
+      <div class="flex gap-4">
+        <a href={`/${lang}/comunidad/`} class="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+          {t('nav.community')}
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
