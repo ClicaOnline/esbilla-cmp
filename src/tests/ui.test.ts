@@ -4,7 +4,7 @@ import { ui } from '../i18n/ui'; // Revisa qu'esta ruta apunta bien al to ficher
 describe('Validación de Diccionarios (I18n)', () => {
   
   it('el diccionariu asturianu debe tener les llaves básiques', () => {
-    expect(ui.ast['nav.saas']).toBe('Soluciones SaaS');
+    expect(ui.ast['nav.saas']).toBe('SaaS (Próximamente)');
     expect(ui.ast['nav.community']).toBe('Comunidá');
   });
 

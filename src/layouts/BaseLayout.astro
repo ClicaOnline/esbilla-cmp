@@ -1,0 +1,20 @@
+---
+import Header from '../components/Header.astro';
+const { title, lang } = Astro.props;
+---
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title} | Esbilla CMP</title>
+  </head>
+  <body class="bg-white text-slate-900 font-sans antialiased">
+    <Header lang={lang} />
+    <main class="max-w-5xl mx-auto px-4 py-12">
+      <slot />
+    </main>
+    <footer class="border-t border-slate-100 py-8 text-center text-slate-400 text-sm">
+      &copy; 2026 Esbilla CMP. Made with 💙 in Asturias.
+    </footer>
+  </body>
+</html>

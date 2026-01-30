@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/utils';
+import { languages } from '../../i18n/ui';
+
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang as any);
+---
+<BaseLayout title="Comunidad" lang={lang}>
+  <div class="py-12">
+    <h1 class="text-4xl font-bold mb-6 text-slate-900">{t('community.title')}</h1>
+    <p class="text-lg text-slate-600 mb-12 max-w-2xl">{t('community.desc')}</p>
+    
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-8 flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-indigo-900 mb-1">Códigu Fonte</h3>
+        <p class="text-indigo-700/70">Revisa'l nuesu repositoriu y unvia la to andecha.</p>
+      </div>
+      <a href="https://github.com/ClicaOnline/esbilla-cmp" target="_blank" class="bg-white border border-indigo-200 text-indigo-600 px-6 py-2 rounded-lg font-bold hover:shadow-md transition-all">
+        Ver en GitHub
+      </a>
+    </div>
+  </div>
+</BaseLayout>
