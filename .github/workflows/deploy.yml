@@ -14,10 +14,10 @@ jobs:
       - name: Descargar códigu 📥
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js 18.x 🟢
+      - name: Configurar Node.js 20.x 🟢
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
 
       - name: Instalar dependencies 📦
