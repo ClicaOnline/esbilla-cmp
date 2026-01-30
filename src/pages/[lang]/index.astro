@@ -1,0 +1,25 @@
+---
+// src/pages/[lang]/index.astro
+import { getEsbillaSchema } from '../../seo/schema';
+const { lang } = Astro.params;
+const schema = getEsbillaSchema(lang);
+
+import { languages } from '../../i18n/ui';
+
+// 2. Esportamos obligatoriamente getStaticPaths pa que Astro sepa qué rutes crear
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => ({
+    params: { lang },
+  }));
+}
+
+---
+
+<html lang={lang}>
+  <head>
+    <title>Esbilla CMP - {lang}</title>
+  </head>
+  <body>
+    <h1>Bienveníos a Esbilla CMP ({lang})</h1>
+  </body>
+</html>
