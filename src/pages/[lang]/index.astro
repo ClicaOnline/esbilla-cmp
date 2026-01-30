@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Panoya from '../../components/icons/Panoya.astro';
 import { useTranslations } from '../../i18n/utils';
 import { languages } from '../../i18n/ui';
 
@@ -8,23 +9,63 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params;
-const t = useTranslations(lang as keyof typeof languages);
+const t = useTranslations(lang as any);
 ---
-
 <BaseLayout title={t('nav.home')} lang={lang}>
-  <section class="py-16 md:py-24">
-    <div class="max-w-3xl">
-      <h1 class="text-5xl font-black text-slate-900 leading-tight mb-6">
-        {t('home.title')}
-      </h1>
-      <p class="text-xl text-slate-600 leading-relaxed mb-10">
-        {t('home.desc')}
-      </p>
-      <div class="flex gap-4">
-        <a href={`/${lang}/comunidad/`} class="bg-indigo-600 text-white px-8 py-3 rounded-full font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
-          {t('nav.community')}
-        </a>
+  
+  <section class="relative pt-20 pb-32">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center gap-16">
+        <div class="flex-1 space-y-8">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider">
+            <Panoya size="16" class="text-amber-600" />
+            {t('hero.tagline')}
+          </div>
+          <h1 class="text-6xl md:text-8xl font-black leading-[0.9] text-stone-900">
+            {t('hero.title')} <span class="text-amber-600 italic">{t('hero.highlight')}</span>
+          </h1>
+          <p class="text-xl text-stone-600 leading-relaxed max-w-lg">
+            {t('hero.description')}
+          </p>
+          <div class="flex gap-4">
+            <a href={`/${lang}/comunidad/`} class="bg-stone-900 text-white px-8 py-4 rounded-xl font-bold hover:scale-105 transition-transform">
+              {t('hero.cta')}
+            </a>
+          </div>
+        </div>
+
+        <div class="flex-1 relative w-full aspect-square bg-stone-200 rounded-2xl border-b-8 border-stone-400 shadow-2xl flex items-center justify-center group overflow-hidden">
+             <div class="grid grid-cols-3 gap-4 transform group-hover:rotate-12 transition-transform duration-500">
+                <Panoya size="48" class="text-amber-500 opacity-20" />
+                <Panoya size="48" class="text-amber-500" />
+                <Panoya size="48" class="text-amber-500 opacity-20" />
+             </div>
+        </div>
       </div>
     </div>
   </section>
+
+  <section class="py-20 bg-stone-900 text-stone-100 rounded-[3rem] mx-4">
+    <div class="max-w-5xl mx-auto px-6">
+      <h2 class="text-4xl mb-16 text-center">{t('features.title')}</h2>
+      <div class="grid md:grid-cols-3 gap-12">
+        <div class="space-y-4">
+          <Panoya class="text-amber-400" size="32" />
+          <h3 class="text-xl font-bold">{t('feature.gov.title')}</h3>
+          <p class="text-stone-400">{t('feature.gov.desc')}</p>
+        </div>
+        <div class="space-y-4">
+          <Panoya class="text-amber-400" size="32" />
+          <h3 class="text-xl font-bold">{t('feature.community.title')}</h3>
+          <p class="text-stone-400">{t('feature.community.desc')}</p>
+        </div>
+        <div class="space-y-4">
+          <Panoya class="text-amber-400" size="32" />
+          <h3 class="text-xl font-bold">{t('feature.privacy.title')}</h3>
+          <p class="text-stone-400">{t('feature.privacy.desc')}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </BaseLayout>
