@@ -1,24 +1,19 @@
 {
-  "name": "esbilla-public",
-  "type": "module",
+  "name": "esbilla-cmp",
   "version": "0.0.1",
+  "private": true,
+  "description": "Monorepo de Esbilla CMP: Gobernanza ética y soberanía de datos",
+  "workspaces": [
+    "esbilla-public",
+    "esbilla-dashboard",
+    "esbilla-api",
+    "esbilla-plugins/*"
+  ],
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro",
-    "test": "vitest",
-    "test:ui": "vitest --ui"
+    "dev:public": "npm run dev -w esbilla-public",
+    "build:public": "npm run build -w esbilla-public",
+    "install:all": "npm install"
   },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.1.18",
-    "astro": "^5.17.1",
-    "tailwindcss": "^4.1.18"
-  },
-  "devDependencies": {
-    "@testing-library/dom": "^10.4.1",
-    "@vitest/ui": "^4.0.18",
-    "jsdom": "^27.4.0",
-    "vitest": "^4.0.18"
-  }
+  "author": "Jlasolis (Clica Online)",
+  "license": "GPL-3.0"
 }

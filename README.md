@@ -15,6 +15,19 @@ En el contexto de la privacidad, **Esbilla-CMP** nace con esa filosofía:
 
 ---
 
+## 🏗️ Estructura del Proyecto (Monorepo)
+
+Este repositorio utiliza una arquitectura de **Monorepo** para gestionar todas las piezas de la "andecha" tecnológica desde un solo lugar:
+
+| Carpeta | Componente | Descripción |
+| :--- | :--- | :--- |
+| `esbilla-public/` | **Landing Page** | Web pública construida con Astro (Multi-idioma). |
+| `esbilla-dashboard/` | **Panel de Control** | Interfaz para gestionar sitios y consentimientos (En desarrollo). |
+| `esbilla-api/` | **Backend Core** | API de alta concurrencia para el registro de logs. |
+| `esbilla-plugins/` | **Adaptadores** | Conectores para WordPress, Shopify y otros CMS. |
+
+---
+
 ## 🚀 Hoja de Ruta y Características Futuras
 
 Este proyecto se encuentra actualmente en fase de desarrollo. Las siguientes características están planificadas para las próximas versiones:
