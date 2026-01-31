@@ -1,18 +1,56 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { useTranslations } from '../i18n/utils';
-import { languages } from '../i18n/ui';
+import { useTranslations, getLocalizedPath } from '../i18n/utils';
+import { languages, defaultLang, site } from '../i18n/ui';
 import '../styles/global.css';
-const { title, lang } = Astro.props;
+const { 
+  title, 
+  description, 
+  lang, 
+  image = '/esbilla-og.png' 
+} = Astro.props;
 const t = useTranslations(lang as keyof typeof languages);
+// Construimos la URL absoluta actual
+const siteBase = site;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = new URL(image, site);
+
 ---
 <html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title} | Esbilla CMP</title>
+    <meta name="description" content={description} />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+   
+    <link rel="canonical" href={canonicalURL} />
+    {Object.keys(languages).map((l) => (
+      <link 
+        rel="alternate" 
+        hreflang={l === 'ast' ? 'ast' : l} 
+        href={new URL(getLocalizedPath(Astro.url, l), siteBase)} 
+      />
+    ))}
+    <link 
+      rel="alternate" 
+      hreflang="x-default" 
+      href={new URL(getLocalizedPath(Astro.url, defaultLang), siteBase)} 
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={`${title} | Esbilla CMP`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageURL} />
+
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={`${title} | Esbilla CMP`} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={ogImageURL} />
+
   </head>
   <body class="bg-[#F8F5F2] text-stone-900 font-sans selection:bg-amber-200">
     <Header lang={lang} />

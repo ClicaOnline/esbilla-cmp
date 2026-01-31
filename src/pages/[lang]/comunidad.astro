@@ -2,13 +2,24 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { useTranslations } from '../../i18n/utils';
 import { languages } from '../../i18n/ui';
+import Panoya from '../../components/icons/Panoya.astro'; //
+
+const { lang } = Astro.params;
+const t = useTranslations(lang as any);
 
 export function getStaticPaths() {
   return Object.keys(languages).map((lang) => ({ params: { lang } }));
 }
 
-const { lang } = Astro.params;
-const t = useTranslations(lang as any);
+const ways = [
+  { title: 'comm.ways.code.title', desc: 'comm.ways.code.desc' },
+  { title: 'comm.ways.trans.title', desc: 'comm.ways.trans.desc' },
+  { title: 'comm.ways.design.title', desc: 'comm.ways.design.desc' },
+  { title: 'comm.ways.test.title', desc: 'comm.ways.test.desc' },
+  { title: 'comm.ways.features.title', desc: 'comm.ways.features.desc' },
+  { title: 'comm.ways.legal.title', desc: 'comm.ways.legal.desc' },
+];
+
 ---
 <BaseLayout title="Comunidad" lang={lang}>
   <section class="relative min-h-[60vh] flex items-center overflow-hidden rounded-[3rem] mx-4 my-4">
@@ -35,4 +46,33 @@ const t = useTranslations(lang as any);
       </div>
     </div>
   </section>
+
+  <section class="py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <header class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-artesana text-madera mb-4">{t('comm.ways.title')}</h2>
+      <p class="text-stone-600 max-w-2xl mx-auto">{t('comm.ways.subtitle')}</p>
+    </header>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {ways.map((way) => (
+        <article class="p-8 rounded-2xl border border-stone-200 hover:border-maiz transition-colors group bg-stone-50/50">
+          <div class="w-10 h-10 mb-6 text-maiz transition-transform group-hover:rotate-12">
+            <Panoya size="40" /> </div>
+          <h3 class="text-xl font-bold text-madera mb-3">{t(way.title)}</h3>
+          <p class="text-stone-600 leading-relaxed text-sm">{t(way.desc)}</p>
+        </article>
+      ))}
+    </div>
+
+    <div class="mt-16 p-10 bg-madera rounded-3xl text-center text-white">
+      <h3 class="text-2xl font-artesana text-maiz mb-4">¿Tienes otra idea?</h3>
+      <p class="text-stone-300 mb-8">Si tienes una forma distinta d'ayudar que nun tea na llista, escríbenos n'andecha.</p>
+      <a href="mailto:esbilla@clicaonline.com" class="inline-block bg-maiz text-madera px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform">
+        Unite al coleutivu
+      </a>
+    </div>
+  </div>
+</section>
+
 </BaseLayout>

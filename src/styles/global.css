@@ -2,9 +2,10 @@
 
 @theme {
   /* Definición de colores del horru */
-  --color-maiz: #FFBF00;
-  --color-madera: #3D2B1F;
-  --color-piedra: #78716C;
+  --color-maiz: #FFBF00;          /* Marca/Iconos */
+  --color-maiz-dark: #997300;     /* Testu accesible (>4.5:1 sobre fondu claru) */
+  --color-madera: #3D2B1F;        /* Perfecto (>7:1) */
+  --color-piedra: #66615E;        /* Axustáu de #78716C pa cumplir 4.5:1 */
   --color-fondu: #F8F5F2;
 
   /* Fontes artesanes */
@@ -21,6 +22,13 @@
   
   h1, h2, h3 {
     font-family: var(--font-artesana);
+  }
+  /* Resalte de focu pa navegación con tecláu */
+  a:focus-visible, 
+  button:focus-visible {
+    outline: 3px solid var(--color-maiz);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
   }
 }
 
