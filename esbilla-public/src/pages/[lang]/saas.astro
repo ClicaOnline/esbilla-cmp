@@ -2,7 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { useTranslations } from '../../i18n/utils';
 import { languages } from '../../i18n/ui';
-
+import { Image } from 'astro:assets';
+import esbillaPuebluImg from '../../../public/images/esbilla-pueblu.png';
 export function getStaticPaths() {
   return Object.keys(languages).map((lang) => ({ params: { lang } }));
 }
@@ -13,7 +14,15 @@ const t = useTranslations(lang as any);
 <BaseLayout title="SaaS" lang={lang}>
   <section class="relative min-h-[60vh] flex items-center overflow-hidden rounded-[3rem] mx-4 my-4">
     <div class="absolute inset-0 z-0">
-      <img src="/images/esbilla-pueblu.png" class="w-full h-full object-cover opacity-50" alt="SaaS Background" />
+      <Image 
+        src={esbillaPuebluImg} 
+        alt="Andecha Background: Pueblu asturianu ente montes"
+        class="w-full h-full object-cover"
+        width={1920} 
+        height={1080} 
+        format="webp" 
+        quality={"mid"} 
+      />
       <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
     </div>
 

@@ -3,7 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Panoya from '../../components/icons/Panoya.astro';
 import { useTranslations } from '../../i18n/utils';
 import { languages } from '../../i18n/ui';
-
+import { Image } from 'astro:assets';
+import esbillaPuebluImg from '../../../public/images/esbilla-pueblu.png';
 export function getStaticPaths() {
   return Object.keys(languages).map((lang) => ({ params: { lang } }));
 }
@@ -15,10 +16,14 @@ const t = useTranslations(lang as any);
   
 <section class="relative min-h-[80vh] flex items-center overflow-hidden rounded-[2rem] md:rounded-[4rem] mx-4 my-4">
     <div class="absolute inset-0 z-0">
-      <img 
-        src="/images/esbilla-pueblu.png" 
-        alt="Xente trabayando n'andecha delantre d'un hórreo dixital" 
+      <Image 
+        src={esbillaPuebluImg} 
+        alt="Andecha Background: Pueblu asturianu ente montes"
         class="w-full h-full object-cover"
+        width={1920} 
+        height={1080} 
+        format="webp" 
+        quality={"mid"} 
       />
       <div class="absolute inset-0 bg-gradient-to-r from-madera/90 via-madera/40 to-transparent"></div>
     </div>
