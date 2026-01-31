@@ -19,16 +19,17 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+          cache-dependency-path: 'esbilla-public/package-lock.json'
 
       - name: Instalar dependencies 📦
-        run: npm install
+        run: cd esbilla-public && npm install
 
       - name: Executar Tests Unitarios (Vitest) ✅
         # Esti pasu ye la llave: si falla'l test del Schema o i18n, nun hai despliegue
-        run: npm run test
+        run: cd esbilla-public && npm run test
 
       - name: Compilar Landing (Astro) 🏗️
-        run: npm run build
+        run: cd esbilla-public && npm run build
 
       - name: Desplegar en Firebase Hosting ☁️
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -36,6 +37,6 @@ jobs:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ESBILLA_CMP }}'
-          projectId: esbilla-cmp # Cambia esto pol ID real del to proyeutu
+          projectId: esbilla-cmp 
           entryPoint: esbilla-public
           channelId: live
