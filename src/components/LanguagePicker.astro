@@ -1,14 +1,13 @@
 ---
 import { languages } from '../i18n/ui';
 import { getLangFromUrl } from '../i18n/utils';
-
 const currentLang = getLangFromUrl(Astro.url);
 ---
 <div class="relative inline-block text-left">
   <details class="group">
-    <summary class="list-none cursor-pointer flex items-center gap-2 px-4 py-2 bg-white/50 border border-stone-200 rounded-full hover:bg-white transition-colors">
-      <span class="text-sm font-bold uppercase">{currentLang}</span>
-      <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <summary class="list-none cursor-pointer flex items-center gap-2 px-3 py-2 bg-white/50 border border-stone-200 rounded-xl hover:bg-white transition-colors">
+      <span class="text-sm font-bold uppercase text-madera">{currentLang}</span>
+      <svg class="w-4 h-4 text-stone-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
       </svg>
     </summary>
@@ -18,7 +17,7 @@ const currentLang = getLangFromUrl(Astro.url);
         <li>
           <a 
             href={`/${code}/`} 
-            class={`block px-4 py-2 text-sm hover:bg-amber-50 transition-colors ${currentLang === code ? 'text-amber-600 font-bold' : 'text-stone-600'}`}
+            class={`block px-4 py-2 text-sm hover:bg-maiz/10 transition-colors ${currentLang === code ? 'text-maiz font-bold' : 'text-stone-600'}`}
           >
             {label}
           </a>
@@ -29,6 +28,5 @@ const currentLang = getLangFromUrl(Astro.url);
 </div>
 
 <style>
-  /* Esconde la flecha por defeutu de Chrome/Safari */
   summary::-webkit-details-marker { display: none; }
 </style>
