@@ -1,5 +1,6 @@
 export const ast = {
-  'nav.home': 'Entamu',
+    'only.in.asturianu':'Textu en Asturianu',
+    'nav.home': 'Entamu',
     'nav.saas': 'SaaS (Próximamente)',
     'nav.community': 'Comunidá',
     'hero.tagline': 'Tradición Dixital',

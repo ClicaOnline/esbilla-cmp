@@ -39,7 +39,7 @@ export const en = {
     'footer.madeby': 'Proudly made by',
     'concepts.title': 'Los pilares de Esbilla',
     'row.deploy.esbilla': 'Self Hosted (Docker / On-premise)',
-    'only.in.english': 'English Text',
+    c: 'English Text',
     // Technical Manifesto
     'manifesto.title': 'Technical Manifesto: The <strong>Data Granary</strong> (Docker-First)',
     'manifesto.intro': 'This document is for those who, like me, spent more time in the faculty cafeteria than in class but know exactly how to spin up a container when needed.',

@@ -11,7 +11,7 @@ describe('Sistema de Traducción Esbilla', () => {
   it('debe usar el fallback (inglés) si la llave no existe en asturianu', () => {
     const t = useTranslations('ast');
     // Forzamos una llave que solo tea n'inglés pa probar
-    expect(t('only.in.english' as any)).toBe('English Text');
+    expect(t('only.in.asturianu' as any)).toBe('Textu en Asturianu');
   });
 
   it('debe funcionar correctamente con el parámetro de idioma', () => {

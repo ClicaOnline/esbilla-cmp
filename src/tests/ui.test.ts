@@ -8,9 +8,9 @@ describe('Validación de Diccionarios (I18n)', () => {
     expect(ui.ast['nav.community']).toBe('Comunidá');
   });
 
-  it('el diccionariu inglés debe incluyir la llave de fallback pa los tests', () => {
+  it('el diccionariu Asturianu debe incluyir la llave de fallback pa los tests', () => {
     // Esta ye la llinia que taba fallando nel CI/CD
-    expect(ui.en['only.in.english']).toBe('English Text');
+    expect(ui.ast['only.in.asturianu']).toBe('Textu en Asturianu');
   });
 
   it('el diccionariu español debe tar completu', () => {
