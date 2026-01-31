@@ -1,6 +1,8 @@
 ---
 import LanguagePicker from './LanguagePicker.astro';
 import { useTranslations } from '../i18n/utils';
+import { Image } from 'astro:assets';
+import logoEsbilla from '../../public/logo-esbilla.png';
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 ---
@@ -9,11 +11,17 @@ const t = useTranslations(lang);
     
     <div class="flex items-center gap-12">
       <a href={`/${lang}/`} class="flex items-center gap-3 group shrink-0">
-        <img 
-          src="/logo-esbilla.png" 
-          alt="Esbilla Logo" 
-          class="w-10 h-10 object-contain transition-transform group-hover:rotate-6"
-        />
+        
+              <Image 
+        src={logoEsbilla} 
+        alt="Logo Esbilla CMP" 
+        width={40} 
+        height={40} 
+        format="webp"
+        quality="high"
+        class="w-10 h-10 object-contain transition-transform group-hover:rotate-6"
+      />
+    
         <span class="text-2xl font-black tracking-tighter text-madera uppercase">
           Esbilla<span class="text-maiz">CMP</span>
         </span>
