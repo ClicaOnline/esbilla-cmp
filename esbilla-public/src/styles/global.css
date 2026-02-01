@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Instrument Serif';
+  src: url('/fonts/instrument-serif-v5-latin-regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* CLAVE pa que PageSpeed nun se quexe */
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-v20-latin-200.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* CLAVE pa que PageSpeed nun se quexe */
+}
+
 @theme {
   /* Definición de colores del horru */
   --color-maiz: #FFBF00;          /* Marca/Iconos */
