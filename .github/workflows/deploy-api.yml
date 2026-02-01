@@ -1,0 +1,52 @@
+name: Despliegue de Esbilla API (Artifact Registry) 🚀
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'esbilla-api/**' ]
+
+env:
+  REGION: europe-southwest1
+  PROJECT_ID: esbilla-cmp # Puees ponelo direutu equí o usalu como secret
+  REPO_NAME: esbilla-docker
+  IMAGE_NAME: esbilla-api
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar códigu 📥
+        uses: actions/checkout@v4
+
+      - name: Autenticar en Google Cloud 🔑
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Configurar Google Cloud SDK 🟢
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configurar Docker pa Artifact Registry 🐋
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Construyir y Xubir Imaxe 🏗️
+        run: |
+          # El tag completu de la imaxe
+          TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          
+          # Entramos nel direutoriu y construyimos
+          docker build -t $TAG ./esbilla-api
+          docker push $TAG
+
+      - name: Desplegar en Cloud Run ☁️
+        run: |
+          TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          
+          gcloud run deploy esbilla-api \
+            --image $TAG \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --project ${{ env.PROJECT_ID }}
