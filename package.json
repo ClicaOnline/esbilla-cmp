@@ -15,5 +15,8 @@
     "install:all": "npm install"
   },
   "author": "Jlasolis (Clica Online)",
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
