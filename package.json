@@ -18,9 +18,5 @@
   "license": "GPL-3.0",
   "dependencies": {
     "express": "^5.2.1"
-  },
-  "optionalDependencies": {
-      "express": "^5.2.1",
-      "@lightningcss/linux-x64-gnu": "1.30.2"
   }
 }
