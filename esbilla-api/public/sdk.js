@@ -129,5 +129,29 @@
 
       bannerWrapper.remove();
     }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+  const btnAccept = document.getElementById('esbilla-accept');
+  
+  if (btnAccept) {
+    btnAccept.addEventListener('click', () => {
+      console.log('Botón primíu!');
+      fetch('https://api.esbilla.com/api/consent/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: 'accepted',
+          timestamp: new Date().toISOString()
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log('Log guardáu nel hórreu:', data);
+        document.getElementById('esbilla-banner').style.display = 'none';
+      })
+      .catch(err => console.error('Error de soberanía:', err));
+    });
+  }
+});
   }
 })();
