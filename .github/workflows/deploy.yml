@@ -29,7 +29,7 @@ jobs:
         run: npm test -w esbilla-public
 
       - name: Compilar Landing (Astro) 🏗️
-        run: npm run build --workspace=esbilla-public
+        run: npm run build -w esbilla-public
 
       - name: Desplegar en Firebase Hosting ☁️
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
