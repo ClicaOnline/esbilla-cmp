@@ -25,8 +25,7 @@ jobs:
         run: npm install --include=optional
 
       - name: Executar Tests Unitarios (Vitest) ✅
-        # Esti pasu ye la llave: si falla'l test del Schema o i18n, nun hai despliegue
-        run: npm test -w esbilla-public
+        run: npx vitest
 
       - name: Compilar Landing (Astro) 🏗️
         run: npm run build -w esbilla-public
