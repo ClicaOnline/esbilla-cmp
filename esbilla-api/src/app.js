@@ -1,9 +1,11 @@
 const express = require('express');
+const cors = require('cors'); 
 const path = require('path');
 const app = express();
 
+app.use(cors({ origin: 'https://esbilla.com' }));
 app.use(express.json());
-
+app.use('/', express.static(path.join(__dirname, '../public')));
 // Rutas de la API con prefijo /api
 app.get('/api/config/:id', (req, res) => {
   const { id } = req.params;
