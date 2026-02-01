@@ -51,7 +51,7 @@
     style.innerHTML = `
       #esbilla-banner {
         position: fixed; bottom: 20px; left: 20px; right: 20px;
-        background: #F8F5F0; border: 2px solid #3D2B1F;
+        background: #F8F5F2; border: 2px solid #3D2B1F;
         border-radius: 1.5rem; z-index: 999999; padding: 1.5rem;
         box-shadow: 0 10px 25px -5px rgba(61, 43, 31, 0.2);
         font-family: sans-serif;
