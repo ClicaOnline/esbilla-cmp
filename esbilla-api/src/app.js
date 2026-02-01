@@ -16,8 +16,19 @@ app.get('/api/config/:id', (req, res) => {
   });
 });
 
-app.post('/api/consent/log', (req, res) => {
-  res.status(201).send({ status: 'Log guardáu nel hórreu' });
+app.post('/api/consent/log', async (req, res) => {
+  const { cmpId, choices, timestamp } = req.body;
+  
+  // Guardamos un rexistru inmutable nel hórreu de Firestore
+  await db.collection('consents').add({
+    cmpId,
+    choices,
+    timestamp,
+    userAgent: req.headers['user-agent'],
+    ipHash: hash(req.ip) // Anonimizáu puru pa soberanía
+  });
+  
+  res.status(201).json({ status: 'esbilláu' });
 });
 
 module.exports = app;

@@ -1,0 +1,18 @@
+{
+  "ast": {
+    "template": "maiz.html",
+    "title": "Esbilla de Cookies 🍪",
+    "description": "Como cuando separes la panoya de la fueya, tu decides qué datos dexas pasar.",
+    "accept": "Aceptar Toa",
+    "reject": "Refugar",
+    "settings": "Configurar"
+  },
+  "es": {
+    "template": "maiz.html",
+    "title": "Selección de Cookies 🍪",
+    "description": "Tú decides qué datos permites. Usamos cookies para mejorar tu experiencia.",
+    "accept": "Aceptar Todo",
+    "reject": "Rechazar",
+    "settings": "Configurar"
+  }
+}
