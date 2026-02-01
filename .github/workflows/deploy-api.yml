@@ -6,7 +6,7 @@ on:
     paths: [ 'esbilla-api/**' ]
 
 env:
-  REGION: europe-southwest1
+  REGION: europe-4
   PROJECT_ID: esbilla-cmp # Puees ponelo direutu equí o usalu como secret
   REPO_NAME: esbilla-docker
   IMAGE_NAME: esbilla-api
