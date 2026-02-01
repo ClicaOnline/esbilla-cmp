@@ -1,5 +1,5 @@
 # esbilla-api/Dockerfile
-FROM node:20-slim
+FROM node:20
 
 # Creación del directoriu de trabayu
 WORKDIR /app
