@@ -20,6 +20,6 @@
     "express": "^5.2.1"
   },
   "optionalDependencies": {
-    "@lightningcss/linux-x64-gnu": "npm:null@*"
+    "@lightningcss/linux-x64-gnu": "1.30.2"
   }
 }

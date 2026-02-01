@@ -22,7 +22,7 @@ jobs:
           cache-dependency-path: './package-lock.json'
 
       - name: Instalar dependencies 📦
-        run: npm install
+        run: npm ci
 
       - name: Executar Tests Unitarios (Vitest) ✅
         # Esti pasu ye la llave: si falla'l test del Schema o i18n, nun hai despliegue
