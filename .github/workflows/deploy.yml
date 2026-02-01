@@ -21,11 +21,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './package-lock.json'
 
+      - name: Limpiar node_modules previos 🧹
+        run: rm -rf node_modules package-lock.json
+
       - name: Instalar dependencies 📦
         run: npm install --include=optional
 
       - name: Executar Tests Unitarios (Vitest) ✅
-        run: npx vitest
+        # Esti pasu ye la llave: si falla'l test del Schema o i18n, nun hai despliegue
+        run: npm run test -w esbilla-public -- --run
 
       - name: Compilar Landing (Astro) 🏗️
         run: npm run build -w esbilla-public
