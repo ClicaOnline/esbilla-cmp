@@ -26,12 +26,31 @@ const ogImageURL = new URL(image, site);
     data-gtm="GTM-XXXXXX"
     data-meta="PIXEL_ID">
   </script>
+
+<script src="https://api.esbilla.com/sdk.js" defer></script>
+
+<script is:inline>
+  // Configuración inicial del CMP llamando al to back-end
+  window.esbillaConfig = {
+    projectId: 'esbilla-web-oficial',
+    apiUrl: 'https://api.esbilla.com/api/config'
+  };
+
+  // Ejemplo de cómo invocar la 'collecha' de configuración
+  fetch(`${window.esbillaConfig.apiUrl}/${window.esbillaConfig.projectId}`)
+    .then(res => res.json())
+    .then(config => {
+      console.log('Configuración recibida del hórreu:', config);
+      // Equí activaríase la lóxica del banner colos colores: config.theme.primary
+    });
+</script>
+
   <link rel="preload" href="/fonts/instrument-serif-v5-latin-regular.woff2" as="font" type="font/woff2" crossorigin />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{title} | Esbilla CMP</title>
     <meta name="description" content={description} />
-     
+
     <link rel="canonical" href={canonicalURL} />
     {Object.keys(languages).map((l) => (
       <link 
