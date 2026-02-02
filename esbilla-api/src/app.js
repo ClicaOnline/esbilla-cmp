@@ -33,12 +33,29 @@ const app = express();
 
 // CORS configuráu pa permitir el dominiu de producción y desarrollo
 app.use(cors({
-  origin: ['https://esbilla.com', 'http://localhost:4321', 'http://localhost:3000'],
+  origin: [
+    'https://esbilla.com',
+    'https://api.esbilla.com',
+    'http://localhost:4321',
+    'http://localhost:3000',
+    'http://localhost:5173'  // Vite dev server del dashboard
+  ],
   credentials: true
 }));
 
 app.use(express.json());
+
+// Servir ficheros estáticos del SDK
 app.use('/', express.static(path.join(__dirname, '../public')));
+
+// Servir el Dashboard (SPA)
+const dashboardPath = path.join(__dirname, '../public/dashboard');
+app.use('/dashboard', express.static(dashboardPath));
+
+// SPA fallback: toles rutas del dashboard devuelven index.html
+app.get('/dashboard/{*path}', (req, res) => {
+  res.sendFile(path.join(dashboardPath, 'index.html'));
+});
 
 // Hash anónimu del IP pa soberanía de datos
 function hashIP(ip) {

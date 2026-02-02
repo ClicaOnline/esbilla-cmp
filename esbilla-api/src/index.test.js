@@ -3,7 +3,7 @@ import request from 'supertest';
 import app from './app';
 
 describe('Esbilla API - Pruebes de Gobernanza', () => {
-  
+
   it('Debería devolver la configuración correuta pol ID', async () => {
     const response = await request(app).get('/api/config/sevares-001');
     expect(response.status).toBe(200);
@@ -37,6 +37,89 @@ describe('Esbilla API - Pruebes de Gobernanza', () => {
     const response = await request(app).get('/api/health');
     expect(response.status).toBe(200);
     expect(response.body.status).toBe('healthy');
+  });
+
+});
+
+describe('Esbilla API - SDK y ficheros estáticos', () => {
+
+  it('Debería servir el SDK (sdk.js)', async () => {
+    const response = await request(app).get('/sdk.js');
+    expect(response.status).toBe(200);
+    expect(response.type).toMatch(/javascript/);
+    expect(response.text).toContain('ESBILLA CMP');
+  });
+
+  it('El SDK debería contener la función getFootprintId', async () => {
+    const response = await request(app).get('/sdk.js');
+    expect(response.text).toContain('getFootprintId');
+    expect(response.text).toContain('esbilla_footprint');
+  });
+
+  it('El SDK debería tener la mosca con footprint', async () => {
+    const response = await request(app).get('/sdk.js');
+    expect(response.text).toContain('showMosca');
+    expect(response.text).toContain('esbilla-mosca-expanded');
+    expect(response.text).toContain('esbilla-mosca-footprint');
+  });
+
+  it('Debería servir el manifest de configuración', async () => {
+    const response = await request(app).get('/config/manifest.json');
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('layouts');
+    expect(response.body).toHaveProperty('themes');
+  });
+
+  it('Debería servir los estilos base', async () => {
+    const response = await request(app).get('/styles/base.css');
+    expect(response.status).toBe(200);
+    expect(response.type).toMatch(/css/);
+    expect(response.text).toContain('--esbilla-primary');
+  });
+
+  it('Los estilos deberían incluir la mosca expandida', async () => {
+    const response = await request(app).get('/styles/base.css');
+    expect(response.text).toContain('.esbilla-mosca-expanded');
+    expect(response.text).toContain('.esbilla-mosca-footprint');
+  });
+
+  it('Debería servir las traducciones i18n', async () => {
+    const response = await request(app).get('/i18n/config.json');
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('es');
+    expect(response.body).toHaveProperty('en');
+  });
+
+});
+
+describe('Esbilla API - Consent con footprintId', () => {
+
+  it('Debería aceptar y guardar el footprintId nel log', async () => {
+    const payload = {
+      cmpId: 'test-footprint',
+      footprintId: 'ESB-TEST1234',
+      choices: { analytics: true, marketing: false },
+      lang: 'ast',
+      userAgent: 'TestAgent/1.0'
+    };
+    const response = await request(app)
+      .post('/api/consent/log')
+      .send(payload);
+
+    expect(response.status).toBe(201);
+    expect(response.body.status).toBe('esbilláu');
+  });
+
+  it('Debería funcionar sin footprintId (retrocompatibilidad)', async () => {
+    const payload = {
+      cmpId: 'test-legacy',
+      choices: { analytics: false, marketing: false }
+    };
+    const response = await request(app)
+      .post('/api/consent/log')
+      .send(payload);
+
+    expect(response.status).toBe(201);
   });
 
 });
