@@ -4,7 +4,7 @@ import { useI18n, SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../i18n';
 import { Globe } from 'lucide-react';
 
 export function LoginPage() {
-  const { user, userData, loading, error, signInWithGoogle } = useAuth();
+  const { user, userData, loading, error, signInWithGoogle, signOut } = useAuth();
   const { language, setLanguage, t } = useI18n();
 
   if (loading) {
@@ -51,10 +51,7 @@ export function LoginPage() {
             {t.login.checkAgain}
           </button>
           <button
-            onClick={() => {
-              const auth = useAuth();
-              auth.signOut();
-            }}
+            onClick={signOut}
             className="text-sm text-stone-500 hover:text-stone-700"
           >
             {t.login.useOtherAccount}

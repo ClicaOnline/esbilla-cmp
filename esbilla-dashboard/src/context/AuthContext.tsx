@@ -7,7 +7,10 @@ import {
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db, googleProvider } from '../lib/firebase';
+import { auth, db, googleProvider, initError, isFirebaseConfigured } from '../lib/firebase';
+
+// Timeout for auth state check (5 seconds)
+const AUTH_TIMEOUT_MS = 5000;
 
 // ============================================
 // TIPOS DE ROLES Y PERMISOS
@@ -103,6 +106,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // CARGA DE DATOS DEL USUARIO
   // ============================================
   async function loadUserData(firebaseUser: User) {
+    if (!db) {
+      setError('Firestore no está disponible');
+      return;
+    }
+
     try {
       const userRef = doc(db, 'users', firebaseUser.uid);
       const userSnap = await getDoc(userRef);
@@ -156,7 +164,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // EFECTOS
   // ============================================
   useEffect(() => {
+    // Check if Firebase initialized correctly
+    if (initError || !isFirebaseConfigured) {
+      console.error('Firebase initialization failed:', initError?.message || 'Missing configuration');
+      setError(initError?.message || 'Firebase no está configurado correctamente');
+      setLoading(false);
+      return;
+    }
+
+    if (!auth) {
+      console.error('Firebase auth not initialized');
+      setError('Firebase Auth no está disponible');
+      setLoading(false);
+      return;
+    }
+
+    // Timeout fallback in case onAuthStateChanged never fires
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Auth state check timeout - forcing loading to false');
+        setLoading(false);
+      }
+    }, AUTH_TIMEOUT_MS);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      clearTimeout(timeout);
       setUser(firebaseUser);
 
       if (firebaseUser) {
@@ -168,13 +200,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, []);
 
   // ============================================
   // ACCIONES DE AUTENTICACIÓN
   // ============================================
   async function signInWithGoogle() {
+    if (!auth || !googleProvider) {
+      setError('Firebase Auth no está disponible');
+      return;
+    }
+
     try {
       setError(null);
       const result = await signInWithPopup(auth, googleProvider);
@@ -187,6 +227,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
+    if (!auth) {
+      setError('Firebase Auth no está disponible');
+      return;
+    }
+
     try {
       await firebaseSignOut(auth);
       setUser(null);

@@ -38,6 +38,12 @@ export function DashboardPage() {
   }, []);
 
   async function loadStats() {
+    if (!db) {
+      console.error('Firestore not available');
+      setLoading(false);
+      return;
+    }
+
     try {
       const consentsRef = collection(db, 'consents');
 

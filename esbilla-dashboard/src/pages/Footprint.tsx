@@ -33,6 +33,12 @@ export function FootprintPage() {
     setLoading(true);
     setSearched(true);
 
+    if (!db) {
+      console.error('Firestore not available');
+      setLoading(false);
+      return;
+    }
+
     try {
       const consentsRef = collection(db, 'consents');
 

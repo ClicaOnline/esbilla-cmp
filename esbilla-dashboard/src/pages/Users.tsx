@@ -28,6 +28,12 @@ export function UsersPage() {
   }, []);
 
   async function loadUsers() {
+    if (!db) {
+      console.error('Firestore not available');
+      setLoading(false);
+      return;
+    }
+
     try {
       const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
@@ -55,7 +61,7 @@ export function UsersPage() {
   }
 
   async function updateUserRole(userId: string, newRole: UserRole) {
-    if (!isAdmin) return;
+    if (!isAdmin || !db) return;
 
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
@@ -66,7 +72,7 @@ export function UsersPage() {
   }
 
   async function deleteUser(userId: string) {
-    if (!isAdmin || userId === currentUser?.uid) return;
+    if (!isAdmin || userId === currentUser?.uid || !db) return;
 
     if (!confirm(t.users.confirmDelete)) return;
 
