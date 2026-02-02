@@ -19,9 +19,23 @@ describe('Esbilla API - Pruebes de Gobernanza', () => {
     const response = await request(app)
       .post('/api/consent/log')
       .send(payload);
-    
+
     expect(response.status).toBe(201);
-    expect(response.body.status).toContain('Log guardáu');
+    expect(response.body.status).toBe('esbilláu');
+  });
+
+  it('Debería rexazar peticiones sin cmpId', async () => {
+    const response = await request(app)
+      .post('/api/consent/log')
+      .send({ choices: { analytics: true } });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('Debería devolver health check', async () => {
+    const response = await request(app).get('/api/health');
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe('healthy');
   });
 
 });
