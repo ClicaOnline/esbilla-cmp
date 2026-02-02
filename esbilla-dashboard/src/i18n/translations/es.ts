@@ -113,4 +113,77 @@ export const es: Translations = {
     eu: 'Euskara',
     gl: 'Galego',
   },
+
+  // Settings page
+  settings: {
+    title: 'Configuración del Banner',
+    subtitle: 'Personaliza el aspecto y comportamiento del banner de cookies',
+
+    // Layout section
+    layoutSection: 'Diseño del Banner',
+    layoutDescription: 'Elige cómo se presentará el banner de cookies',
+    layoutModal: 'Modal centrado',
+    layoutModalDesc: 'Aparece en el centro de la pantalla con fondo oscurecido',
+    layoutBar: 'Barra inferior',
+    layoutBarDesc: 'Barra fija en la parte inferior de la pantalla',
+    layoutCorner: 'Esquina',
+    layoutCornerDesc: 'Pequeño diálogo en una esquina de la pantalla',
+
+    // Colors section
+    colorsSection: 'Esquema de Colores',
+    colorsDescription: 'Ajusta los colores del banner para que coincidan con tu marca',
+    primaryColor: 'Color Primario',
+    primaryColorDesc: 'Color principal para botones destacados',
+    secondaryColor: 'Color Secundario',
+    secondaryColorDesc: 'Color para botones secundarios',
+    backgroundColor: 'Fondo',
+    backgroundColorDesc: 'Color de fondo del banner',
+    textColor: 'Texto',
+    textColorDesc: 'Color del texto principal',
+
+    // Fonts section
+    fontsSection: 'Tipografía',
+    fontsDescription: 'Elige la fuente para los textos del banner',
+    fontFamily: 'Familia de Fuente',
+    fontFamilies: {
+      system: 'Sistema (por defecto)',
+      inter: 'Inter',
+      roboto: 'Roboto',
+      opensans: 'Open Sans',
+      lato: 'Lato',
+      montserrat: 'Montserrat',
+    },
+
+    // Buttons section
+    buttonsSection: 'Estilo de Botones',
+    buttonsDescription: 'Configura el aspecto de los botones del banner',
+    buttonStyle: 'Estilo de botones',
+    buttonStyles: {
+      equal: 'Mismo peso visual',
+      equalDesc: 'Aceptar y Rechazar tienen el mismo tamaño y contraste',
+      acceptHighlight: 'Destacar Aceptar',
+      acceptHighlightDesc: 'El botón de aceptar destaca sobre el de rechazar',
+    },
+    acceptAllLabel: 'Texto "Aceptar todas"',
+    rejectAllLabel: 'Texto "Rechazar todas"',
+    customizeLabel: 'Texto "Personalizar"',
+    acceptEssentialLabel: 'Texto "Solo esenciales"',
+
+    // Legal notice section
+    legalSection: 'Aviso Legal',
+    legalDescription: 'Configura el aviso legal que se mostrará como modal',
+    legalTitle: 'Título del aviso',
+    legalContent: 'Contenido del aviso legal',
+    legalPlaceholder: 'Escribe aquí el aviso legal...',
+    previewModal: 'Previsualizar Modal',
+
+    // Preview
+    preview: 'Vista previa',
+    previewDescription: 'Así se verá el banner con los ajustes actuales',
+
+    // Actions
+    saveChanges: 'Guardar Cambios',
+    resetDefaults: 'Restaurar por Defecto',
+    saved: 'Cambios guardados',
+  },
 };

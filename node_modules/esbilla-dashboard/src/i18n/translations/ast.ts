@@ -111,6 +111,79 @@ export const ast = {
     eu: 'Euskara',
     gl: 'Galego',
   },
+
+  // Settings page
+  settings: {
+    title: 'Configuración del Banner',
+    subtitle: 'Personaliza l\'aspeutu y comportamientu del banner de cookies',
+
+    // Layout section
+    layoutSection: 'Diseñu del Banner',
+    layoutDescription: 'Escueyi cómo se va presentar el banner de cookies',
+    layoutModal: 'Modal centráu',
+    layoutModalDesc: 'Apaez nel centru de la pantalla con fondu escurecíu',
+    layoutBar: 'Barra inferior',
+    layoutBarDesc: 'Barra fixa na parte inferior de la pantalla',
+    layoutCorner: 'Esquina',
+    layoutCornerDesc: 'Pequeñu diálogu nuna esquina de la pantalla',
+
+    // Colors section
+    colorsSection: 'Esquema de Colores',
+    colorsDescription: 'Axusta los colores del banner pa que concuayen cola to marca',
+    primaryColor: 'Color Primariu',
+    primaryColorDesc: 'Color principal pa botones destacaos',
+    secondaryColor: 'Color Secundariu',
+    secondaryColorDesc: 'Color pa botones secundarios',
+    backgroundColor: 'Fondu',
+    backgroundColorDesc: 'Color de fondu del banner',
+    textColor: 'Testu',
+    textColorDesc: 'Color del testu principal',
+
+    // Fonts section
+    fontsSection: 'Tipografía',
+    fontsDescription: 'Escueyi la fonte pa los testos del banner',
+    fontFamily: 'Familia de Fonte',
+    fontFamilies: {
+      system: 'Sistema (por defectu)',
+      inter: 'Inter',
+      roboto: 'Roboto',
+      opensans: 'Open Sans',
+      lato: 'Lato',
+      montserrat: 'Montserrat',
+    },
+
+    // Buttons section
+    buttonsSection: 'Estilu de Botones',
+    buttonsDescription: 'Configura l\'aspeutu de los botones del banner',
+    buttonStyle: 'Estilu de botones',
+    buttonStyles: {
+      equal: 'Mesmu pesu visual',
+      equalDesc: 'Aceptar y Refugar tienen el mesmu tamañu y contraste',
+      acceptHighlight: 'Destacar Aceptar',
+      acceptHighlightDesc: 'El botón d\'aceptar destaca sobre\'l de refugar',
+    },
+    acceptAllLabel: 'Testu "Aceptar toes"',
+    rejectAllLabel: 'Testu "Refugar toes"',
+    customizeLabel: 'Testu "Personalizar"',
+    acceptEssentialLabel: 'Testu "Namás esenciales"',
+
+    // Legal notice section
+    legalSection: 'Avisu Llegal',
+    legalDescription: 'Configura l\'avisu llegal que s\'amosará como modal',
+    legalTitle: 'Títulu del avisu',
+    legalContent: 'Conteníu del avisu llegal',
+    legalPlaceholder: 'Escribe equí l\'avisu llegal...',
+    previewModal: 'Previsualizar Modal',
+
+    // Preview
+    preview: 'Vista previa',
+    previewDescription: 'Asina se verá\'l banner colos axustes actuales',
+
+    // Actions
+    saveChanges: 'Guardar Cambeos',
+    resetDefaults: 'Restaurar por Defectu',
+    saved: 'Cambeos guardaos',
+  },
 } as const;
 
 export type Translations = typeof ast;

@@ -113,4 +113,77 @@ export const en: Translations = {
     eu: 'Euskara',
     gl: 'Galego',
   },
+
+  // Settings page
+  settings: {
+    title: 'Banner Settings',
+    subtitle: 'Customize the appearance and behavior of the cookie banner',
+
+    // Layout section
+    layoutSection: 'Banner Layout',
+    layoutDescription: 'Choose how the cookie banner will be displayed',
+    layoutModal: 'Centered modal',
+    layoutModalDesc: 'Appears in the center of the screen with darkened background',
+    layoutBar: 'Bottom bar',
+    layoutBarDesc: 'Fixed bar at the bottom of the screen',
+    layoutCorner: 'Corner',
+    layoutCornerDesc: 'Small dialog in a corner of the screen',
+
+    // Colors section
+    colorsSection: 'Color Scheme',
+    colorsDescription: 'Adjust the banner colors to match your brand',
+    primaryColor: 'Primary Color',
+    primaryColorDesc: 'Main color for highlighted buttons',
+    secondaryColor: 'Secondary Color',
+    secondaryColorDesc: 'Color for secondary buttons',
+    backgroundColor: 'Background',
+    backgroundColorDesc: 'Banner background color',
+    textColor: 'Text',
+    textColorDesc: 'Main text color',
+
+    // Fonts section
+    fontsSection: 'Typography',
+    fontsDescription: 'Choose the font for banner texts',
+    fontFamily: 'Font Family',
+    fontFamilies: {
+      system: 'System (default)',
+      inter: 'Inter',
+      roboto: 'Roboto',
+      opensans: 'Open Sans',
+      lato: 'Lato',
+      montserrat: 'Montserrat',
+    },
+
+    // Buttons section
+    buttonsSection: 'Button Style',
+    buttonsDescription: 'Configure the appearance of banner buttons',
+    buttonStyle: 'Button style',
+    buttonStyles: {
+      equal: 'Equal visual weight',
+      equalDesc: 'Accept and Reject have the same size and contrast',
+      acceptHighlight: 'Highlight Accept',
+      acceptHighlightDesc: 'The accept button stands out over the reject button',
+    },
+    acceptAllLabel: '"Accept all" text',
+    rejectAllLabel: '"Reject all" text',
+    customizeLabel: '"Customize" text',
+    acceptEssentialLabel: '"Essential only" text',
+
+    // Legal notice section
+    legalSection: 'Legal Notice',
+    legalDescription: 'Configure the legal notice that will be shown as a modal',
+    legalTitle: 'Notice title',
+    legalContent: 'Legal notice content',
+    legalPlaceholder: 'Write the legal notice here...',
+    previewModal: 'Preview Modal',
+
+    // Preview
+    preview: 'Preview',
+    previewDescription: 'This is how the banner will look with current settings',
+
+    // Actions
+    saveChanges: 'Save Changes',
+    resetDefaults: 'Reset to Defaults',
+    saved: 'Changes saved',
+  },
 };
