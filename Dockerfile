@@ -23,9 +23,9 @@ ENV VITE_FIREBASE_STORAGE_BUCKET=$VITE_FIREBASE_STORAGE_BUCKET
 ENV VITE_FIREBASE_MESSAGING_SENDER_ID=$VITE_FIREBASE_MESSAGING_SENDER_ID
 ENV VITE_FIREBASE_APP_ID=$VITE_FIREBASE_APP_ID
 
-# Copiar package.json del dashboard
-COPY esbilla-dashboard/package*.json ./
-RUN npm ci
+# Copiar package.json del dashboard (npm install porque nun hai lockfile individual)
+COPY esbilla-dashboard/package.json ./
+RUN npm install
 
 # Copiar el restu del dashboard y compilar
 COPY esbilla-dashboard/ ./
@@ -39,8 +39,8 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copiar ficheros de dependencies de la API
-COPY esbilla-api/package*.json ./
-RUN npm ci --production
+COPY esbilla-api/package.json ./
+RUN npm install --omit=dev
 
 # Copiar el códigu de la API
 COPY esbilla-api/ ./
