@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Base path para servir desde /dashboard/ en producción
+  base: '/dashboard/',
   plugins: [react(), tailwindcss()],
   test: {
     globals: true,
