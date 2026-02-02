@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Función helper para verificar si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Función helper para verificar el rol del usuario
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() in ['admin', 'superadmin'];
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserRole() == 'superadmin';
+    }
+
+    function isAuthorized() {
+      return isAuthenticated() && getUserRole() in ['viewer', 'admin', 'superadmin'];
+    }
+
+    // Colección de usuarios
+    match /users/{userId} {
+      // Cualquier usuario autenticado puede leer su propio documento
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+
+      // Los admins pueden leer todos los usuarios
+      allow read: if isAdmin();
+
+      // Un usuario puede crear su propio documento (primer login)
+      allow create: if isAuthenticated() && request.auth.uid == userId
+                    && request.resource.data.role == 'pending';
+
+      // Un usuario puede actualizar su lastLogin
+      allow update: if isAuthenticated() && request.auth.uid == userId
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']);
+
+      // Solo admins pueden actualizar roles de usuarios
+      allow update: if isAdmin() && request.auth.uid != userId;
+
+      // Solo superadmins pueden eliminar usuarios
+      allow delete: if isSuperAdmin();
+    }
+
+    // Colección de consentimientos
+    match /consents/{consentId} {
+      // Cualquier usuario autorizado puede leer consentimientos
+      allow read: if isAuthorized();
+
+      // Los consentimientos se crean desde la API (sin autenticación del dashboard)
+      // La API usa el Admin SDK que bypasea estas reglas
+      allow create: if false; // Solo vía Admin SDK
+
+      // No se pueden modificar ni eliminar consentimientos
+      allow update, delete: if false;
+    }
+
+    // Colección de configuración
+    match /config/{configId} {
+      // Cualquier usuario autorizado puede leer la configuración
+      allow read: if isAuthorized();
+
+      // Solo admins pueden modificar la configuración
+      allow write: if isAdmin();
+    }
+  }
+}
