@@ -68,6 +68,16 @@
     const style = document.createElement('style');
     style.id = 'esbilla-base-styles';
     style.innerHTML = `
+      #esbilla-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 999999; background: rgba(0, 0, 0, 0.5); }
+      .esbilla-v3 #esbilla-banner { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); max-width: 500px; width: 90%; }
+      .esbilla-v3 .esbilla-inner { text-align: center; }
+      .esbilla-v3 .esbilla-title { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #3D2B1F; }
+      .esbilla-v3 .esbilla-text { font-size: 16px; margin-bottom: 20px; color: #555; line-height: 1.5; }
+      .esbilla-v3 .esbilla-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+      .esbilla-v3 .btn-maiz { background: #FFBF00; color: #3D2B1F; border: 2px solid #3D2B1F; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: all 0.2s; }
+      .esbilla-v3 .btn-maiz:hover { background: #FFA500; transform: translateY(-2px); }
+      .esbilla-v3 .btn-stone { background: transparent; color: #3D2B1F; border: 2px solid #3D2B1F; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: all 0.2s; }
+      .esbilla-v3 .btn-stone:hover { background: #f5f5f5; transform: translateY(-2px); }
       #esbilla-mosca { position: fixed; bottom: 20px; left: 20px; cursor: pointer; z-index: 999998; background: #FFBF00; padding: 12px; border-radius: 50%; box-shadow: 0 4px 10px rgba(61, 43, 31, 0.3); font-size: 24px; border: 2px solid #3D2B1F; transition: transform 0.2s; }
       #esbilla-mosca:hover { transform: scale(1.1); }
       .esbilla-hidden { display: none !important; }
