@@ -14,6 +14,24 @@
   let manifest = {};
   let currentLang = 'es';
   let templateHtml = '';
+  let footprintId = '';
+
+  // ============================================
+  // FOOTPRINT ID - Identificador único de usuario
+  // ============================================
+  function getFootprintId() {
+    // Intentar recuperar el ID existente
+    let id = localStorage.getItem('esbilla_footprint');
+
+    if (!id) {
+      // Generar nuevo UUID y formatear como ESB-XXXXXXXX
+      const uuid = crypto.randomUUID();
+      id = 'ESB-' + uuid.split('-')[0].toUpperCase();
+      localStorage.setItem('esbilla_footprint', id);
+    }
+
+    return id;
+  }
 
   // Nomes de los idiomes (fallback, sobrescríbese col manifest)
   const defaultLangNames = {
@@ -66,6 +84,9 @@
 
       // D. Detectar idioma
       detectLanguage();
+
+      // D2. Obtener/Generar footprintId
+      footprintId = getFootprintId();
 
       // E. Cargar estilos (CSS externos)
       await loadStyles();
@@ -391,6 +412,11 @@
       <div class="esbilla-actions" style="margin-top: 20px;">
         <button id="esbilla-btn-save" class="btn-primary">${t.saveSettings || 'Guardar'}</button>
       </div>
+
+      <div class="esbilla-footprint">
+        <span class="esbilla-footprint-label">${t.footprintLabel || 'Tu ID de privacidad'}:</span>
+        <code class="esbilla-footprint-id">${footprintId}</code>
+      </div>
     `;
 
     banner.appendChild(settingsPanel);
@@ -410,10 +436,22 @@
     if (document.getElementById('esbilla-mosca')) return;
 
     const t = translations[currentLang] || {};
+    const showFootprint = config.mosca?.showFootprint !== false;
+
     const mosca = document.createElement('div');
     mosca.id = 'esbilla-mosca';
-    mosca.innerHTML = config.mosca?.icon || '🍪';
     mosca.title = t.moscaTitle || 'Configurar cookies';
+
+    if (showFootprint) {
+      mosca.classList.add('esbilla-mosca-expanded');
+      mosca.innerHTML = `
+        <span class="esbilla-mosca-icon">${config.mosca?.icon || '🍪'}</span>
+        <span class="esbilla-mosca-footprint">${footprintId}</span>
+      `;
+    } else {
+      mosca.innerHTML = config.mosca?.icon || '🍪';
+    }
+
     mosca.onclick = () => {
       mosca.remove();
       renderBanner(true);
@@ -434,9 +472,11 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         cmpId,
+        footprintId,
         choices,
         timestamp: new Date().toISOString(),
-        lang: currentLang
+        lang: currentLang,
+        userAgent: navigator.userAgent
       })
     }).catch(e => console.warn('[Esbilla] Error logging consent:', e));
 

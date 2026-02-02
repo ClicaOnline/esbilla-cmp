@@ -14,7 +14,8 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permiten personalizar anuncios",
     "saveSettings": "Guardar preferencies",
-    "moscaTitle": "Configurar cookies"
+    "moscaTitle": "Configurar cookies",
+    "footprintLabel": "El to ID de privacidá"
   },
   "es": {
     "template": "maiz.html",
@@ -31,7 +32,8 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permiten personalizar anuncios",
     "saveSettings": "Guardar preferencias",
-    "moscaTitle": "Configurar cookies"
+    "moscaTitle": "Configurar cookies",
+    "footprintLabel": "Tu ID de privacidad"
   },
   "en": {
     "template": "maiz.html",
@@ -48,7 +50,8 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Allow personalized ads",
     "saveSettings": "Save preferences",
-    "moscaTitle": "Configure cookies"
+    "moscaTitle": "Configure cookies",
+    "footprintLabel": "Your privacy ID"
   },
   "fr": {
     "template": "maiz.html",
@@ -65,7 +68,8 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permettent de personnaliser les publicités",
     "saveSettings": "Enregistrer les préférences",
-    "moscaTitle": "Configurer les cookies"
+    "moscaTitle": "Configurer les cookies",
+    "footprintLabel": "Votre ID de confidentialité"
   },
   "pt": {
     "template": "maiz.html",
