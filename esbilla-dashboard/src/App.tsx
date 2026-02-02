@@ -70,8 +70,11 @@ function AppRoutes() {
 }
 
 function App() {
+  // Use Vite's base URL for the router (matches vite.config.ts base: '/dashboard/')
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>

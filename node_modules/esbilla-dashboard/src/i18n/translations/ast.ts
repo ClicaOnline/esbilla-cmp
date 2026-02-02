@@ -1,5 +1,7 @@
 // Asturianu - Idioma por defectu
-export const ast = {
+import type { Translations } from './types';
+
+export const ast: Translations = {
   // Common
   common: {
     loading: 'Cargando...',
@@ -184,6 +186,4 @@ export const ast = {
     resetDefaults: 'Restaurar por Defectu',
     saved: 'Cambeos guardaos',
   },
-} as const;
-
-export type Translations = typeof ast;
+};

@@ -1,5 +1,5 @@
 // Español
-import type { Translations } from './ast';
+import type { Translations } from './types';
 
 export const es: Translations = {
   // Common
