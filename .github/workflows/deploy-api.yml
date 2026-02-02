@@ -1,16 +1,19 @@
-name: Despliegue de Esbilla API (Artifact Registry) 🚀
+name: Despliegue de Esbilla API + Dashboard 🚀
 
 on:
   push:
     branches: [ main ]
-    paths: [ 'esbilla-api/**' ]
+    paths:
+      - 'esbilla-api/**'
+      - 'esbilla-dashboard/**'
+      - 'Dockerfile'
 
 env:
   REGION: europe-west4
-  PROJECT_ID: esbilla-cmp # Puees ponelo direutu equí o usalu como secret
+  PROJECT_ID: esbilla-cmp
   REPO_NAME: esbilla-docker
   IMAGE_NAME: esbilla-api
-  FIRESTORE_DATABASE_ID: esbilla-cmp # Nome de la BBDD en Firestore
+  FIRESTORE_DATABASE_ID: esbilla-cmp
 
 jobs:
   build-and-deploy:
@@ -32,13 +35,21 @@ jobs:
         run: |
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-      - name: Construyir y Xubir Imaxe 🏗️
+      - name: Construyir y Xubir Imaxe (API + Dashboard) 🏗️
         run: |
           # El tag completu de la imaxe
           TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          
-          # Entramos nel direutoriu y construyimos
-          docker build -t $TAG ./esbilla-api
+
+          # Construyir dende la raíz (incluye dashboard)
+          # Las variables VITE_* se pasan como build args pa Firebase
+          docker build -t $TAG -f Dockerfile \
+            --build-arg VITE_FIREBASE_API_KEY="${{ secrets.VITE_FIREBASE_API_KEY }}" \
+            --build-arg VITE_FIREBASE_AUTH_DOMAIN="${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" \
+            --build-arg VITE_FIREBASE_PROJECT_ID="${{ secrets.VITE_FIREBASE_PROJECT_ID }}" \
+            --build-arg VITE_FIREBASE_STORAGE_BUCKET="${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}" \
+            --build-arg VITE_FIREBASE_MESSAGING_SENDER_ID="${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" \
+            --build-arg VITE_FIREBASE_APP_ID="${{ secrets.VITE_FIREBASE_APP_ID }}" \
+            .
           docker push $TAG
 
       - name: Desplegar en Cloud Run ☁️
@@ -52,3 +63,7 @@ jobs:
             --allow-unauthenticated \
             --set-env-vars="FIRESTORE_DATABASE_ID=${{ env.FIRESTORE_DATABASE_ID }}" \
             --project ${{ env.PROJECT_ID }}
+
+      - name: Mostrar URL del Dashboard 🔗
+        run: |
+          echo "Dashboard disponible en: https://api.esbilla.com/dashboard"
