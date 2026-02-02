@@ -21,6 +21,7 @@ export const ast: Translations = {
   // Navigation
   nav: {
     dashboard: 'Dashboard',
+    sites: 'Sitios',
     users: 'Usuarios',
     footprint: 'Buscar Footprint',
     settings: 'Configuración',
@@ -112,6 +113,37 @@ export const ast: Translations = {
     ca: 'Català',
     eu: 'Euskara',
     gl: 'Galego',
+  },
+
+  // Sites page
+  sites: {
+    title: 'Xestión de Sitios',
+    subtitle: 'Alministra los sitios web y dominios que uses Esbilla CMP',
+    createSite: 'Crear Sitiu',
+    editSite: 'Editar Sitiu',
+    deleteSite: 'Eliminar Sitiu',
+    confirmDelete: '¿Tas seguru d\'eliminar esti sitiu? Tola configuración y estadístiques van perdese.',
+    name: 'Nome',
+    namePlaceholder: 'El mio sitiu web',
+    domains: 'Dominios',
+    domainsPlaceholder: 'example.com, www.example.com',
+    domainsHelp: 'Dominios asociaos a esti sitiu (separaos por comes)',
+    apiKey: 'API Key',
+    apiKeyHelp: 'Usa esta clave pa integrar el SDK nel to sitiu',
+    copyApiKey: 'Copiar API Key',
+    copied: 'Copiáu',
+    regenerateKey: 'Rexenerar Clave',
+    confirmRegenerate: '¿Tas seguru de rexenerar la clave API? La clave anterior va dexar de funcionar.',
+    noSites: 'Nun hai sitios',
+    noSitesMessage: 'Entovía nun creaste dengún sitiu. Crea\'l primeru pa empezar.',
+    integration: 'Integración',
+    integrationCode: 'Códigu d\'integración',
+    stats: 'Estadístiques',
+    totalConsents: 'Total consentimientos',
+    lastConsent: 'Caberu consentimientu',
+    never: 'Enxamás',
+    viewStats: 'Ver estadístiques',
+    configure: 'Configurar',
   },
 
   // Settings page

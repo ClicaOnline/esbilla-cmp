@@ -1,17 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import { Search, Download, CheckCircle, XCircle, Settings, Calendar, Globe, Monitor } from 'lucide-react';
+import type { Site } from '../types';
+import { Search, Download, CheckCircle, XCircle, Settings, Calendar, Globe, Monitor, Globe2, Link } from 'lucide-react';
 
 interface ConsentRecord {
   id: string;
-  cmpId: string;
+  siteId: string;
+  siteName?: string;
   footprintId: string;
   choices: {
     analytics: boolean;
     marketing: boolean;
+  };
+  action?: string;
+  metadata?: {
+    domain?: string;
+    pageUrl?: string;
+    language?: string;
+    sdkVersion?: string;
   };
   timestamp: string;
   userAgent: string;
@@ -21,10 +31,47 @@ interface ConsentRecord {
 
 export function FootprintPage() {
   const { t, language } = useI18n();
+  const { isAdmin } = useAuth();
   const [searchId, setSearchId] = useState('');
   const [records, setRecords] = useState<ConsentRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [sites, setSites] = useState<Site[]>([]);
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
+
+  useEffect(() => {
+    loadSites();
+  }, []);
+
+  async function loadSites() {
+    if (!db || !isAdmin) return;
+
+    try {
+      const q = query(collection(db, 'sites'), orderBy('name', 'asc'));
+      const snapshot = await getDocs(q);
+      const siteList: Site[] = [];
+      snapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
+        siteList.push({
+          id: docSnapshot.id,
+          name: data.name,
+          domains: data.domains || [],
+          settings: data.settings,
+          apiKey: data.apiKey,
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          createdBy: data.createdBy,
+        });
+      });
+      setSites(siteList);
+    } catch (err) {
+      console.error('Error loading sites:', err);
+    }
+  }
+
+  function getSiteName(siteId: string): string {
+    const site = sites.find(s => s.id === siteId);
+    return site?.name || siteId;
+  }
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -45,6 +92,8 @@ export function FootprintPage() {
       // Buscar por footprintId exacto o parcial (comienza con)
       const normalizedId = searchId.trim().toUpperCase();
 
+      // Build query - note: Firestore doesn't support multiple range filters
+      // so we filter by site client-side if needed
       const q = query(
         consentsRef,
         where('footprintId', '>=', normalizedId),
@@ -58,14 +107,24 @@ export function FootprintPage() {
       const results: ConsentRecord[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
+        const siteId = data.siteId || data.cmpId;
+
+        // Filter by site if selected
+        if (selectedSiteId !== 'all' && siteId !== selectedSiteId) {
+          return;
+        }
+
         results.push({
           id: doc.id,
-          cmpId: data.cmpId,
+          siteId: siteId,
+          siteName: getSiteName(siteId),
           footprintId: data.footprintId,
           choices: data.choices,
+          action: data.action,
+          metadata: data.metadata,
           timestamp: data.timestamp,
-          userAgent: data.userAgent,
-          lang: data.lang || 'es',
+          userAgent: data.metadata?.userAgent || data.userAgent,
+          lang: data.metadata?.language || data.lang || 'es',
           createdAt: data.createdAt?.toDate?.() || new Date(data.timestamp)
         });
       });
@@ -121,8 +180,8 @@ export function FootprintPage() {
         </div>
 
         {/* Search form */}
-        <form onSubmit={handleSearch} className="flex gap-3">
-          <div className="relative flex-1 max-w-md">
+        <form onSubmit={handleSearch} className="flex flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={20} />
             <input
               type="text"
@@ -132,6 +191,26 @@ export function FootprintPage() {
               className="w-full pl-10 pr-4 py-3 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             />
           </div>
+
+          {/* Site filter */}
+          {isAdmin && sites.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Globe2 size={18} className="text-stone-400" />
+              <select
+                value={selectedSiteId}
+                onChange={(e) => setSelectedSiteId(e.target.value)}
+                className="px-3 py-3 border border-stone-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              >
+                <option value="all">{t.sites?.title || 'All sites'}</option>
+                {sites.map((site) => (
+                  <option key={site.id} value={site.id}>
+                    {site.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading || !searchId.trim()}
@@ -201,7 +280,13 @@ export function FootprintPage() {
                                 {type === 'rejected' && t.footprint.allRejected}
                                 {type === 'customized' && t.footprint.customized}
                               </p>
-                              <p className="text-sm text-stone-500">{t.footprint.site}: {record.cmpId}</p>
+                              <p className="text-sm text-stone-500">{t.footprint.site}: {record.siteName || record.siteId}</p>
+                              {record.metadata?.domain && (
+                                <p className="text-xs text-stone-400 flex items-center gap-1 mt-1">
+                                  <Link size={10} />
+                                  {record.metadata.domain}
+                                </p>
+                              )}
                             </div>
                           </div>
 

@@ -21,6 +21,7 @@ export const en: Translations = {
   // Navigation
   nav: {
     dashboard: 'Dashboard',
+    sites: 'Sites',
     users: 'Users',
     footprint: 'Search Footprint',
     settings: 'Settings',
@@ -112,6 +113,37 @@ export const en: Translations = {
     ca: 'Català',
     eu: 'Euskara',
     gl: 'Galego',
+  },
+
+  // Sites page
+  sites: {
+    title: 'Site Management',
+    subtitle: 'Manage websites and domains using Esbilla CMP',
+    createSite: 'Create Site',
+    editSite: 'Edit Site',
+    deleteSite: 'Delete Site',
+    confirmDelete: 'Are you sure you want to delete this site? All configuration and statistics will be lost.',
+    name: 'Name',
+    namePlaceholder: 'My website',
+    domains: 'Domains',
+    domainsPlaceholder: 'example.com, www.example.com',
+    domainsHelp: 'Domains associated with this site (comma-separated)',
+    apiKey: 'API Key',
+    apiKeyHelp: 'Use this key to integrate the SDK on your site',
+    copyApiKey: 'Copy API Key',
+    copied: 'Copied',
+    regenerateKey: 'Regenerate Key',
+    confirmRegenerate: 'Are you sure you want to regenerate the API key? The previous key will stop working.',
+    noSites: 'No sites',
+    noSitesMessage: 'You haven\'t created any sites yet. Create your first one to get started.',
+    integration: 'Integration',
+    integrationCode: 'Integration code',
+    stats: 'Statistics',
+    totalConsents: 'Total consents',
+    lastConsent: 'Last consent',
+    never: 'Never',
+    viewStats: 'View statistics',
+    configure: 'Configure',
   },
 
   // Settings page

@@ -9,7 +9,7 @@ const { getFirestore } = require('firebase-admin/firestore');
 
 // Configuración de la BBDD
 const PROJECT_ID = process.env.GCLOUD_PROJECT || 'esbilla-cmp';
-const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || '(default)'; // Usa '(default)' pa la BBDD por defeutu
+const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || '(esbilla-cmp)'; // Usa '(default)' pa la BBDD por defeutu
 
 // Inicializar Firebase solo si nun ta yá inicializáu
 let db = null;

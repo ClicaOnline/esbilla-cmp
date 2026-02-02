@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import {
   signInWithPopup,
@@ -9,36 +9,14 @@ import type { User } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider, initError, isFirebaseConfigured } from '../lib/firebase';
 
-// Timeout for auth state check (5 seconds)
-const AUTH_TIMEOUT_MS = 5000;
-
 // ============================================
 // TIPOS DE ROLES Y PERMISOS
 // ============================================
 
-/**
- * Roles globales del sistema:
- * - superadmin: Acceso total a todos los sitios y configuración global
- * - admin: Puede gestionar usuarios y ver estadísticas (del dashboard actual)
- * - viewer: Solo puede ver estadísticas y buscar footprints
- * - pending: Usuario registrado pendiente de aprobación
- */
 export type GlobalRole = 'superadmin' | 'admin' | 'viewer' | 'pending';
-
-// Alias para compatibilidad con código existente
 export type UserRole = GlobalRole;
-
-/**
- * Roles específicos por sitio (para multi-tenant futuro):
- * - owner: Propietario del sitio, control total
- * - admin: Puede configurar el sitio y ver estadísticas
- * - viewer: Solo puede ver estadísticas del sitio
- */
 export type SiteRole = 'owner' | 'admin' | 'viewer';
 
-/**
- * Acceso a un sitio específico
- */
 export interface SiteAccess {
   role: SiteRole;
   siteId: string;
@@ -47,48 +25,27 @@ export interface SiteAccess {
   addedBy: string;
 }
 
-/**
- * Datos del usuario almacenados en Firestore
- */
 export interface UserData {
-  // Información básica
   email: string;
   displayName: string;
   photoURL: string;
-
-  // Rol global (retrocompatible con campo 'role' anterior)
   role: GlobalRole;
-
-  // Acceso a sitios específicos (multi-tenant futuro)
-  // Formato: { "site-id-1": { role: "admin", ... }, "site-id-2": { role: "viewer", ... } }
   siteAccess?: Record<string, SiteAccess>;
-
-  // Metadatos
   createdAt: Date;
   lastLogin: Date;
-  createdBy?: string;  // UID del admin que aprobó al usuario
+  createdBy?: string;
 }
 
-/**
- * Contexto de autenticación
- */
 interface AuthContextType {
-  // Estado de autenticación
   user: User | null;
   userData: UserData | null;
   loading: boolean;
   error: string | null;
-
-  // Acciones
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
-
-  // Helpers de permisos globales
   isAdmin: boolean;
   isSuperAdmin: boolean;
   isAuthorized: boolean;
-
-  // Helpers de permisos por sitio (multi-tenant futuro)
   hasAccessToSite: (siteId: string) => boolean;
   getSiteRole: (siteId: string) => SiteRole | null;
   canManageSite: (siteId: string) => boolean;
@@ -102,12 +59,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Ref para evitar llamadas duplicadas a loadUserData
+  const loadingUserData = useRef(false);
+
   // ============================================
   // CARGA DE DATOS DEL USUARIO
   // ============================================
   async function loadUserData(firebaseUser: User) {
+    // Evitar llamadas duplicadas
+    if (loadingUserData.current) return;
+    loadingUserData.current = true;
+
     if (!db) {
       setError('Firestore no está disponible');
+      loadingUserData.current = false;
       return;
     }
 
@@ -117,8 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (userSnap.exists()) {
         const data = userSnap.data();
-
-        // Convertir datos de Firestore al tipo UserData
         const parsedData: UserData = {
           email: data.email || firebaseUser.email || '',
           displayName: data.displayName || firebaseUser.displayName || '',
@@ -132,8 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUserData(parsedData);
 
-        // Actualizar último login
-        await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
+        // Actualizar último login (no esperar)
+        setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(console.error);
       } else {
         // Primer login - crear usuario con rol 'pending'
         const newUserData: UserData = {
@@ -157,38 +120,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error('Error cargando datos del usuario:', err);
       setError('Error al cargar los datos del usuario');
+    } finally {
+      loadingUserData.current = false;
     }
   }
 
   // ============================================
-  // EFECTOS
+  // EFECTO DE AUTENTICACIÓN
   // ============================================
   useEffect(() => {
-    // Check if Firebase initialized correctly
     if (initError || !isFirebaseConfigured) {
-      console.error('Firebase initialization failed:', initError?.message || 'Missing configuration');
       setError(initError?.message || 'Firebase no está configurado correctamente');
       setLoading(false);
       return;
     }
 
     if (!auth) {
-      console.error('Firebase auth not initialized');
       setError('Firebase Auth no está disponible');
       setLoading(false);
       return;
     }
 
-    // Timeout fallback in case onAuthStateChanged never fires
-    const timeout = setTimeout(() => {
-      if (loading) {
-        console.warn('Auth state check timeout - forcing loading to false');
-        setLoading(false);
-      }
-    }, AUTH_TIMEOUT_MS);
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      clearTimeout(timeout);
       setUser(firebaseUser);
 
       if (firebaseUser) {
@@ -200,10 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => {
-      clearTimeout(timeout);
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   // ============================================
@@ -217,12 +167,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null);
-      const result = await signInWithPopup(auth, googleProvider);
-      await loadUserData(result.user);
+      // Solo llamar a signInWithPopup - onAuthStateChanged se encargará del resto
+      await signInWithPopup(auth, googleProvider);
     } catch (err: unknown) {
       console.error('Error en login:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     }
   }
 
@@ -238,56 +187,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserData(null);
     } catch (err: unknown) {
       console.error('Error en logout:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error al cerrar sesión';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Error al cerrar sesión');
     }
   }
 
   // ============================================
-  // HELPERS DE PERMISOS GLOBALES
+  // HELPERS DE PERMISOS
   // ============================================
   const isSuperAdmin = userData?.role === 'superadmin';
   const isAdmin = userData?.role === 'admin' || userData?.role === 'superadmin';
   const isAuthorized = ['superadmin', 'admin', 'viewer'].includes(userData?.role || '');
 
-  // ============================================
-  // HELPERS DE PERMISOS POR SITIO (Multi-tenant)
-  // ============================================
-
-  /**
-   * Verifica si el usuario tiene acceso a un sitio específico
-   */
   function hasAccessToSite(siteId: string): boolean {
-    // Superadmin tiene acceso a todo
     if (isSuperAdmin) return true;
-
-    // Verificar acceso específico al sitio
     return !!userData?.siteAccess?.[siteId];
   }
 
-  /**
-   * Obtiene el rol del usuario en un sitio específico
-   */
   function getSiteRole(siteId: string): SiteRole | null {
-    // Superadmin es owner de todo
     if (isSuperAdmin) return 'owner';
-
     return userData?.siteAccess?.[siteId]?.role || null;
   }
 
-  /**
-   * Verifica si el usuario puede administrar un sitio
-   */
   function canManageSite(siteId: string): boolean {
     if (isSuperAdmin) return true;
-
     const siteRole = getSiteRole(siteId);
     return siteRole === 'owner' || siteRole === 'admin';
   }
 
-  // ============================================
-  // PROVIDER
-  // ============================================
   return (
     <AuthContext.Provider value={{
       user,

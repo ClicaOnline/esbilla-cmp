@@ -7,6 +7,7 @@ export function LoginPage() {
   const { user, userData, loading, error, signInWithGoogle, signOut } = useAuth();
   const { language, setLanguage, t } = useI18n();
 
+  // Loading
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
@@ -18,13 +19,14 @@ export function LoginPage() {
     );
   }
 
-  // Si está autenticado y autorizado, redirigir al dashboard
-  if (user && userData?.role !== 'pending') {
+  // Usuario autenticado con rol válido (no pending) - ir al dashboard
+  // Importante: solo redirigir si userData existe Y el rol NO es pending
+  if (user && userData && userData.role !== 'pending') {
     return <Navigate to="/" replace />;
   }
 
-  // Si está autenticado pero pendiente de aprobación
-  if (user && userData?.role === 'pending') {
+  // Usuario autenticado pero pendiente o sin userData
+  if (user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
         <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4 text-center">
@@ -61,6 +63,7 @@ export function LoginPage() {
     );
   }
 
+  // No autenticado - mostrar formulario de login
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
       {/* Language selector */}

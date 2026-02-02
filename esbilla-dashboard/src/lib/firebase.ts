@@ -33,10 +33,14 @@ let db: Firestore | null = null;
 let googleProvider: GoogleAuthProvider | null = null;
 let initError: Error | null = null;
 
+// Database ID - usar 'esbilla-cmp' en lugar de '(default)'
+const FIRESTORE_DATABASE_ID = 'esbilla-cmp';
+
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
-  db = getFirestore(app);
+  // Conectar a la base de datos específica 'esbilla-cmp'
+  db = getFirestore(app, FIRESTORE_DATABASE_ID);
   googleProvider = new GoogleAuthProvider();
 
   // Configurar el proveedor de Google

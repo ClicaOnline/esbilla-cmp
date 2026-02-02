@@ -2,13 +2,15 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginPage } from './pages/Login';
 import { DashboardPage } from './pages/Dashboard';
+import { SitesPage } from './pages/Sites';
 import { FootprintPage } from './pages/Footprint';
 import { UsersPage } from './pages/Users';
 import { SettingsPage } from './pages/Settings';
 
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
-  const { user, loading, isAdmin, isAuthorized, error } = useAuth();
+  const { user, userData, loading, isAdmin, error } = useAuth();
 
+  // Loading inicial
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -20,7 +22,7 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     );
   }
 
-  // Show error if Firebase failed to initialize
+  // Error de Firebase
   if (error && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -39,14 +41,34 @@ function ProtectedRoute({ children, adminOnly = false }: { children: React.React
     );
   }
 
-  if (!user || !isAuthorized) {
+  // No hay usuario - ir a login
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
+  // Usuario existe pero userData no cargado aún - esperar
+  if (!userData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-gray-500 text-sm">Verificando permisos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // userData cargado pero rol es pending - ir a login (mostrará pantalla pending)
+  if (userData.role === 'pending') {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Solo admin pero usuario no es admin
   if (adminOnly && !isAdmin) {
     return <Navigate to="/" replace />;
   }
 
+  // Todo OK - mostrar contenido
   return <>{children}</>;
 }
 
@@ -59,6 +81,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sites"
+        element={
+          <ProtectedRoute adminOnly>
+            <SitesPage />
           </ProtectedRoute>
         }
       />
@@ -86,14 +116,12 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
 function App() {
-  // Use Vite's base URL for the router (matches vite.config.ts base: '/dashboard/')
-  const basename = import.meta.env.BASE_URL.replace(/\/$/, ''); // Remove trailing slash
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, '');
 
   return (
     <BrowserRouter basename={basename}>

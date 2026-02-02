@@ -9,17 +9,20 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Globe
+  Globe,
+  Globe2
 } from 'lucide-react';
+import './Layout.css';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-type NavKey = 'dashboard' | 'users' | 'footprint' | 'settings';
+type NavKey = 'dashboard' | 'sites' | 'users' | 'footprint' | 'settings';
 
 const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
   { key: 'dashboard', href: '/', icon: LayoutDashboard },
+  { key: 'sites', href: '/sites', icon: Globe2, adminOnly: true },
   { key: 'users', href: '/users', icon: Users, adminOnly: true },
   { key: 'footprint', href: '/footprint', icon: Search },
   { key: 'settings', href: '/settings', icon: Settings, adminOnly: true },
@@ -33,20 +36,20 @@ export function Layout({ children }: LayoutProps) {
   const filteredNav = navigation.filter(item => !item.adminOnly || isAdmin);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="dashboard-layout">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 w-64 bg-stone-900 text-white">
+      <aside className="dashboard-sidebar">
         {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-stone-700">
-          <span className="text-2xl">🌽</span>
+        <div className="sidebar-header">
+          <span className="sidebar-logo">🌽</span>
           <div>
-            <h1 className="font-bold text-lg">Esbilla CMP</h1>
-            <p className="text-xs text-stone-400">{t.nav.controlPanel}</p>
+            <h1 className="sidebar-title">Esbilla CMP</h1>
+            <p className="sidebar-subtitle">{t.nav.controlPanel}</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="px-3 py-4 space-y-1">
+        <nav className="sidebar-nav">
           {filteredNav.map((item) => {
             const isActive = location.pathname === item.href;
             const Icon = item.icon;
@@ -56,57 +59,48 @@ export function Layout({ children }: LayoutProps) {
               <Link
                 key={item.key}
                 to={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-amber-500 text-stone-900 font-medium'
-                    : 'text-stone-300 hover:bg-stone-800 hover:text-white'
-                }`}
+                className={`nav-link ${isActive ? 'nav-link-active' : ''}`}
               >
                 <Icon size={20} />
                 <span>{name}</span>
-                {isActive && <ChevronRight size={16} className="ml-auto" />}
+                {isActive && <ChevronRight size={16} className="nav-arrow" />}
               </Link>
             );
           })}
         </nav>
 
         {/* Language selector */}
-        <div className="px-3 py-4 border-t border-stone-700">
-          <div className="flex items-center gap-2 px-3 py-2 text-stone-400">
-            <Globe size={16} />
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as typeof language)}
-              className="flex-1 bg-transparent text-sm text-stone-300 focus:outline-none cursor-pointer"
-            >
-              {SUPPORTED_LANGUAGES.map((lang) => (
-                <option key={lang} value={lang} className="bg-stone-800">
-                  {LANGUAGE_LABELS[lang]}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="sidebar-lang">
+          <Globe size={16} />
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as typeof language)}
+            className="lang-select"
+          >
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <option key={lang} value={lang}>
+                {LANGUAGE_LABELS[lang]}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* User section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-stone-700">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="sidebar-user">
+          <div className="user-info">
             {user?.photoURL && (
               <img
                 src={user.photoURL}
                 alt={user.displayName || ''}
-                className="w-10 h-10 rounded-full"
+                className="user-avatar"
               />
             )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.displayName}</p>
-              <p className="text-xs text-stone-400 truncate">{userData?.role}</p>
+            <div className="user-details">
+              <p className="user-name">{user?.displayName}</p>
+              <p className="user-role">{userData?.role}</p>
             </div>
           </div>
-          <button
-            onClick={signOut}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-stone-400 hover:text-white hover:bg-stone-800 rounded-lg transition-colors"
-          >
+          <button onClick={signOut} className="logout-btn">
             <LogOut size={18} />
             <span>{t.nav.logout}</span>
           </button>
@@ -114,7 +108,7 @@ export function Layout({ children }: LayoutProps) {
       </aside>
 
       {/* Main content */}
-      <main className="ml-64 p-8">
+      <main className="dashboard-main">
         {children}
       </main>
     </div>

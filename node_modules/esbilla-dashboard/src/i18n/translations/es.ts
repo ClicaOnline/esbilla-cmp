@@ -21,6 +21,7 @@ export const es: Translations = {
   // Navigation
   nav: {
     dashboard: 'Dashboard',
+    sites: 'Sitios',
     users: 'Usuarios',
     footprint: 'Buscar Footprint',
     settings: 'Configuración',
@@ -112,6 +113,37 @@ export const es: Translations = {
     ca: 'Català',
     eu: 'Euskara',
     gl: 'Galego',
+  },
+
+  // Sites page
+  sites: {
+    title: 'Gestión de Sitios',
+    subtitle: 'Administra los sitios web y dominios que usan Esbilla CMP',
+    createSite: 'Crear Sitio',
+    editSite: 'Editar Sitio',
+    deleteSite: 'Eliminar Sitio',
+    confirmDelete: '¿Estás seguro de eliminar este sitio? Toda la configuración y estadísticas se perderán.',
+    name: 'Nombre',
+    namePlaceholder: 'Mi sitio web',
+    domains: 'Dominios',
+    domainsPlaceholder: 'example.com, www.example.com',
+    domainsHelp: 'Dominios asociados a este sitio (separados por comas)',
+    apiKey: 'API Key',
+    apiKeyHelp: 'Usa esta clave para integrar el SDK en tu sitio',
+    copyApiKey: 'Copiar API Key',
+    copied: 'Copiado',
+    regenerateKey: 'Regenerar Clave',
+    confirmRegenerate: '¿Estás seguro de regenerar la clave API? La clave anterior dejará de funcionar.',
+    noSites: 'No hay sitios',
+    noSitesMessage: 'Aún no has creado ningún sitio. Crea el primero para comenzar.',
+    integration: 'Integración',
+    integrationCode: 'Código de integración',
+    stats: 'Estadísticas',
+    totalConsents: 'Total consentimientos',
+    lastConsent: 'Último consentimiento',
+    never: 'Nunca',
+    viewStats: 'Ver estadísticas',
+    configure: 'Configurar',
   },
 
   // Settings page

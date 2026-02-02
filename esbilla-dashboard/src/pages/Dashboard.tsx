@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
+import type { Site } from '../types';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { TrendingUp, TrendingDown, CheckCircle, XCircle, Settings, Eye } from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle, XCircle, Settings, Eye, Globe2 } from 'lucide-react';
 
 interface Stats {
   total: number;
@@ -29,13 +31,45 @@ const COLORS = ['#22c55e', '#ef4444', '#f59e0b'];
 
 export function DashboardPage() {
   const { t, language } = useI18n();
+  const { isAdmin } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [dailyData, setDailyData] = useState<DailyData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sites, setSites] = useState<Site[]>([]);
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
+
+  useEffect(() => {
+    loadSites();
+  }, []);
 
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [selectedSiteId]);
+
+  async function loadSites() {
+    if (!db || !isAdmin) return;
+
+    try {
+      const q = query(collection(db, 'sites'), orderBy('name', 'asc'));
+      const snapshot = await getDocs(q);
+      const siteList: Site[] = [];
+      snapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
+        siteList.push({
+          id: docSnapshot.id,
+          name: data.name,
+          domains: data.domains || [],
+          settings: data.settings,
+          apiKey: data.apiKey,
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          createdBy: data.createdBy,
+        });
+      });
+      setSites(siteList);
+    } catch (err) {
+      console.error('Error loading sites:', err);
+    }
+  }
 
   async function loadStats() {
     if (!db) {
@@ -51,11 +85,22 @@ export function DashboardPage() {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const q = query(
-        consentsRef,
-        where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-        orderBy('createdAt', 'desc')
-      );
+      // Build query with optional site filter
+      let q;
+      if (selectedSiteId && selectedSiteId !== 'all') {
+        q = query(
+          consentsRef,
+          where('siteId', '==', selectedSiteId),
+          where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+          orderBy('createdAt', 'desc')
+        );
+      } else {
+        q = query(
+          consentsRef,
+          where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+          orderBy('createdAt', 'desc')
+        );
+      }
 
       const snapshot = await getDocs(q);
 
@@ -154,9 +199,30 @@ export function DashboardPage() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-stone-800">{t.dashboard.title}</h1>
-          <p className="text-stone-500">{t.dashboard.subtitle}</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-stone-800">{t.dashboard.title}</h1>
+            <p className="text-stone-500">{t.dashboard.subtitle}</p>
+          </div>
+
+          {/* Site selector */}
+          {isAdmin && sites.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Globe2 size={18} className="text-stone-400" />
+              <select
+                value={selectedSiteId}
+                onChange={(e) => setSelectedSiteId(e.target.value)}
+                className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              >
+                <option value="all">{t.sites?.title || 'All sites'}</option>
+                {sites.map((site) => (
+                  <option key={site.id} value={site.id}>
+                    {site.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Stats cards */}

@@ -17,6 +17,7 @@ export interface Translations {
 
   nav: {
     dashboard: string;
+    sites: string;
     users: string;
     footprint: string;
     settings: string;
@@ -103,6 +104,36 @@ export interface Translations {
     ca: string;
     eu: string;
     gl: string;
+  };
+
+  sites: {
+    title: string;
+    subtitle: string;
+    createSite: string;
+    editSite: string;
+    deleteSite: string;
+    confirmDelete: string;
+    name: string;
+    namePlaceholder: string;
+    domains: string;
+    domainsPlaceholder: string;
+    domainsHelp: string;
+    apiKey: string;
+    apiKeyHelp: string;
+    copyApiKey: string;
+    copied: string;
+    regenerateKey: string;
+    confirmRegenerate: string;
+    noSites: string;
+    noSitesMessage: string;
+    integration: string;
+    integrationCode: string;
+    stats: string;
+    totalConsents: string;
+    lastConsent: string;
+    never: string;
+    viewStats: string;
+    configure: string;
   };
 
   settings: {

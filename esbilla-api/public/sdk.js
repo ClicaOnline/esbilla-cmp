@@ -1,10 +1,12 @@
 /**
- * ESBILLA CMP - SDK v1.0 (Modular & Configurable)
+ * ESBILLA CMP - SDK v1.1 (Modular & Configurable)
  * Arquitectura modular: estilos, plantillas y configuración externos
  */
 (function() {
+  const SDK_VERSION = '1.1.0';
   const script = document.currentScript;
   const cmpId = script.getAttribute('data-id') || 'default';
+  const siteApiKey = script.getAttribute('data-key') || '';
   const gtmId = script.getAttribute('data-gtm');
   const apiBase = script.getAttribute('data-api') || script.src.replace('/sdk.js', '');
 
@@ -287,8 +289,8 @@
     const btnReject = document.getElementById('esbilla-btn-reject');
     const btnSettings = document.getElementById('esbilla-btn-settings');
 
-    if (btnAccept) btnAccept.onclick = () => saveConsent({ analytics: true, marketing: true });
-    if (btnReject) btnReject.onclick = () => saveConsent({ analytics: false, marketing: false });
+    if (btnAccept) btnAccept.onclick = () => saveConsent({ analytics: true, marketing: true }, 'accept_all');
+    if (btnReject) btnReject.onclick = () => saveConsent({ analytics: false, marketing: false }, 'reject_all');
     if (btnSettings) btnSettings.onclick = () => toggleSettings();
   }
 
@@ -446,7 +448,7 @@
       mosca.classList.add('esbilla-mosca-expanded');
       mosca.innerHTML = `
         <span class="esbilla-mosca-icon">${config.mosca?.icon || '🍪'}</span>
-        <span class="esbilla-mosca-footprint">${footprintId}</span>
+        <span class="esbilla-mosca-footprint" style="display:none;">${footprintId}</span>
       `;
     } else {
       mosca.innerHTML = config.mosca?.icon || '🍪';
@@ -462,21 +464,49 @@
   // ============================================
   // 11. GUARDAR CONSENTIMIENTO
   // ============================================
-  function saveConsent(choices) {
+  function saveConsent(choices, action = 'customize') {
     updateConsentMode(choices);
+
+    const previousConsent = localStorage.getItem('esbilla_consent');
+    const isUpdate = !!previousConsent;
+
     localStorage.setItem('esbilla_consent', JSON.stringify(choices));
+
+    // Determinar acción si no se especificó
+    let consentAction = action;
+    if (action === 'customize' && !isUpdate) {
+      // Si es desde el panel de settings, es customize
+      consentAction = 'customize';
+    } else if (isUpdate && action === 'customize') {
+      consentAction = 'update';
+    }
+
+    // Metadata enriquecida
+    const metadata = {
+      domain: window.location.hostname,
+      pageUrl: window.location.href,
+      referrer: document.referrer || null,
+      userAgent: navigator.userAgent,
+      language: currentLang,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      sdkVersion: SDK_VERSION,
+      consentVersion: config.consentVersion || '1.0'
+    };
 
     // Log en el backend
     fetch(`${apiBase}/api/consent/log`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        cmpId,
+        siteId: cmpId,
+        apiKey: siteApiKey,
         footprintId,
         choices,
-        timestamp: new Date().toISOString(),
-        lang: currentLang,
-        userAgent: navigator.userAgent
+        action: consentAction,
+        metadata,
+        timestamp: new Date().toISOString()
       })
     }).catch(e => console.warn('[Esbilla] Error logging consent:', e));
 

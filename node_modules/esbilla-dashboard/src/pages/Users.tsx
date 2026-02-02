@@ -5,7 +5,8 @@ import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import type { UserRole } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import { Shield, Eye, Clock, Trash2, Check, X, Crown } from 'lucide-react';
+import type { Site, SiteAccess, SiteRole } from '../types';
+import { Shield, Eye, Clock, Trash2, Check, X, Crown, Globe2, Plus } from 'lucide-react';
 
 interface UserRecord {
   id: string;
@@ -13,6 +14,7 @@ interface UserRecord {
   displayName: string;
   photoURL: string;
   role: UserRole;
+  siteAccess: Record<string, SiteAccess>;
   createdAt: Date;
   lastLogin: Date;
 }
@@ -21,13 +23,16 @@ export function UsersPage() {
   const { user: currentUser, isAdmin, isSuperAdmin } = useAuth();
   const { t, language } = useI18n();
   const [users, setUsers] = useState<UserRecord[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSiteModal, setShowSiteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
 
   useEffect(() => {
-    loadUsers();
+    loadData();
   }, []);
 
-  async function loadUsers() {
+  async function loadData() {
     if (!db) {
       console.error('Firestore not available');
       setLoading(false);
@@ -35,26 +40,48 @@ export function UsersPage() {
     }
 
     try {
-      const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
+      // Load users
+      const usersQ = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+      const usersSnapshot = await getDocs(usersQ);
 
       const userList: UserRecord[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      usersSnapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
         userList.push({
-          id: doc.id,
+          id: docSnapshot.id,
           email: data.email,
           displayName: data.displayName,
           photoURL: data.photoURL,
           role: data.role,
+          siteAccess: data.siteAccess || {},
           createdAt: data.createdAt?.toDate?.() || new Date(),
           lastLogin: data.lastLogin?.toDate?.() || new Date()
         });
       });
 
       setUsers(userList);
+
+      // Load sites
+      const sitesQ = query(collection(db, 'sites'), orderBy('name', 'asc'));
+      const sitesSnapshot = await getDocs(sitesQ);
+
+      const siteList: Site[] = [];
+      sitesSnapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
+        siteList.push({
+          id: docSnapshot.id,
+          name: data.name,
+          domains: data.domains || [],
+          settings: data.settings,
+          apiKey: data.apiKey,
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          createdBy: data.createdBy,
+        });
+      });
+
+      setSites(siteList);
     } catch (err) {
-      console.error('Error cargando usuarios:', err);
+      console.error('Error cargando datos:', err);
     } finally {
       setLoading(false);
     }
@@ -82,6 +109,46 @@ export function UsersPage() {
     } catch (err) {
       console.error('Error eliminando usuario:', err);
     }
+  }
+
+  function openSiteAccessModal(user: UserRecord) {
+    setSelectedUser(user);
+    setShowSiteModal(true);
+  }
+
+  async function updateSiteAccess(userId: string, siteId: string, role: SiteRole | null) {
+    if (!isAdmin || !db) return;
+
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const newSiteAccess = { ...user.siteAccess };
+
+    if (role === null) {
+      delete newSiteAccess[siteId];
+    } else {
+      newSiteAccess[siteId] = {
+        role,
+        siteId,
+        siteName: sites.find(s => s.id === siteId)?.name,
+        addedAt: new Date(),
+        addedBy: currentUser?.uid || ''
+      };
+    }
+
+    try {
+      await updateDoc(doc(db, 'users', userId), { siteAccess: newSiteAccess });
+      setUsers(users.map(u => u.id === userId ? { ...u, siteAccess: newSiteAccess } : u));
+      if (selectedUser?.id === userId) {
+        setSelectedUser({ ...selectedUser, siteAccess: newSiteAccess });
+      }
+    } catch (err) {
+      console.error('Error updating site access:', err);
+    }
+  }
+
+  function getSiteAccessCount(user: UserRecord): number {
+    return Object.keys(user.siteAccess || {}).length;
   }
 
   const pendingUsers = users.filter(u => u.role === 'pending');
@@ -179,6 +246,9 @@ export function UsersPage() {
                   {t.users.role}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
+                  {t.nav?.sites || 'Sites'}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   {t.users.lastAccess}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase">
@@ -202,6 +272,19 @@ export function UsersPage() {
                   </td>
                   <td className="px-6 py-4">
                     <RoleBadge role={user.role} labels={t.users.roles} />
+                  </td>
+                  <td className="px-6 py-4">
+                    {user.role === 'superadmin' || user.role === 'admin' ? (
+                      <span className="text-xs text-stone-400">All sites</span>
+                    ) : (
+                      <button
+                        onClick={() => openSiteAccessModal(user)}
+                        className="flex items-center gap-1 text-sm text-stone-600 hover:text-amber-600 transition-colors"
+                      >
+                        <Globe2 size={14} />
+                        <span>{getSiteAccessCount(user)} {t.nav?.sites?.toLowerCase() || 'sites'}</span>
+                      </button>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-stone-500">
                     {user.lastLogin.toLocaleDateString(language, {
@@ -243,6 +326,100 @@ export function UsersPage() {
             </tbody>
           </table>
         </div>
+        {/* Site Access Modal */}
+        {showSiteModal && selectedUser && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
+                <div>
+                  <h2 className="text-lg font-semibold text-stone-800">
+                    {t.nav?.sites || 'Site Access'}
+                  </h2>
+                  <p className="text-sm text-stone-500">{selectedUser.displayName}</p>
+                </div>
+                <button
+                  onClick={() => setShowSiteModal(false)}
+                  className="p-2 text-stone-400 hover:bg-stone-100 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6">
+                {sites.length === 0 ? (
+                  <p className="text-center text-stone-500 py-8">No sites available</p>
+                ) : (
+                  <div className="space-y-3">
+                    {sites.map((site) => {
+                      const access = selectedUser.siteAccess?.[site.id];
+                      const hasAccess = !!access;
+
+                      return (
+                        <div
+                          key={site.id}
+                          className={`flex items-center justify-between p-4 rounded-lg border ${
+                            hasAccess ? 'border-amber-200 bg-amber-50' : 'border-stone-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                              hasAccess ? 'bg-amber-200' : 'bg-stone-100'
+                            }`}>
+                              <Globe2 size={16} className={hasAccess ? 'text-amber-700' : 'text-stone-400'} />
+                            </div>
+                            <div>
+                              <p className="font-medium text-stone-800">{site.name}</p>
+                              <p className="text-xs text-stone-500">{site.domains.join(', ')}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {hasAccess ? (
+                              <>
+                                <select
+                                  value={access.role}
+                                  onChange={(e) => updateSiteAccess(selectedUser.id, site.id, e.target.value as SiteRole)}
+                                  className="text-sm border border-stone-200 rounded-lg px-2 py-1"
+                                >
+                                  <option value="viewer">Viewer</option>
+                                  <option value="admin">Admin</option>
+                                  <option value="owner">Owner</option>
+                                </select>
+                                <button
+                                  onClick={() => updateSiteAccess(selectedUser.id, site.id, null)}
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() => updateSiteAccess(selectedUser.id, site.id, 'viewer')}
+                                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors"
+                              >
+                                <Plus size={14} />
+                                <span>Add</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 py-4 border-t border-stone-200">
+                <button
+                  onClick={() => setShowSiteModal(false)}
+                  className="w-full py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
+                >
+                  {t.common.cancel}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
