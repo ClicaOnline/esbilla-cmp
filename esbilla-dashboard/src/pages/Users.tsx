@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import type { UserRole } from '../context/AuthContext';
-import { Shield, Eye, Clock, Trash2, Check, X } from 'lucide-react';
+import { Shield, Eye, Clock, Trash2, Check, X, Crown } from 'lucide-react';
 
 interface UserRecord {
   id: string;
@@ -17,7 +17,7 @@ interface UserRecord {
 }
 
 export function UsersPage() {
-  const { user: currentUser, isAdmin } = useAuth();
+  const { user: currentUser, isAdmin, isSuperAdmin } = useAuth();
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -211,13 +211,16 @@ export function UsersPage() {
                           value={user.role}
                           onChange={(e) => updateUserRole(user.id, e.target.value as UserRole)}
                           className="text-sm border border-stone-200 rounded-lg px-2 py-1"
+                          disabled={user.role === 'superadmin' && !isSuperAdmin}
                         >
                           <option value="viewer">Viewer</option>
                           <option value="admin">Admin</option>
+                          {isSuperAdmin && <option value="superadmin">Superadmin</option>}
                         </select>
                         <button
                           onClick={() => deleteUser(user.id)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          disabled={user.role === 'superadmin' && !isSuperAdmin}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -238,22 +241,31 @@ export function UsersPage() {
 }
 
 function RoleBadge({ role }: { role: UserRole }) {
-  const styles = {
+  const styles: Record<UserRole, string> = {
+    superadmin: 'bg-purple-100 text-purple-700',
     admin: 'bg-blue-100 text-blue-700',
     viewer: 'bg-green-100 text-green-700',
     pending: 'bg-amber-100 text-amber-700'
   };
 
-  const icons = {
+  const icons: Record<UserRole, React.ReactNode> = {
+    superadmin: <Crown size={14} />,
     admin: <Shield size={14} />,
     viewer: <Eye size={14} />,
     pending: <Clock size={14} />
   };
 
+  const labels: Record<UserRole, string> = {
+    superadmin: 'Superadmin',
+    admin: 'Admin',
+    viewer: 'Viewer',
+    pending: 'Pendiente'
+  };
+
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${styles[role]}`}>
       {icons[role]}
-      {role.charAt(0).toUpperCase() + role.slice(1)}
+      {labels[role]}
     </span>
   );
 }
