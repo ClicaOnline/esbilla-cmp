@@ -8,7 +8,8 @@ describe('Esbilla API - Pruebes de Gobernanza', () => {
     const response = await request(app).get('/api/config/sevares-001');
     expect(response.status).toBe(200);
     expect(response.body.id).toBe('sevares-001');
-    expect(response.body.theme.primary).toBe('#FFBF00'); // El color del maíz
+    expect(response.body.colors.primary).toBe('#FFBF00'); // El color del maíz
+    expect(response.body.layout).toBeDefined();
   });
 
   it('Debería rexistrar el log de consentimientu', async () => {

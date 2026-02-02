@@ -1,0 +1,49 @@
+{
+  "$schema": "./schema.json",
+  "_comment": "Configuración por defeutu pa nuevos sitios de Esbilla CMP",
+
+  "layout": "modal",
+  "theme": "default",
+  "icon": "🌽",
+
+  "colors": {
+    "primary": "#FFBF00",
+    "primaryHover": "#FFA500",
+    "secondary": "#3D2B1F",
+    "background": "#FFFEF5",
+    "backgroundEnd": "#FFF8E1",
+    "text": "#3D2B1F",
+    "textMuted": "#5D4037",
+    "border": "#3D2B1F",
+    "overlay": "rgba(0, 0, 0, 0.6)"
+  },
+
+  "dimensions": {
+    "maxWidth": "480px",
+    "padding": "32px",
+    "borderRadius": "16px",
+    "borderWidth": "2px"
+  },
+
+  "typography": {
+    "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    "titleSize": "22px",
+    "textSize": "15px"
+  },
+
+  "mosca": {
+    "enabled": true,
+    "position": "bottom-left",
+    "size": "56px",
+    "icon": "🍪"
+  },
+
+  "features": {
+    "languageSelector": true,
+    "darkModeAuto": false,
+    "rememberLanguage": true
+  },
+
+  "defaultLanguage": "es",
+  "availableLanguages": ["ast", "es", "en", "fr", "pt"]
+}

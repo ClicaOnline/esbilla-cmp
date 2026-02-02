@@ -10,6 +10,7 @@ env:
   PROJECT_ID: esbilla-cmp # Puees ponelo direutu equí o usalu como secret
   REPO_NAME: esbilla-docker
   IMAGE_NAME: esbilla-api
+  FIRESTORE_DATABASE_ID: esbilla-cmp # Nome de la BBDD en Firestore
 
 jobs:
   build-and-deploy:
@@ -43,10 +44,11 @@ jobs:
       - name: Desplegar en Cloud Run ☁️
         run: |
           TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          
+
           gcloud run deploy esbilla-api \
             --image $TAG \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
+            --set-env-vars="FIRESTORE_DATABASE_ID=${{ env.FIRESTORE_DATABASE_ID }}" \
             --project ${{ env.PROJECT_ID }}

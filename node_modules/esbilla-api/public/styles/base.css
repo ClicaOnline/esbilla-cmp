@@ -1,0 +1,379 @@
+/**
+ * ESBILLA CMP - Estilos Base
+ * Variables CSS personalizables dende'l panel de control
+ */
+
+:root {
+  /* Colores principales - sobrescribibles por tema */
+  --esbilla-primary: #FFBF00;
+  --esbilla-primary-hover: #FFA500;
+  --esbilla-secondary: #3D2B1F;
+  --esbilla-background: #FFFEF5;
+  --esbilla-background-end: #FFF8E1;
+  --esbilla-text: #3D2B1F;
+  --esbilla-text-muted: #5D4037;
+  --esbilla-text-light: #795548;
+  --esbilla-border: #3D2B1F;
+  --esbilla-overlay: rgba(0, 0, 0, 0.6);
+
+  /* Dimensiones */
+  --esbilla-max-width: 480px;
+  --esbilla-padding: 32px;
+  --esbilla-border-radius: 16px;
+  --esbilla-border-width: 2px;
+
+  /* Tipografía */
+  --esbilla-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --esbilla-font-size-title: 22px;
+  --esbilla-font-size-text: 15px;
+  --esbilla-font-size-small: 13px;
+
+  /* Sombras */
+  --esbilla-shadow: 0 12px 40px rgba(61, 43, 31, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1);
+  --esbilla-shadow-button: 0 4px 8px rgba(61, 43, 31, 0.2);
+  --esbilla-shadow-hover: 0 6px 12px rgba(61, 43, 31, 0.3);
+
+  /* Transiciones */
+  --esbilla-transition: all 0.2s ease;
+
+  /* Mosca */
+  --esbilla-mosca-size: 56px;
+  --esbilla-mosca-bottom: 20px;
+  --esbilla-mosca-left: 20px;
+}
+
+/* ============================================
+   OVERLAY
+   ============================================ */
+#esbilla-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  background: var(--esbilla-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ============================================
+   BANNER PRINCIPAL
+   ============================================ */
+#esbilla-banner {
+  background: linear-gradient(145deg, var(--esbilla-background) 0%, var(--esbilla-background-end) 100%);
+  padding: var(--esbilla-padding);
+  border-radius: var(--esbilla-border-radius);
+  box-shadow: var(--esbilla-shadow);
+  max-width: var(--esbilla-max-width);
+  width: 90%;
+  border: var(--esbilla-border-width) solid var(--esbilla-border);
+  font-family: var(--esbilla-font-family);
+  position: relative;
+  animation: esbillaFadeIn 0.3s ease-out;
+}
+
+.esbilla-inner {
+  text-align: center;
+}
+
+.esbilla-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.esbilla-title {
+  font-size: var(--esbilla-font-size-title);
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--esbilla-text);
+}
+
+.esbilla-text {
+  font-size: var(--esbilla-font-size-text);
+  margin-bottom: 24px;
+  color: var(--esbilla-text-muted);
+  line-height: 1.6;
+}
+
+/* ============================================
+   SELECTOR DE IDIOMA
+   ============================================ */
+.esbilla-lang-selector {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.esbilla-lang-btn {
+  background: rgba(61, 43, 31, 0.08);
+  border: 1px solid rgba(61, 43, 31, 0.2);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: var(--esbilla-font-size-small);
+  cursor: pointer;
+  color: var(--esbilla-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--esbilla-transition);
+}
+
+.esbilla-lang-btn:hover {
+  background: rgba(61, 43, 31, 0.12);
+}
+
+.esbilla-lang-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.esbilla-lang-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid rgba(61, 43, 31, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 10;
+  min-width: 120px;
+}
+
+.esbilla-lang-option {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: var(--esbilla-font-size-small);
+  color: var(--esbilla-text);
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.esbilla-lang-option:hover {
+  background: rgba(255, 191, 0, 0.2);
+}
+
+.esbilla-lang-option.active {
+  background: rgba(255, 191, 0, 0.3);
+  font-weight: 600;
+}
+
+.esbilla-lang-option .check {
+  opacity: 0;
+  color: var(--esbilla-primary);
+}
+
+.esbilla-lang-option.active .check {
+  opacity: 1;
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+.esbilla-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: linear-gradient(145deg, var(--esbilla-primary), var(--esbilla-primary-hover));
+  color: var(--esbilla-secondary);
+  border: var(--esbilla-border-width) solid var(--esbilla-border);
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: var(--esbilla-font-size-text);
+  transition: var(--esbilla-transition);
+  box-shadow: var(--esbilla-shadow-button);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(145deg, var(--esbilla-primary-hover), #FF8C00);
+  transform: translateY(-2px);
+  box-shadow: var(--esbilla-shadow-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--esbilla-text);
+  border: var(--esbilla-border-width) solid var(--esbilla-border);
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: var(--esbilla-font-size-text);
+  transition: var(--esbilla-transition);
+}
+
+.btn-secondary:hover {
+  background: rgba(61, 43, 31, 0.08);
+  transform: translateY(-2px);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--esbilla-text-light);
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 8px 16px;
+  transition: color 0.2s;
+}
+
+.btn-link:hover {
+  color: var(--esbilla-text);
+}
+
+/* ============================================
+   PANEL DE CONFIGURACIÓN
+   ============================================ */
+.esbilla-settings {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(61, 43, 31, 0.2);
+  text-align: left;
+}
+
+.esbilla-settings-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--esbilla-text);
+  margin-bottom: 16px;
+}
+
+.esbilla-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(61, 43, 31, 0.1);
+}
+
+.esbilla-option:last-child {
+  border-bottom: none;
+}
+
+.esbilla-option-info {
+  flex: 1;
+}
+
+.esbilla-option-label {
+  font-weight: 600;
+  color: var(--esbilla-text);
+  font-size: 14px;
+}
+
+.esbilla-option-desc {
+  font-size: 12px;
+  color: var(--esbilla-text-light);
+  margin-top: 4px;
+}
+
+/* ============================================
+   TOGGLE SWITCH
+   ============================================ */
+.esbilla-toggle {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  margin-left: 16px;
+  flex-shrink: 0;
+}
+
+.esbilla-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.esbilla-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
+  border-radius: 26px;
+}
+
+.esbilla-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.esbilla-toggle input:checked + .esbilla-toggle-slider {
+  background-color: var(--esbilla-primary);
+}
+
+.esbilla-toggle input:checked + .esbilla-toggle-slider:before {
+  transform: translateX(22px);
+}
+
+.esbilla-toggle input:disabled + .esbilla-toggle-slider {
+  background-color: #A5D6A7;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   MOSCA (BOTÓN FLOTANTE)
+   ============================================ */
+#esbilla-mosca {
+  position: fixed;
+  bottom: var(--esbilla-mosca-bottom);
+  left: var(--esbilla-mosca-left);
+  cursor: pointer;
+  z-index: 999998;
+  background: linear-gradient(145deg, var(--esbilla-primary), var(--esbilla-primary-hover));
+  padding: 14px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(61, 43, 31, 0.35);
+  font-size: 26px;
+  border: var(--esbilla-border-width) solid var(--esbilla-border);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--esbilla-mosca-size);
+  height: var(--esbilla-mosca-size);
+}
+
+#esbilla-mosca:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(61, 43, 31, 0.4);
+}
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+.esbilla-hidden {
+  display: none !important;
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+@keyframes esbillaFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

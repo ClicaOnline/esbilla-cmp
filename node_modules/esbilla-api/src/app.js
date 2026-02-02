@@ -5,22 +5,29 @@ const crypto = require('crypto');
 
 // Inicialización de Firebase Admin
 const admin = require('firebase-admin');
+const { getFirestore } = require('firebase-admin/firestore');
+
+// Configuración de la BBDD
+const PROJECT_ID = process.env.GCLOUD_PROJECT || 'esbilla-cmp';
+const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || '(default)'; // Usa '(default)' pa la BBDD por defeutu
 
 // Inicializar Firebase solo si nun ta yá inicializáu
+let db = null;
 if (!admin.apps.length) {
   // En Cloud Run, les credenciales cárguense automáticamente
   // En local, pue usase GOOGLE_APPLICATION_CREDENTIALS o un ficheru JSON
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.K_SERVICE) {
-    admin.initializeApp({
-      projectId: process.env.GCLOUD_PROJECT || 'esbilla-cmp'
-    });
+    admin.initializeApp({ projectId: PROJECT_ID });
+    // Usar la BBDD específica si nun ye la default
+    db = getFirestore(admin.app(), DATABASE_ID);
+    console.log(`🔥 Firestore conectáu: proyecto=${PROJECT_ID}, database=${DATABASE_ID}`);
   } else {
     // Fallback pa desarrollo local sin credenciales
     console.warn('⚠️ Firebase nun ta configuráu. Los logs de consentimientu nun se guardarán.');
   }
+} else {
+  db = getFirestore(admin.app(), DATABASE_ID);
 }
-
-const db = admin.apps.length ? admin.firestore() : null;
 
 const app = express();
 
@@ -39,13 +46,43 @@ function hashIP(ip) {
   return crypto.createHash('sha256').update(ip + 'esbilla-salt').digest('hex').substring(0, 16);
 }
 
+// Cargar configuración por defeutu
+const fs = require('fs');
+const defaultConfigPath = path.join(__dirname, '../public/config/default.json');
+let defaultConfig = {};
+try {
+  defaultConfig = JSON.parse(fs.readFileSync(defaultConfigPath, 'utf8'));
+} catch (err) {
+  console.warn('⚠️ Non se pudo cargar config/default.json');
+}
+
 // Ruta: Configuración del sitiu por ID
-app.get('/api/config/:id', (req, res) => {
+app.get('/api/config/:id', async (req, res) => {
   const { id } = req.params;
+
+  // 1. Intentar cargar config personalizada de Firestore
+  if (db) {
+    try {
+      const siteDoc = await db.collection('sites').doc(id).get();
+      if (siteDoc.exists) {
+        const siteConfig = siteDoc.data();
+        return res.json({
+          id,
+          ...defaultConfig,
+          ...siteConfig,
+          _source: 'firestore'
+        });
+      }
+    } catch (err) {
+      console.warn(`Error cargando config de Firestore pa ${id}:`, err.message);
+    }
+  }
+
+  // 2. Fallback: devolver config por defeutu
   res.json({
-    id: id,
-    theme: { primary: '#FFBF00', secondary: '#3D2B1F' },
-    texts: { title: "¿Esbillamos les cookies?" }
+    id,
+    ...defaultConfig,
+    _source: 'default'
   });
 });
 
