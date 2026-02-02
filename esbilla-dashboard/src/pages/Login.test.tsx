@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './Login';
+import { I18nProvider } from '../i18n';
 
 // Mock del contexto de autenticación
 vi.mock('../context/AuthContext', () => ({
@@ -17,29 +18,34 @@ vi.mock('../context/AuthContext', () => ({
   })
 }));
 
-function renderWithRouter(component: React.ReactElement) {
+function renderWithProviders(component: React.ReactElement) {
   return render(
-    <BrowserRouter>
-      {component}
-    </BrowserRouter>
+    <I18nProvider>
+      <BrowserRouter>
+        {component}
+      </BrowserRouter>
+    </I18nProvider>
   );
 }
 
 describe('LoginPage', () => {
   it('debería mostrar el logo de Esbilla', () => {
-    renderWithRouter(<LoginPage />);
+    renderWithProviders(<LoginPage />);
     expect(screen.getByText('Esbilla CMP')).toBeInTheDocument();
-    expect(screen.getByText('Panel de Control')).toBeInTheDocument();
+    // Panel de Control is translated - check for any of the translations
+    expect(screen.getByText(/Panel de Control|Control Panel/)).toBeInTheDocument();
   });
 
   it('debería mostrar el botón de login con Google', () => {
-    renderWithRouter(<LoginPage />);
-    expect(screen.getByText('Continuar con Google')).toBeInTheDocument();
+    renderWithProviders(<LoginPage />);
+    // Check for translated button text
+    expect(screen.getByText(/Continuar con Google|Siguir con Google|Continue with Google/)).toBeInTheDocument();
   });
 
   it('debería mostrar mensaje de acceso restringido', () => {
-    renderWithRouter(<LoginPage />);
-    expect(screen.getByText('Solo usuarios autorizados pueden acceder')).toBeInTheDocument();
+    renderWithProviders(<LoginPage />);
+    // Check for translated message
+    expect(screen.getByText(/Solo usuarios autorizados|Namás usuarios autorizaos|Only authorized users/)).toBeInTheDocument();
   });
 
   it('debería mostrar estado de carga cuando loading=true', () => {
@@ -57,7 +63,7 @@ describe('LoginPage', () => {
     }));
 
     // El componente LoginPage maneja su propio estado de carga
-    renderWithRouter(<LoginPage />);
+    renderWithProviders(<LoginPage />);
     // Verificar que el componente se renderiza
     expect(document.body).toBeInTheDocument();
   });

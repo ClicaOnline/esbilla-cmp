@@ -14,6 +14,15 @@ vi.mock('../lib/firebase', () => ({
   googleProvider: {}
 }));
 
+// Mock de localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
 // Mock de ResizeObserver (necesario para Recharts)
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),

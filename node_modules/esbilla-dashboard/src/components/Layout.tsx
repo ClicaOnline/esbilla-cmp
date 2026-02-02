@@ -1,28 +1,33 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useI18n, SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../i18n';
 import {
   LayoutDashboard,
   Users,
   Search,
   Settings,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Usuarios', href: '/users', icon: Users, adminOnly: true },
-  { name: 'Buscar Footprint', href: '/footprint', icon: Search },
-  { name: 'Configuración', href: '/settings', icon: Settings, adminOnly: true },
+type NavKey = 'dashboard' | 'users' | 'footprint' | 'settings';
+
+const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
+  { key: 'dashboard', href: '/', icon: LayoutDashboard },
+  { key: 'users', href: '/users', icon: Users, adminOnly: true },
+  { key: 'footprint', href: '/footprint', icon: Search },
+  { key: 'settings', href: '/settings', icon: Settings, adminOnly: true },
 ];
 
 export function Layout({ children }: LayoutProps) {
   const { user, userData, signOut, isAdmin } = useAuth();
+  const { language, setLanguage, t } = useI18n();
   const location = useLocation();
 
   const filteredNav = navigation.filter(item => !item.adminOnly || isAdmin);
@@ -36,7 +41,7 @@ export function Layout({ children }: LayoutProps) {
           <span className="text-2xl">🌽</span>
           <div>
             <h1 className="font-bold text-lg">Esbilla CMP</h1>
-            <p className="text-xs text-stone-400">Panel de Control</p>
+            <p className="text-xs text-stone-400">{t.nav.controlPanel}</p>
           </div>
         </div>
 
@@ -45,10 +50,11 @@ export function Layout({ children }: LayoutProps) {
           {filteredNav.map((item) => {
             const isActive = location.pathname === item.href;
             const Icon = item.icon;
+            const name = t.nav[item.key];
 
             return (
               <Link
-                key={item.name}
+                key={item.key}
                 to={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
                   isActive
@@ -57,12 +63,30 @@ export function Layout({ children }: LayoutProps) {
                 }`}
               >
                 <Icon size={20} />
-                <span>{item.name}</span>
+                <span>{name}</span>
                 {isActive && <ChevronRight size={16} className="ml-auto" />}
               </Link>
             );
           })}
         </nav>
+
+        {/* Language selector */}
+        <div className="px-3 py-4 border-t border-stone-700">
+          <div className="flex items-center gap-2 px-3 py-2 text-stone-400">
+            <Globe size={16} />
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as typeof language)}
+              className="flex-1 bg-transparent text-sm text-stone-300 focus:outline-none cursor-pointer"
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <option key={lang} value={lang} className="bg-stone-800">
+                  {LANGUAGE_LABELS[lang]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* User section */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-stone-700">
@@ -84,7 +108,7 @@ export function Layout({ children }: LayoutProps) {
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-stone-400 hover:text-white hover:bg-stone-800 rounded-lg transition-colors"
           >
             <LogOut size={18} />
-            <span>Cerrar sesión</span>
+            <span>{t.nav.logout}</span>
           </button>
         </div>
       </aside>

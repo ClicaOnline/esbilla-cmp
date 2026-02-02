@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { FootprintPage } from './Footprint';
+import { I18nProvider } from '../i18n';
 
 // Mock del contexto de autenticación
 vi.mock('../context/AuthContext', () => ({
@@ -26,39 +27,42 @@ vi.mock('firebase/firestore', () => ({
   orderBy: vi.fn()
 }));
 
-function renderWithRouter(component: React.ReactElement) {
+function renderWithProviders(component: React.ReactElement) {
   return render(
-    <BrowserRouter>
-      {component}
-    </BrowserRouter>
+    <I18nProvider>
+      <BrowserRouter>
+        {component}
+      </BrowserRouter>
+    </I18nProvider>
   );
 }
 
 describe('FootprintPage', () => {
   it('debería mostrar el título de la página', () => {
-    renderWithRouter(<FootprintPage />);
-    expect(screen.getByText('Buscar por Footprint')).toBeInTheDocument();
+    renderWithProviders(<FootprintPage />);
+    // Check for translated title
+    expect(screen.getByText(/Buscar por Footprint|Search by Footprint/)).toBeInTheDocument();
   });
 
   it('debería mostrar el campo de búsqueda', () => {
-    renderWithRouter(<FootprintPage />);
+    renderWithProviders(<FootprintPage />);
     const searchInput = screen.getByPlaceholderText(/ESB-A7F3B2C1/i);
     expect(searchInput).toBeInTheDocument();
   });
 
   it('debería mostrar el botón de buscar', () => {
-    renderWithRouter(<FootprintPage />);
-    expect(screen.getByRole('button', { name: /buscar/i })).toBeInTheDocument();
+    renderWithProviders(<FootprintPage />);
+    expect(screen.getByRole('button', { name: /buscar|search/i })).toBeInTheDocument();
   });
 
   it('debería mostrar información sobre el Footprint ID', () => {
-    renderWithRouter(<FootprintPage />);
-    expect(screen.getByText(/¿Qué es el Footprint ID\?/i)).toBeInTheDocument();
-    expect(screen.getByText(/derechos ARCO/i)).toBeInTheDocument();
+    renderWithProviders(<FootprintPage />);
+    expect(screen.getByText(/¿Qué es el Footprint ID\?|¿Qué ye'l Footprint ID\?|What is the Footprint ID\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/derechos ARCO|ARCO rights/i)).toBeInTheDocument();
   });
 
   it('debería mostrar la descripción de la funcionalidad', () => {
-    renderWithRouter(<FootprintPage />);
-    expect(screen.getByText(/historial de consentimiento/i)).toBeInTheDocument();
+    renderWithProviders(<FootprintPage />);
+    expect(screen.getByText(/historial de consentimiento|historial de consentimientu|consent history/i)).toBeInTheDocument();
   });
 });

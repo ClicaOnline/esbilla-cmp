@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
+import { useI18n } from '../i18n';
 import { Search, Download, CheckCircle, XCircle, Settings, Calendar, Globe, Monitor } from 'lucide-react';
 
 interface ConsentRecord {
@@ -19,6 +20,7 @@ interface ConsentRecord {
 }
 
 export function FootprintPage() {
+  const { t, language } = useI18n();
   const [searchId, setSearchId] = useState('');
   const [records, setRecords] = useState<ConsentRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -106,9 +108,9 @@ export function FootprintPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-stone-800">Buscar por Footprint</h1>
+          <h1 className="text-2xl font-bold text-stone-800">{t.footprint.title}</h1>
           <p className="text-stone-500">
-            Busca el historial de consentimiento de un usuario por su ID de footprint
+            {t.footprint.subtitle}
           </p>
         </div>
 
@@ -120,7 +122,7 @@ export function FootprintPage() {
               type="text"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
-              placeholder="Ej: ESB-A7F3B2C1 o parte del ID..."
+              placeholder={t.footprint.searchPlaceholder}
               className="w-full pl-10 pr-4 py-3 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             />
           </div>
@@ -129,17 +131,15 @@ export function FootprintPage() {
             disabled={loading || !searchId.trim()}
             className="px-6 py-3 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Buscando...' : 'Buscar'}
+            {loading ? t.common.searching : t.common.search}
           </button>
         </form>
 
         {/* Info box */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <p className="text-sm text-blue-800">
-            <strong>¿Qué es el Footprint ID?</strong><br />
-            Es un identificador único generado para cada navegador/dispositivo. Los usuarios pueden
-            encontrar su ID en el banner de cookies al hacer clic en "Personalizar". Este ID permite
-            ejercer los derechos ARCO (Acceso, Rectificación, Cancelación, Oposición).
+            <strong>{t.footprint.whatIsFootprint}</strong><br />
+            {t.footprint.footprintExplanation}
           </p>
         </div>
 
@@ -151,14 +151,14 @@ export function FootprintPage() {
                 {/* Results header */}
                 <div className="flex items-center justify-between">
                   <p className="text-stone-600">
-                    Se encontraron <strong>{records.length}</strong> registros
+                    {t.footprint.recordsFound} <strong>{records.length}</strong> {t.footprint.records}
                   </p>
                   <button
                     onClick={exportToJSON}
                     className="flex items-center gap-2 px-4 py-2 text-sm bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
                   >
                     <Download size={16} />
-                    Exportar JSON
+                    {t.footprint.exportJSON}
                   </button>
                 </div>
 
@@ -191,24 +191,24 @@ export function FootprintPage() {
                             )}
                             <div>
                               <p className="font-medium text-stone-800">
-                                {type === 'accepted' && 'Todas aceptadas'}
-                                {type === 'rejected' && 'Todas rechazadas'}
-                                {type === 'customized' && 'Personalizado'}
+                                {type === 'accepted' && t.footprint.allAccepted}
+                                {type === 'rejected' && t.footprint.allRejected}
+                                {type === 'customized' && t.footprint.customized}
                               </p>
-                              <p className="text-sm text-stone-500">Sitio: {record.cmpId}</p>
+                              <p className="text-sm text-stone-500">{t.footprint.site}: {record.cmpId}</p>
                             </div>
                           </div>
 
                           <div className="text-right">
                             <p className="text-sm font-medium text-stone-800">
-                              {record.createdAt.toLocaleDateString('es', {
+                              {record.createdAt.toLocaleDateString(language, {
                                 day: '2-digit',
                                 month: 'long',
                                 year: 'numeric'
                               })}
                             </p>
                             <p className="text-xs text-stone-400">
-                              {record.createdAt.toLocaleTimeString('es', {
+                              {record.createdAt.toLocaleTimeString(language, {
                                 hour: '2-digit',
                                 minute: '2-digit'
                               })}
@@ -220,20 +220,20 @@ export function FootprintPage() {
                         <div className="mt-4 pt-4 border-t border-stone-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div className="flex items-center gap-2 text-stone-500">
                             <Calendar size={14} />
-                            <span>Analíticas: {record.choices.analytics ? '✓' : '✗'}</span>
+                            <span>{t.footprint.analytics}: {record.choices.analytics ? '✓' : '✗'}</span>
                           </div>
                           <div className="flex items-center gap-2 text-stone-500">
                             <Calendar size={14} />
-                            <span>Marketing: {record.choices.marketing ? '✓' : '✗'}</span>
+                            <span>{t.footprint.marketing}: {record.choices.marketing ? '✓' : '✗'}</span>
                           </div>
                           <div className="flex items-center gap-2 text-stone-500">
                             <Globe size={14} />
-                            <span>Idioma: {record.lang.toUpperCase()}</span>
+                            <span>{t.footprint.language}: {record.lang.toUpperCase()}</span>
                           </div>
                           <div className="flex items-center gap-2 text-stone-500 truncate">
                             <Monitor size={14} />
                             <span className="truncate" title={record.userAgent}>
-                              {parseUserAgent(record.userAgent)}
+                              {parseUserAgent(record.userAgent, t.common.unknown)}
                             </span>
                           </div>
                         </div>
@@ -253,10 +253,10 @@ export function FootprintPage() {
               <div className="text-center py-12 bg-white rounded-xl border border-stone-200">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-lg font-medium text-stone-800 mb-2">
-                  No se encontraron registros
+                  {t.footprint.noRecords}
                 </h3>
                 <p className="text-stone-500">
-                  No hay consentimientos registrados con ese ID de footprint
+                  {t.footprint.noRecordsMessage}
                 </p>
               </div>
             )}
@@ -267,13 +267,13 @@ export function FootprintPage() {
   );
 }
 
-function parseUserAgent(ua: string): string {
-  if (!ua || ua === 'unknown') return 'Desconocido';
+function parseUserAgent(ua: string, unknownLabel: string): string {
+  if (!ua || ua === 'unknown') return unknownLabel;
 
   if (ua.includes('Chrome')) return 'Chrome';
   if (ua.includes('Firefox')) return 'Firefox';
   if (ua.includes('Safari')) return 'Safari';
   if (ua.includes('Edge')) return 'Edge';
 
-  return 'Navegador';
+  return 'Browser';
 }

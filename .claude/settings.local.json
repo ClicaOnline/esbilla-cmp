@@ -11,7 +11,8 @@
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nMosca con footprint, dashboard y tests\n\n- Mosca expandida mostrando el footprintId \\(ESB-XXXXXXXX\\)\n- Dashboard configuráu con rutas protexíes\n- Tests pa SDK \\(13\\) y Dashboard \\(15\\)\n- Dockerfile multi-stage pa compilar dashboard\n- Eliminaos node_modules del repo\n- Correxíu .gitignore\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git push:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

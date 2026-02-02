@@ -4,6 +4,7 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import type { UserRole } from '../context/AuthContext';
+import { useI18n } from '../i18n';
 import { Shield, Eye, Clock, Trash2, Check, X, Crown } from 'lucide-react';
 
 interface UserRecord {
@@ -18,6 +19,7 @@ interface UserRecord {
 
 export function UsersPage() {
   const { user: currentUser, isAdmin, isSuperAdmin } = useAuth();
+  const { t, language } = useI18n();
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +68,7 @@ export function UsersPage() {
   async function deleteUser(userId: string) {
     if (!isAdmin || userId === currentUser?.uid) return;
 
-    if (!confirm('¿Estás seguro de eliminar este usuario?')) return;
+    if (!confirm(t.users.confirmDelete)) return;
 
     try {
       await deleteDoc(doc(db, 'users', userId));
@@ -94,8 +96,8 @@ export function UsersPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-stone-800">Gestión de Usuarios</h1>
-          <p className="text-stone-500">Administra los usuarios que pueden acceder al panel</p>
+          <h1 className="text-2xl font-bold text-stone-800">{t.users.title}</h1>
+          <p className="text-stone-500">{t.users.subtitle}</p>
         </div>
 
         {/* Pending approvals */}
@@ -104,7 +106,7 @@ export function UsersPage() {
             <div className="flex items-center gap-2 mb-4">
               <Clock className="text-amber-600" />
               <h2 className="text-lg font-semibold text-amber-800">
-                Pendientes de Aprobación ({pendingUsers.length})
+                {t.users.pendingApproval} ({pendingUsers.length})
               </h2>
             </div>
 
@@ -130,21 +132,21 @@ export function UsersPage() {
                       className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
                     >
                       <Check size={16} />
-                      <span>Aprobar (Viewer)</span>
+                      <span>{t.users.approveViewer}</span>
                     </button>
                     <button
                       onClick={() => updateUserRole(user.id, 'admin')}
                       className="flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                     >
                       <Shield size={16} />
-                      <span>Admin</span>
+                      <span>{t.users.roles.admin}</span>
                     </button>
                     <button
                       onClick={() => deleteUser(user.id)}
                       className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                     >
                       <X size={16} />
-                      <span>Rechazar</span>
+                      <span>{t.users.reject}</span>
                     </button>
                   </div>
                 </div>
@@ -157,7 +159,7 @@ export function UsersPage() {
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-stone-200">
             <h2 className="text-lg font-semibold text-stone-800">
-              Usuarios Activos ({activeUsers.length})
+              {t.users.activeUsers} ({activeUsers.length})
             </h2>
           </div>
 
@@ -165,16 +167,16 @@ export function UsersPage() {
             <thead className="bg-stone-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
-                  Usuario
+                  {t.users.user}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
-                  Rol
+                  {t.users.role}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
-                  Último Acceso
+                  {t.users.lastAccess}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase">
-                  Acciones
+                  {t.users.actions}
                 </th>
               </tr>
             </thead>
@@ -193,10 +195,10 @@ export function UsersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <RoleBadge role={user.role} />
+                    <RoleBadge role={user.role} labels={t.users.roles} />
                   </td>
                   <td className="px-6 py-4 text-sm text-stone-500">
-                    {user.lastLogin.toLocaleDateString('es', {
+                    {user.lastLogin.toLocaleDateString(language, {
                       day: '2-digit',
                       month: 'short',
                       year: 'numeric',
@@ -213,9 +215,9 @@ export function UsersPage() {
                           className="text-sm border border-stone-200 rounded-lg px-2 py-1"
                           disabled={user.role === 'superadmin' && !isSuperAdmin}
                         >
-                          <option value="viewer">Viewer</option>
-                          <option value="admin">Admin</option>
-                          {isSuperAdmin && <option value="superadmin">Superadmin</option>}
+                          <option value="viewer">{t.users.roles.viewer}</option>
+                          <option value="admin">{t.users.roles.admin}</option>
+                          {isSuperAdmin && <option value="superadmin">{t.users.roles.superadmin}</option>}
                         </select>
                         <button
                           onClick={() => deleteUser(user.id)}
@@ -227,7 +229,7 @@ export function UsersPage() {
                       </div>
                     )}
                     {user.id === currentUser?.uid && (
-                      <span className="text-sm text-stone-400">Tú</span>
+                      <span className="text-sm text-stone-400">{t.common.you}</span>
                     )}
                   </td>
                 </tr>
@@ -240,7 +242,7 @@ export function UsersPage() {
   );
 }
 
-function RoleBadge({ role }: { role: UserRole }) {
+function RoleBadge({ role, labels }: { role: UserRole; labels: Record<UserRole, string> }) {
   const styles: Record<UserRole, string> = {
     superadmin: 'bg-purple-100 text-purple-700',
     admin: 'bg-blue-100 text-blue-700',
@@ -253,13 +255,6 @@ function RoleBadge({ role }: { role: UserRole }) {
     admin: <Shield size={14} />,
     viewer: <Eye size={14} />,
     pending: <Clock size={14} />
-  };
-
-  const labels: Record<UserRole, string> = {
-    superadmin: 'Superadmin',
-    admin: 'Admin',
-    viewer: 'Viewer',
-    pending: 'Pendiente'
   };
 
   return (

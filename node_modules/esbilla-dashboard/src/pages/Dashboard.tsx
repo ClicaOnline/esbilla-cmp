@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
+import { useI18n } from '../i18n';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
@@ -27,6 +28,7 @@ interface DailyData {
 const COLORS = ['#22c55e', '#ef4444', '#f59e0b'];
 
 export function DashboardPage() {
+  const { t, language } = useI18n();
   const [stats, setStats] = useState<Stats | null>(null);
   const [dailyData, setDailyData] = useState<DailyData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,7 @@ export function DashboardPage() {
       sortedDates.slice(-14).forEach((date) => {
         const data = dailyMap.get(date)!;
         dailyArray.push({
-          date: new Date(date).toLocaleDateString('es', { day: '2-digit', month: 'short' }),
+          date: new Date(date).toLocaleDateString(language, { day: '2-digit', month: 'short' }),
           ...data
         });
       });
@@ -137,9 +139,9 @@ export function DashboardPage() {
   }
 
   const pieData = stats ? [
-    { name: 'Aceptados', value: stats.accepted },
-    { name: 'Rechazados', value: stats.rejected },
-    { name: 'Personalizados', value: stats.customized }
+    { name: t.dashboard.accepted, value: stats.accepted },
+    { name: t.dashboard.rejected, value: stats.rejected },
+    { name: t.dashboard.customized, value: stats.customized }
   ] : [];
 
   return (
@@ -147,38 +149,42 @@ export function DashboardPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-stone-800">Dashboard</h1>
-          <p className="text-stone-500">Estadísticas de consentimiento de los últimos 30 días</p>
+          <h1 className="text-2xl font-bold text-stone-800">{t.dashboard.title}</h1>
+          <p className="text-stone-500">{t.dashboard.subtitle}</p>
         </div>
 
         {/* Stats cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Total Consentimientos"
+            title={t.dashboard.totalConsents}
             value={stats?.total || 0}
             icon={<Eye className="text-blue-500" />}
             trend={stats?.trend}
+            trendLabel={t.dashboard.vsLastWeek}
           />
           <StatCard
-            title="Aceptados"
+            title={t.dashboard.accepted}
             value={stats?.accepted || 0}
             icon={<CheckCircle className="text-green-500" />}
             percentage={stats ? (stats.accepted / stats.total * 100) : 0}
             color="green"
+            percentLabel={t.dashboard.ofTotal}
           />
           <StatCard
-            title="Rechazados"
+            title={t.dashboard.rejected}
             value={stats?.rejected || 0}
             icon={<XCircle className="text-red-500" />}
             percentage={stats ? (stats.rejected / stats.total * 100) : 0}
             color="red"
+            percentLabel={t.dashboard.ofTotal}
           />
           <StatCard
-            title="Personalizados"
+            title={t.dashboard.customized}
             value={stats?.customized || 0}
             icon={<Settings className="text-amber-500" />}
             percentage={stats ? (stats.customized / stats.total * 100) : 0}
             color="amber"
+            percentLabel={t.dashboard.ofTotal}
           />
         </div>
 
@@ -186,7 +192,7 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Area chart */}
           <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-            <h2 className="text-lg font-semibold text-stone-800 mb-4">Evolución Diaria</h2>
+            <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.dashboard.dailyEvolution}</h2>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={dailyData}>
@@ -206,7 +212,7 @@ export function DashboardPage() {
                     stroke="#3b82f6"
                     fill="#93c5fd"
                     fillOpacity={0.3}
-                    name="Total"
+                    name={t.dashboard.total}
                   />
                   <Area
                     type="monotone"
@@ -214,7 +220,7 @@ export function DashboardPage() {
                     stroke="#22c55e"
                     fill="#86efac"
                     fillOpacity={0.3}
-                    name="Aceptados"
+                    name={t.dashboard.accepted}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -223,7 +229,7 @@ export function DashboardPage() {
 
           {/* Pie chart */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-            <h2 className="text-lg font-semibold text-stone-800 mb-4">Distribución</h2>
+            <h2 className="text-lg font-semibold text-stone-800 mb-4">{t.dashboard.distribution}</h2>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -262,9 +268,9 @@ export function DashboardPage() {
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-amber-100">Hoy</p>
+              <p className="text-amber-100">{t.dashboard.today}</p>
               <p className="text-4xl font-bold">{stats?.today || 0}</p>
-              <p className="text-amber-100 mt-1">consentimientos registrados</p>
+              <p className="text-amber-100 mt-1">{t.dashboard.consentsRegistered}</p>
             </div>
             <div className="text-6xl opacity-20">🌽</div>
           </div>
@@ -279,11 +285,13 @@ interface StatCardProps {
   value: number;
   icon: React.ReactNode;
   trend?: number;
+  trendLabel?: string;
   percentage?: number;
+  percentLabel?: string;
   color?: 'green' | 'red' | 'amber' | 'blue';
 }
 
-function StatCard({ title, value, icon, trend, percentage, color }: StatCardProps) {
+function StatCard({ title, value, icon, trend, trendLabel, percentage, percentLabel, color }: StatCardProps) {
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm border border-stone-200">
       <div className="flex items-start justify-between">
@@ -304,7 +312,7 @@ function StatCard({ title, value, icon, trend, percentage, color }: StatCardProp
           <span className={`text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {Math.abs(trend).toFixed(1)}%
           </span>
-          <span className="text-sm text-stone-400">vs semana anterior</span>
+          <span className="text-sm text-stone-400">{trendLabel}</span>
         </div>
       )}
 
@@ -320,7 +328,7 @@ function StatCard({ title, value, icon, trend, percentage, color }: StatCardProp
               style={{ width: `${percentage}%` }}
             />
           </div>
-          <p className="text-xs text-stone-400 mt-1">{percentage.toFixed(1)}% del total</p>
+          <p className="text-xs text-stone-400 mt-1">{percentage.toFixed(1)}% {percentLabel}</p>
         </div>
       )}
     </div>
