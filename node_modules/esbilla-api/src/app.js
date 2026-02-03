@@ -9,7 +9,9 @@ const { getFirestore } = require('firebase-admin/firestore');
 
 // Configuración de la BBDD
 const PROJECT_ID = process.env.GCLOUD_PROJECT || 'esbilla-cmp';
-const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || '(esbilla-cmp)'; // Usa '(default)' pa la BBDD por defeutu
+// NOTA: Los IDs de bases de datos nombradas NO llevan paréntesis
+// Solo '(default)' usa paréntesis para la base de datos por defecto
+const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'esbilla-cmp';
 
 // Inicializar Firebase solo si nun ta yá inicializáu
 let db = null;
@@ -279,6 +281,97 @@ async function updateSiteStats(siteId) {
     }
   }
 }
+
+// ============================================
+// RUTA: HISTORIAL DE CONSENTIMIENTO (TRANSPARENCIA GDPR)
+// ============================================
+// Permite al usuario ver TODOS sus registros de consentimiento
+// basándose en su Footprint ID. Cumple con Art. 15 GDPR (Derecho de acceso).
+// ============================================
+app.get('/api/consent/history/:footprintId', async (req, res) => {
+  const { footprintId } = req.params;
+
+  // Validación básica
+  if (!footprintId || footprintId.length < 8) {
+    return res.status(400).json({
+      error: 'Footprint ID inválido',
+      code: 'INVALID_FOOTPRINT_ID'
+    });
+  }
+
+  // Si Firestore no está disponible
+  if (!db) {
+    return res.status(503).json({
+      error: 'Servicio no disponible',
+      code: 'DB_NOT_AVAILABLE',
+      records: []
+    });
+  }
+
+  try {
+    // Buscar todos los registros con este footprintId
+    const consentsRef = db.collection('consents');
+    const q = consentsRef
+      .where('footprintId', '==', footprintId)
+      .orderBy('createdAt', 'desc')
+      .limit(100); // Límite de seguridad
+
+    const snapshot = await q.get();
+
+    const records = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      // Solo devolver campos seguros (sin userHash ni datos internos)
+      records.push({
+        id: doc.id,
+        footprintId: data.footprintId,
+        siteId: data.siteId,
+        choices: data.choices,
+        action: data.action,
+        metadata: {
+          domain: data.metadata?.domain,
+          language: data.metadata?.language,
+          sdkVersion: data.metadata?.sdkVersion
+        },
+        ipHash: data.ipHash, // Hash, no IP real
+        timestamp: data.timestamp,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.timestamp,
+        expiresAt: data.expiresAt?.toDate?.()?.toISOString() || null,
+        bannerVersion: data.bannerVersion
+      });
+    });
+
+    return res.json({
+      footprintId,
+      totalRecords: records.length,
+      gdprInfo: {
+        retentionPeriod: '3 años (1095 días)',
+        dataController: 'Esbilla CMP',
+        contactEmail: 'privacy@esbilla.com',
+        rights: 'Puede ejercer sus derechos GDPR contactando al responsable del tratamiento.'
+      },
+      records
+    });
+  } catch (err) {
+    console.error('Error obteniendo historial:', err);
+
+    // Si es error de índice, dar instrucciones
+    if (err.code === 9) {
+      return res.status(500).json({
+        error: 'Se requiere crear un índice en Firestore',
+        code: 'INDEX_REQUIRED',
+        details: 'Ejecutar: gcloud firestore indexes composite create --collection-group=consents --field-config=field-path=footprintId,order=ascending --field-config=field-path=createdAt,order=descending',
+        records: []
+      });
+    }
+
+    return res.status(500).json({
+      error: 'Error interno al obtener el historial',
+      code: 'INTERNAL_ERROR',
+      records: []
+    });
+  }
+});
 
 // Health check pa Cloud Run
 app.get('/api/health', (req, res) => {

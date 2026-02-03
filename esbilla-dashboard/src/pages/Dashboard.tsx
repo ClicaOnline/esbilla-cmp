@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, Timestamp, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,10 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { TrendingUp, TrendingDown, CheckCircle, XCircle, Settings, Eye, Globe2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle, XCircle, Settings, Eye, Globe2, Calendar, RefreshCw, AlertCircle } from 'lucide-react';
+
+// Date range presets
+type DateRangePreset = '7d' | '30d' | '90d' | 'custom';
 
 interface Stats {
   total: number;
@@ -29,6 +32,30 @@ interface DailyData {
 
 const COLORS = ['#22c55e', '#ef4444', '#f59e0b'];
 
+// Helper to get date range from preset
+function getDateRangeFromPreset(preset: DateRangePreset): { start: Date; end: Date } {
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+
+  switch (preset) {
+    case '7d':
+      start.setDate(start.getDate() - 7);
+      break;
+    case '30d':
+      start.setDate(start.getDate() - 30);
+      break;
+    case '90d':
+      start.setDate(start.getDate() - 90);
+      break;
+    default:
+      start.setDate(start.getDate() - 30);
+  }
+
+  return { start, end };
+}
+
 export function DashboardPage() {
   const { t, language } = useI18n();
   const { isAdmin } = useAuth();
@@ -37,6 +64,12 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
+  const [error, setError] = useState<string | null>(null);
+
+  // Date range state
+  const [datePreset, setDatePreset] = useState<DateRangePreset>('30d');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
 
   useEffect(() => {
     loadSites();
@@ -44,7 +77,7 @@ export function DashboardPage() {
 
   useEffect(() => {
     loadStats();
-  }, [selectedSiteId]);
+  }, [selectedSiteId, datePreset, customStartDate, customEndDate]);
 
   async function loadSites() {
     if (!db || !isAdmin) return;
@@ -74,31 +107,61 @@ export function DashboardPage() {
   async function loadStats() {
     if (!db) {
       console.error('Firestore not available');
+      setError('Firestore no disponible');
       setLoading(false);
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     try {
       const consentsRef = collection(db, 'consents');
 
-      // Obtener todos los consentimientos (últimos 30 días)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Calculate date range based on preset or custom dates
+      let startDate: Date;
+      let endDate: Date = new Date();
+      endDate.setHours(23, 59, 59, 999);
 
-      // Build query with optional site filter
-      let q;
-      if (selectedSiteId && selectedSiteId !== 'all') {
-        q = query(
-          consentsRef,
-          where('siteId', '==', selectedSiteId),
-          where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-          orderBy('createdAt', 'desc')
-        );
+      if (datePreset === 'custom' && customStartDate && customEndDate) {
+        startDate = new Date(customStartDate);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(customEndDate);
+        endDate.setHours(23, 59, 59, 999);
       } else {
+        const range = getDateRangeFromPreset(datePreset);
+        startDate = range.start;
+        endDate = range.end;
+      }
+
+      // Build query - try simpler query first to avoid index issues
+      let q;
+      try {
+        if (selectedSiteId && selectedSiteId !== 'all') {
+          q = query(
+            consentsRef,
+            where('siteId', '==', selectedSiteId),
+            where('createdAt', '>=', Timestamp.fromDate(startDate)),
+            where('createdAt', '<=', Timestamp.fromDate(endDate)),
+            orderBy('createdAt', 'desc'),
+            limit(5000)
+          );
+        } else {
+          q = query(
+            consentsRef,
+            where('createdAt', '>=', Timestamp.fromDate(startDate)),
+            where('createdAt', '<=', Timestamp.fromDate(endDate)),
+            orderBy('createdAt', 'desc'),
+            limit(5000)
+          );
+        }
+      } catch (queryErr) {
+        // Fallback: simpler query without compound filters
+        console.warn('Using fallback query:', queryErr);
         q = query(
           consentsRef,
-          where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-          orderBy('createdAt', 'desc')
+          orderBy('createdAt', 'desc'),
+          limit(1000)
         );
       }
 
@@ -172,8 +235,16 @@ export function DashboardPage() {
       });
 
       setDailyData(dailyArray);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error cargando estadísticas:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+
+      // Check if it's an index error
+      if (errorMessage.includes('index') || (err as { code?: number })?.code === 9) {
+        setError('Se requiere crear un índice en Firestore. Revisa la consola para más detalles.');
+      } else {
+        setError(`Error al cargar datos: ${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -199,31 +270,119 @@ export function DashboardPage() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-stone-800">{t.dashboard.title}</h1>
             <p className="text-stone-500">{t.dashboard.subtitle}</p>
           </div>
 
-          {/* Site selector */}
-          {isAdmin && sites.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Globe2 size={18} className="text-stone-400" />
-              <select
-                value={selectedSiteId}
-                onChange={(e) => setSelectedSiteId(e.target.value)}
-                className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          {/* Filters row */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Date range selector */}
+            <div className="flex items-center gap-2 bg-white border border-stone-200 rounded-lg p-1">
+              <Calendar size={16} className="text-stone-400 ml-2" />
+              <button
+                onClick={() => setDatePreset('7d')}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  datePreset === '7d'
+                    ? 'bg-amber-500 text-white'
+                    : 'text-stone-600 hover:bg-stone-100'
+                }`}
               >
-                <option value="all">{t.sites?.title || 'All sites'}</option>
-                {sites.map((site) => (
-                  <option key={site.id} value={site.id}>
-                    {site.name}
-                  </option>
-                ))}
-              </select>
+                7 días
+              </button>
+              <button
+                onClick={() => setDatePreset('30d')}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  datePreset === '30d'
+                    ? 'bg-amber-500 text-white'
+                    : 'text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                30 días
+              </button>
+              <button
+                onClick={() => setDatePreset('90d')}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  datePreset === '90d'
+                    ? 'bg-amber-500 text-white'
+                    : 'text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                90 días
+              </button>
+              <button
+                onClick={() => setDatePreset('custom')}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  datePreset === 'custom'
+                    ? 'bg-amber-500 text-white'
+                    : 'text-stone-600 hover:bg-stone-100'
+                }`}
+              >
+                Personalizado
+              </button>
             </div>
-          )}
+
+            {/* Custom date inputs */}
+            {datePreset === 'custom' && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="px-3 py-2 text-sm border border-stone-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-500"
+                />
+                <span className="text-stone-400">→</span>
+                <input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="px-3 py-2 text-sm border border-stone-200 rounded-lg bg-white focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+            )}
+
+            {/* Site selector */}
+            {isAdmin && sites.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Globe2 size={18} className="text-stone-400" />
+                <select
+                  value={selectedSiteId}
+                  onChange={(e) => setSelectedSiteId(e.target.value)}
+                  className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                >
+                  <option value="all">{t.sites?.title || 'All sites'}</option>
+                  {sites.map((site) => (
+                    <option key={site.id} value={site.id}>
+                      {site.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Refresh button */}
+            <button
+              onClick={() => loadStats()}
+              disabled={loading}
+              className="p-2 text-stone-500 hover:bg-stone-100 rounded-lg transition-colors disabled:opacity-50"
+              title="Actualizar datos"
+            >
+              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+            <div>
+              <p className="text-red-800 font-medium">Error al cargar datos</p>
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
 
         {/* Stats cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

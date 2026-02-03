@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 50px auto;
       padding: 20px;
       background: #f5f5f5;
@@ -37,6 +37,89 @@
       font-family: monospace;
     }
     .info { color: #666; font-size: 14px; }
+
+    /* Estilos para la sección de transparencia */
+    .transparency-section {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 2px solid #22c55e;
+    }
+    .transparency-section h2 {
+      color: #166534;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .consent-history {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .consent-record {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+    }
+    .consent-record.accepted { border-left: 4px solid #22c55e; }
+    .consent-record.rejected { border-left: 4px solid #ef4444; }
+    .consent-record.customized { border-left: 4px solid #f59e0b; }
+    .consent-record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .consent-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .consent-badge.accepted { background: #dcfce7; color: #166534; }
+    .consent-badge.rejected { background: #fee2e2; color: #991b1b; }
+    .consent-badge.customized { background: #fef3c7; color: #92400e; }
+    .consent-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      font-size: 13px;
+    }
+    .consent-detail-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .consent-detail-item strong {
+      color: #374151;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #22c55e;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: #6b7280;
+    }
+    .empty-state span {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .export-btn {
+      background: #166534;
+      color: white;
+      border-color: #14532d;
+    }
+    .export-btn:hover { background: #15803d; }
   </style>
 </head>
 <body>
@@ -72,6 +155,40 @@
     <p><a href="/dashboard/footprint" target="_blank">Dashboard → Buscar Footprint</a></p>
   </div>
 
+  <!-- SECCIÓN DE TRANSPARENCIA: Muestra todos los datos guardados del usuario -->
+  <div class="test-section transparency-section">
+    <h2>🔍 Transparencia: Tus Datos Almacenados</h2>
+    <p class="info">
+      En cumplimiento con el GDPR, aquí puedes ver <strong>todos los datos</strong> que hemos
+      almacenado sobre tus decisiones de consentimiento. Esta información se conserva durante
+      3 años para cumplir con los requisitos de auditoría.
+    </p>
+
+    <div style="margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+      <button onclick="loadConsentHistory()">🔄 Cargar mi historial</button>
+      <button onclick="exportMyData()" class="export-btn">📥 Exportar mis datos (JSON)</button>
+    </div>
+
+    <div id="consent-history-container" class="consent-history">
+      <div class="empty-state">
+        <span>🔐</span>
+        <p>Haz clic en "Cargar mi historial" para ver tus registros de consentimiento.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px;">
+      <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #374151;">📋 ¿Qué datos guardamos?</h3>
+      <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #6b7280;">
+        <li><strong>Footprint ID:</strong> Identificador anónimo de tu navegador (no te identifica personalmente)</li>
+        <li><strong>Decisiones:</strong> Si aceptaste/rechazaste cookies de analytics y marketing</li>
+        <li><strong>Fecha y hora:</strong> Cuándo tomaste cada decisión</li>
+        <li><strong>IP Hash:</strong> Un hash irreversible de tu IP (no almacenamos la IP real)</li>
+        <li><strong>Navegador:</strong> Información técnica del navegador para estadísticas</li>
+        <li><strong>Expiración:</strong> Fecha en que se eliminarán automáticamente (3 años)</li>
+      </ul>
+    </div>
+  </div>
+
   <script>
     // Mostrar estado actual
     function updateDisplay() {
@@ -101,6 +218,166 @@
     // Observar cambios en localStorage
     window.addEventListener('storage', updateDisplay);
     setInterval(updateDisplay, 1000);
+
+    // ============================================
+    // TRANSPARENCIA: Cargar historial de consentimiento
+    // ============================================
+    let consentHistoryData = [];
+
+    async function loadConsentHistory() {
+      const footprint = localStorage.getItem('esbilla_footprint');
+      const container = document.getElementById('consent-history-container');
+
+      if (!footprint) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span>⚠️</span>
+            <p>No tienes un Footprint ID. Interactúa con el banner de cookies primero.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div style="text-align: center; padding: 30px;">
+          <div class="loading-spinner"></div>
+          <p style="margin-top: 10px; color: #6b7280;">Cargando tu historial...</p>
+        </div>
+      `;
+
+      try {
+        // Llamar al API para obtener el historial (endpoint público de transparencia)
+        const response = await fetch(`/api/consent/history/${footprint}`);
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}`);
+        }
+
+        const data = await response.json();
+        consentHistoryData = data.records || [];
+
+        if (consentHistoryData.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <span>📭</span>
+              <p>No encontramos registros para tu Footprint ID.</p>
+              <p style="font-size: 12px;">Esto puede significar que aún no has dado tu consentimiento o que los datos ya expiraron.</p>
+            </div>
+          `;
+          return;
+        }
+
+        renderConsentHistory(consentHistoryData);
+      } catch (err) {
+        console.error('Error cargando historial:', err);
+        container.innerHTML = `
+          <div class="empty-state">
+            <span>❌</span>
+            <p>Error al cargar tu historial: ${err.message}</p>
+            <p style="font-size: 12px;">El servidor podría no estar disponible o no tener este endpoint habilitado.</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderConsentHistory(records) {
+      const container = document.getElementById('consent-history-container');
+
+      const html = records.map(record => {
+        const choices = record.choices || {};
+        const isAccepted = choices.analytics && choices.marketing;
+        const isRejected = !choices.analytics && !choices.marketing;
+        const type = isAccepted ? 'accepted' : (isRejected ? 'rejected' : 'customized');
+        const typeLabel = isAccepted ? '✅ Aceptado todo' : (isRejected ? '❌ Rechazado todo' : '⚙️ Personalizado');
+        const typeBadgeClass = type;
+
+        const date = new Date(record.timestamp || record.createdAt);
+        const expiresAt = record.expiresAt ? new Date(record.expiresAt) : null;
+
+        return `
+          <div class="consent-record ${type}">
+            <div class="consent-record-header">
+              <span class="consent-badge ${typeBadgeClass}">${typeLabel}</span>
+              <span style="color: #6b7280; font-size: 13px;">
+                ${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+                a las ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+            <div class="consent-details">
+              <div class="consent-detail-item">
+                <span>📊</span>
+                <strong>Analytics:</strong>
+                <span>${choices.analytics ? '✅ Sí' : '❌ No'}</span>
+              </div>
+              <div class="consent-detail-item">
+                <span>📢</span>
+                <strong>Marketing:</strong>
+                <span>${choices.marketing ? '✅ Sí' : '❌ No'}</span>
+              </div>
+              <div class="consent-detail-item">
+                <span>🎯</span>
+                <strong>Acción:</strong>
+                <span>${record.action || 'desconocida'}</span>
+              </div>
+              <div class="consent-detail-item">
+                <span>🌐</span>
+                <strong>Dominio:</strong>
+                <span>${record.metadata?.domain || record.domain || 'N/A'}</span>
+              </div>
+              <div class="consent-detail-item">
+                <span>🔐</span>
+                <strong>IP Hash:</strong>
+                <code style="font-size: 11px;">${record.ipHash || 'N/A'}</code>
+              </div>
+              ${expiresAt ? `
+              <div class="consent-detail-item">
+                <span>⏳</span>
+                <strong>Expira:</strong>
+                <span>${expiresAt.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <p style="margin-bottom: 15px; color: #166534; font-weight: 500;">
+          📜 Se encontraron ${records.length} registro(s) de consentimiento
+        </p>
+        ${html}
+      `;
+    }
+
+    function exportMyData() {
+      const footprint = localStorage.getItem('esbilla_footprint');
+
+      if (consentHistoryData.length === 0) {
+        alert('Primero carga tu historial antes de exportar.');
+        return;
+      }
+
+      const exportData = {
+        footprintId: footprint,
+        exportDate: new Date().toISOString(),
+        totalRecords: consentHistoryData.length,
+        gdprInfo: {
+          dataController: 'Esbilla CMP',
+          retentionPeriod: '3 años (1095 días)',
+          legalBasis: 'Consentimiento del usuario (Art. 6.1.a GDPR)',
+          rights: 'Acceso, rectificación, supresión, portabilidad (Art. 15-20 GDPR)'
+        },
+        records: consentHistoryData
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `esbilla-mis-datos-${footprint}-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   </script>
 
   <!-- Cargar el SDK de Esbilla -->
