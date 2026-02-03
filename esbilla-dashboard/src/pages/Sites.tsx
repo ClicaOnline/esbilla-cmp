@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import type { Site, BannerSettings } from '../types';
+import type { Site } from '../types';
 import { DEFAULT_BANNER_SETTINGS, generateApiKey, generateSiteId } from '../types';
 import {
   Plus,
@@ -16,8 +16,7 @@ import {
   BarChart3,
   X,
   RefreshCw,
-  Code,
-  ExternalLink
+  Code
 } from 'lucide-react';
 
 interface SiteFormData {

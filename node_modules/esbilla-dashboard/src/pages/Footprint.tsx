@@ -147,7 +147,7 @@ export function FootprintPage() {
       totalRecords: records.length,
       records: records.map(r => ({
         timestamp: r.timestamp,
-        site: r.cmpId,
+        site: r.siteId,
         choices: r.choices,
         language: r.lang
       }))
