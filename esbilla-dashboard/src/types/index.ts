@@ -23,6 +23,9 @@ export interface Organization {
   legalName?: string;                 // Razón social
   taxId?: string;                     // NIF/CIF (opcional)
 
+  // Tracking ID único para identificación (ESB-ORG-XXXXXXXX)
+  trackingId?: string;
+
   // Plan y límites
   plan: 'free' | 'pro' | 'enterprise';
   maxSites: number;

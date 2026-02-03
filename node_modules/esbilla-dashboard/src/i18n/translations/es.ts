@@ -21,6 +21,7 @@ export const es: Translations = {
   // Navigation
   nav: {
     dashboard: 'Dashboard',
+    organizations: 'Organizaciones',
     sites: 'Sitios',
     users: 'Usuarios',
     footprint: 'Buscar Footprint',

@@ -33,17 +33,192 @@ if (!admin.apps.length) {
 
 const app = express();
 
-// CORS configuráu pa permitir el dominiu de producción y desarrollo
-app.use(cors({
-  origin: [
-    'https://esbilla.com',
-    'https://api.esbilla.com',
-    'http://localhost:4321',
-    'http://localhost:3000',
-    'http://localhost:5173'  // Vite dev server del dashboard
-  ],
-  credentials: true
-}));
+// ============================================
+// SECURITY: DOMAIN WHITELIST CACHE & VALIDATION
+// ============================================
+
+// Cache de dominios permitidos por siteId (TTL: 5 minutos)
+const domainCache = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+// Dominios siempre permitidos (desarrollo y dashboard)
+const ALWAYS_ALLOWED_ORIGINS = [
+  'https://esbilla.com',
+  'https://api.esbilla.com',
+  'https://dashboard.esbilla.com',
+  'http://localhost:4321',
+  'http://localhost:3000',
+  'http://localhost:5173'
+];
+
+/**
+ * Obtiene los dominios permitidos para un siteId desde Firestore (con caché)
+ * @param {string} siteId - ID del sitio
+ * @returns {Promise<string[]>} - Array de dominios permitidos
+ */
+async function getAllowedDomainsForSite(siteId) {
+  if (!siteId || !db) return [];
+
+  // Verificar caché
+  const cached = domainCache.get(siteId);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.domains;
+  }
+
+  try {
+    const siteDoc = await db.collection('sites').doc(siteId).get();
+    if (siteDoc.exists) {
+      const siteData = siteDoc.data();
+      // Los dominios están en el campo 'domains' del sitio
+      const domains = siteData.domains || [];
+
+      // Guardar en caché
+      domainCache.set(siteId, {
+        domains,
+        timestamp: Date.now()
+      });
+
+      return domains;
+    }
+  } catch (err) {
+    console.warn(`[Security] Error obteniendo dominios para ${siteId}:`, err.message);
+  }
+
+  return [];
+}
+
+/**
+ * Normaliza un dominio para comparación (elimina protocolo y www)
+ * @param {string} domain - Dominio o URL a normalizar
+ * @returns {string} - Dominio normalizado
+ */
+function normalizeDomain(domain) {
+  if (!domain) return '';
+  return domain
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')  // Eliminar protocolo
+    .replace(/^www\./, '')         // Eliminar www.
+    .replace(/:\d+$/, '')          // Eliminar puerto
+    .replace(/\/.*$/, '');         // Eliminar path
+}
+
+/**
+ * Verifica si un dominio está en la lista de permitidos
+ * Soporta wildcards (*.ejemplo.com) y subdominios
+ * @param {string} requestDomain - Dominio de la petición
+ * @param {string[]} allowedDomains - Lista de dominios permitidos
+ * @returns {boolean}
+ */
+function isDomainAllowed(requestDomain, allowedDomains) {
+  const normalizedRequest = normalizeDomain(requestDomain);
+
+  for (const allowed of allowedDomains) {
+    const normalizedAllowed = normalizeDomain(allowed);
+
+    // Coincidencia exacta
+    if (normalizedRequest === normalizedAllowed) {
+      return true;
+    }
+
+    // Wildcard: *.ejemplo.com permite subdominios
+    if (normalizedAllowed.startsWith('*.')) {
+      const baseDomain = normalizedAllowed.substring(2);
+      if (normalizedRequest === baseDomain || normalizedRequest.endsWith('.' + baseDomain)) {
+        return true;
+      }
+    }
+
+    // También permitir subdominios del dominio registrado
+    if (normalizedRequest.endsWith('.' + normalizedAllowed)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Obtiene todos los dominios registrados en todos los sitios (para CORS dinámico)
+ * @returns {Promise<string[]>}
+ */
+async function getAllRegisteredDomains() {
+  if (!db) return [];
+
+  // Verificar caché global
+  const cached = domainCache.get('__ALL_DOMAINS__');
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.domains;
+  }
+
+  try {
+    const sitesSnapshot = await db.collection('sites').get();
+    const allDomains = new Set();
+
+    sitesSnapshot.forEach((doc) => {
+      const data = doc.data();
+      (data.domains || []).forEach(domain => {
+        allDomains.add(normalizeDomain(domain));
+        // También añadir con www
+        allDomains.add('www.' + normalizeDomain(domain));
+      });
+    });
+
+    const domains = Array.from(allDomains);
+
+    // Guardar en caché
+    domainCache.set('__ALL_DOMAINS__', {
+      domains,
+      timestamp: Date.now()
+    });
+
+    return domains;
+  } catch (err) {
+    console.warn('[Security] Error obteniendo todos los dominios:', err.message);
+    return [];
+  }
+}
+
+// ============================================
+// CORS DINÁMICO CON WHITELIST
+// ============================================
+const corsOptions = {
+  origin: async function (origin, callback) {
+    // Permitir peticiones sin origin (Postman, curl, server-to-server)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Dominios siempre permitidos (desarrollo y dashboard)
+    if (ALWAYS_ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Comprobar si el origen está registrado en algún sitio
+    try {
+      const registeredDomains = await getAllRegisteredDomains();
+      const normalizedOrigin = normalizeDomain(origin);
+
+      if (registeredDomains.some(domain =>
+        normalizedOrigin === domain ||
+        normalizedOrigin.endsWith('.' + domain) ||
+        domain.endsWith('.' + normalizedOrigin)
+      )) {
+        return callback(null, true);
+      }
+    } catch (err) {
+      console.warn('[CORS] Error verificando origen:', err.message);
+    }
+
+    // Rechazar origen no autorizado
+    console.warn(`[CORS] Origen bloqueado: ${origin}`);
+    callback(new Error('Origen no permitido por CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
@@ -131,6 +306,11 @@ app.get('/api/config/:id', async (req, res) => {
 // para mantener un registro de auditoría completo según GDPR.
 // Los documentos se eliminan automáticamente después de 3 años
 // mediante la política TTL de Firestore en el campo 'expiresAt'.
+//
+// SECURITY: Validación de origen
+// - Verifica que el dominio desde el que se envía el hit está en
+//   la lista de dominios permitidos del sitio en Firestore.
+// - Si no coincide, devuelve 403 Forbidden.
 // ============================================
 app.post('/api/consent/log', async (req, res) => {
   const {
@@ -159,6 +339,38 @@ app.post('/api/consent/log', async (req, res) => {
       error: 'Falten datos obligatorios (siteId/cmpId, choices)',
       code: 'MISSING_REQUIRED_FIELDS'
     });
+  }
+
+  // ============================================
+  // SECURITY: VALIDACIÓN DE DOMINIO DE ORIGEN
+  // ============================================
+  // Obtener el dominio desde el que se hace la petición
+  const requestOrigin = req.headers.origin || req.headers.referer;
+  const requestDomain = metadata?.domain || normalizeDomain(requestOrigin);
+
+  // Verificar dominios permitidos para este sitio
+  if (db && requestDomain) {
+    try {
+      const allowedDomains = await getAllowedDomainsForSite(projectId);
+
+      // Si el sitio tiene dominios configurados, validar
+      if (allowedDomains.length > 0) {
+        const isAllowed = isDomainAllowed(requestDomain, allowedDomains);
+
+        if (!isAllowed) {
+          console.warn(`[Security] Dominio bloqueado: ${requestDomain} para siteId: ${projectId}. Permitidos: ${allowedDomains.join(', ')}`);
+          return res.status(403).json({
+            error: 'Dominio no autorizado',
+            code: 'DOMAIN_NOT_ALLOWED',
+            message: `El dominio '${requestDomain}' no está autorizado para el sitio '${projectId}'`
+          });
+        }
+      }
+      // Si no hay dominios configurados, permitir (modo desarrollo/legacy)
+    } catch (err) {
+      console.warn('[Security] Error validando dominio:', err.message);
+      // En caso de error, permitir para no bloquear consentimientos legítimos
+    }
   }
 
   // Obtener IP y User-Agent
