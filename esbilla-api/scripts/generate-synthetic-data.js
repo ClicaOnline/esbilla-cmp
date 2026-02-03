@@ -298,11 +298,9 @@ async function main() {
     }
 
     admin.initializeApp({ projectId: CONFIG.PROJECT_ID });
-    db = admin.firestore();
-    // Usar database específica si no es default
-    if (CONFIG.DATABASE_ID !== '(default)') {
-      db = admin.app().firestore(CONFIG.DATABASE_ID);
-    }
+    // Usar getFirestore para bases de datos nombradas
+    const { getFirestore } = require('firebase-admin/firestore');
+    db = getFirestore(admin.app(), CONFIG.DATABASE_ID);
     console.log('✅ Conectado a Firestore');
   }
 
