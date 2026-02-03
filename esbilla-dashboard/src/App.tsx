@@ -7,6 +7,7 @@ import { FootprintPage } from './pages/Footprint';
 import { UsersPage } from './pages/Users';
 import { SettingsPage } from './pages/Settings';
 import { UrlStatsPage } from './pages/UrlStats';
+import { OrganizationsPage } from './pages/Organizations';
 
 function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
   const { user, userData, loading, isAdmin, error } = useAuth();
@@ -122,6 +123,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <UrlStatsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organizations"
+        element={
+          <ProtectedRoute adminOnly>
+            <OrganizationsPage />
           </ProtectedRoute>
         }
       />

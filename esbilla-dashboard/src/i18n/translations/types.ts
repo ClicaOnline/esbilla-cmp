@@ -17,6 +17,7 @@ export interface Translations {
 
   nav: {
     dashboard: string;
+    organizations: string;
     sites: string;
     users: string;
     footprint: string;
