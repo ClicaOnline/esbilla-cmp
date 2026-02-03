@@ -9,11 +9,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import {
-  TrendingUp, TrendingDown, CheckCircle, XCircle, Settings, Eye,
-  Globe2, Calendar, RefreshCw, AlertCircle, Languages, Monitor,
-  Smartphone, Tablet, MousePointer
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle, XCircle, Settings, Eye, Globe2, Calendar, RefreshCw, AlertCircle } from 'lucide-react';
 
 // Date range presets
 type DateRangePreset = '7d' | '30d' | '90d' | 'custom';
@@ -34,86 +30,7 @@ interface DailyData {
   rejected: number;
 }
 
-interface BreakdownItem {
-  name: string;
-  value: number;
-  percentage: number;
-  color?: string;
-}
-
-// Colores para gráficos
 const COLORS = ['#22c55e', '#ef4444', '#f59e0b'];
-const BROWSER_COLORS: Record<string, string> = {
-  'Chrome': '#4285F4',
-  'Firefox': '#FF7139',
-  'Safari': '#000000',
-  'Edge': '#0078D7',
-  'Opera': '#FF1B2D',
-  'Samsung': '#1428A0',
-  'Otros': '#9ca3af'
-};
-const OS_COLORS: Record<string, string> = {
-  'Windows': '#0078D4',
-  'macOS': '#555555',
-  'iOS': '#000000',
-  'Android': '#3DDC84',
-  'Linux': '#FCC624',
-  'Otros': '#9ca3af'
-};
-const ACTION_COLORS: Record<string, string> = {
-  'accept_all': '#22c55e',
-  'reject_all': '#ef4444',
-  'customize': '#f59e0b',
-  'update': '#3b82f6'
-};
-const LANG_COLORS: Record<string, string> = {
-  'es': '#DC2626',
-  'en': '#1D4ED8',
-  'ast': '#059669',
-  'fr': '#2563EB',
-  'pt': '#16A34A',
-  'de': '#000000',
-  'it': '#16A34A',
-  'ca': '#DC2626',
-  'eu': '#DC2626',
-  'gl': '#2563EB'
-};
-
-// ============================================
-// PARSEO DE USER AGENT
-// ============================================
-function parseUserAgent(ua: string): { browser: string; os: string; deviceType: string } {
-  if (!ua) return { browser: 'Desconocido', os: 'Desconocido', deviceType: 'desktop' };
-
-  // Detectar navegador
-  let browser = 'Otros';
-  if (ua.includes('Edg/') || ua.includes('Edge/')) browser = 'Edge';
-  else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
-  else if (ua.includes('SamsungBrowser')) browser = 'Samsung';
-  else if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
-  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
-  else if (ua.includes('Firefox')) browser = 'Firefox';
-
-  // Detectar sistema operativo
-  let os = 'Otros';
-  if (ua.includes('Windows')) os = 'Windows';
-  else if (ua.includes('Mac OS X') && !ua.includes('iPhone') && !ua.includes('iPad')) os = 'macOS';
-  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-  else if (ua.includes('Android')) os = 'Android';
-  else if (ua.includes('Linux')) os = 'Linux';
-
-  // Detectar tipo de dispositivo
-  let deviceType = 'desktop';
-  if (ua.includes('Mobile') || ua.includes('iPhone') || ua.includes('Android')) {
-    if (ua.includes('iPad') || ua.includes('Tablet')) {
-      deviceType = 'tablet';
-    } else {
-      deviceType = 'mobile';
-    }
-  }
-
-  return { browser, os, deviceType };
-}
 
 // Helper to get date range from preset
 function getDateRangeFromPreset(preset: DateRangePreset): { start: Date; end: Date } {
@@ -148,14 +65,6 @@ export function DashboardPage() {
   const [sites, setSites] = useState<Site[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
-
-  // Nuevas estadísticas
-  const [languageStats, setLanguageStats] = useState<BreakdownItem[]>([]);
-  const [domainStats, setDomainStats] = useState<BreakdownItem[]>([]);
-  const [actionStats, setActionStats] = useState<BreakdownItem[]>([]);
-  const [browserStats, setBrowserStats] = useState<BreakdownItem[]>([]);
-  const [osStats, setOsStats] = useState<BreakdownItem[]>([]);
-  const [deviceStats, setDeviceStats] = useState<BreakdownItem[]>([]);
 
   // Date range state
   const [datePreset, setDatePreset] = useState<DateRangePreset>('30d');
@@ -225,7 +134,7 @@ export function DashboardPage() {
         endDate = range.end;
       }
 
-      // Build query
+      // Build query - try simpler query first to avoid index issues
       let q;
       try {
         if (selectedSiteId && selectedSiteId !== 'all') {
@@ -247,6 +156,7 @@ export function DashboardPage() {
           );
         }
       } catch (queryErr) {
+        // Fallback: simpler query without compound filters
         console.warn('Using fallback query:', queryErr);
         q = query(
           consentsRef,
@@ -267,14 +177,6 @@ export function DashboardPage() {
       todayStart.setHours(0, 0, 0, 0);
 
       const dailyMap = new Map<string, { total: number; accepted: number; rejected: number }>();
-
-      // Mapas para estadísticas adicionales
-      const langMap = new Map<string, number>();
-      const domainMap = new Map<string, number>();
-      const actionMap = new Map<string, number>();
-      const browserMap = new Map<string, number>();
-      const osMap = new Map<string, number>();
-      const deviceMap = new Map<string, number>();
 
       snapshot.forEach((doc) => {
         const data = doc.data();
@@ -299,28 +201,9 @@ export function DashboardPage() {
         if (isAccepted) existing.accepted++;
         if (isRejected) existing.rejected++;
         dailyMap.set(dateKey, existing);
-
-        // Estadísticas por idioma
-        const lang = data.metadata?.language || 'unknown';
-        langMap.set(lang, (langMap.get(lang) || 0) + 1);
-
-        // Estadísticas por dominio
-        const domain = data.metadata?.domain || 'unknown';
-        domainMap.set(domain, (domainMap.get(domain) || 0) + 1);
-
-        // Estadísticas por acción
-        const action = data.action || 'unknown';
-        actionMap.set(action, (actionMap.get(action) || 0) + 1);
-
-        // Estadísticas por navegador, SO y dispositivo
-        const ua = data.userAgent || '';
-        const { browser, os, deviceType } = parseUserAgent(ua);
-        browserMap.set(browser, (browserMap.get(browser) || 0) + 1);
-        osMap.set(os, (osMap.get(os) || 0) + 1);
-        deviceMap.set(deviceType, (deviceMap.get(deviceType) || 0) + 1);
       });
 
-      // Calcular tendencia
+      // Calcular tendencia (comparar con semana anterior)
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       const twoWeeksAgo = new Date();
@@ -340,7 +223,7 @@ export function DashboardPage() {
 
       setStats({ total, accepted, rejected, customized, today, trend });
 
-      // Preparar datos diarios
+      // Preparar datos diarios para el gráfico
       const dailyArray: DailyData[] = [];
       const sortedDates = Array.from(dailyMap.keys()).sort();
       sortedDates.slice(-14).forEach((date) => {
@@ -350,32 +233,13 @@ export function DashboardPage() {
           ...data
         });
       });
+
       setDailyData(dailyArray);
-
-      // Convertir mapas a arrays ordenados
-      const toBreakdown = (map: Map<string, number>, colorMap?: Record<string, string>): BreakdownItem[] => {
-        return Array.from(map.entries())
-          .map(([name, value]) => ({
-            name,
-            value,
-            percentage: total > 0 ? (value / total) * 100 : 0,
-            color: colorMap?.[name]
-          }))
-          .sort((a, b) => b.value - a.value)
-          .slice(0, 10); // Top 10
-      };
-
-      setLanguageStats(toBreakdown(langMap, LANG_COLORS));
-      setDomainStats(toBreakdown(domainMap));
-      setActionStats(toBreakdown(actionMap, ACTION_COLORS));
-      setBrowserStats(toBreakdown(browserMap, BROWSER_COLORS));
-      setOsStats(toBreakdown(osMap, OS_COLORS));
-      setDeviceStats(toBreakdown(deviceMap));
-
     } catch (err: unknown) {
       console.error('Error cargando estadísticas:', err);
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
 
+      // Check if it's an index error
       if (errorMessage.includes('index') || (err as { code?: number })?.code === 9) {
         setError('Se requiere crear un índice en Firestore. Revisa la consola para más detalles.');
       } else {
@@ -555,7 +419,7 @@ export function DashboardPage() {
           />
         </div>
 
-        {/* Charts Row 1: Area + Pie */}
+        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Area chart */}
           <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-stone-200">
@@ -631,94 +495,6 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Charts Row 2: Actions + Languages */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Acciones */}
-          <BreakdownCard
-            title="Tipo de Acción"
-            icon={<MousePointer size={18} className="text-blue-500" />}
-            data={actionStats}
-            colorMap={ACTION_COLORS}
-            labelMap={{
-              'accept_all': 'Aceptar todo',
-              'reject_all': 'Rechazar todo',
-              'customize': 'Personalizar',
-              'update': 'Actualizar'
-            }}
-          />
-
-          {/* Idiomas */}
-          <BreakdownCard
-            title="Idiomas"
-            icon={<Languages size={18} className="text-purple-500" />}
-            data={languageStats}
-            colorMap={LANG_COLORS}
-            labelMap={{
-              'es': 'Español',
-              'en': 'English',
-              'ast': 'Asturianu',
-              'fr': 'Français',
-              'pt': 'Português',
-              'de': 'Deutsch',
-              'it': 'Italiano',
-              'unknown': 'Desconocido'
-            }}
-          />
-        </div>
-
-        {/* Charts Row 3: Browser + OS */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Navegadores */}
-          <BreakdownCard
-            title="Navegadores"
-            icon={<Monitor size={18} className="text-indigo-500" />}
-            data={browserStats}
-            colorMap={BROWSER_COLORS}
-          />
-
-          {/* Sistemas Operativos */}
-          <BreakdownCard
-            title="Sistemas Operativos"
-            icon={<Monitor size={18} className="text-teal-500" />}
-            data={osStats}
-            colorMap={OS_COLORS}
-          />
-        </div>
-
-        {/* Charts Row 4: Devices + Domains */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Dispositivos */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-            <div className="flex items-center gap-2 mb-4">
-              <Smartphone size={18} className="text-pink-500" />
-              <h2 className="text-lg font-semibold text-stone-800">Dispositivos</h2>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {deviceStats.map((device) => {
-                const Icon = device.name === 'mobile' ? Smartphone :
-                             device.name === 'tablet' ? Tablet : Monitor;
-                const label = device.name === 'mobile' ? 'Móvil' :
-                              device.name === 'tablet' ? 'Tablet' : 'Escritorio';
-                return (
-                  <div key={device.name} className="text-center p-4 bg-stone-50 rounded-lg">
-                    <Icon size={32} className="mx-auto text-stone-400 mb-2" />
-                    <p className="text-2xl font-bold text-stone-800">{device.percentage.toFixed(1)}%</p>
-                    <p className="text-sm text-stone-500">{label}</p>
-                    <p className="text-xs text-stone-400">{device.value.toLocaleString()}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Dominios */}
-          <BreakdownCard
-            title="Dominios"
-            icon={<Globe2 size={18} className="text-green-500" />}
-            data={domainStats}
-          />
-        </div>
-
         {/* Today's summary */}
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
@@ -734,10 +510,6 @@ export function DashboardPage() {
     </Layout>
   );
 }
-
-// ============================================
-// COMPONENTES AUXILIARES
-// ============================================
 
 interface StatCardProps {
   title: string;
@@ -790,55 +562,6 @@ function StatCard({ title, value, icon, trend, trendLabel, percentage, percentLa
           <p className="text-xs text-stone-400 mt-1">{percentage.toFixed(1)}% {percentLabel}</p>
         </div>
       )}
-    </div>
-  );
-}
-
-interface BreakdownCardProps {
-  title: string;
-  icon: React.ReactNode;
-  data: BreakdownItem[];
-  colorMap?: Record<string, string>;
-  labelMap?: Record<string, string>;
-}
-
-function BreakdownCard({ title, icon, data, colorMap, labelMap }: BreakdownCardProps) {
-  return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-      <div className="flex items-center gap-2 mb-4">
-        {icon}
-        <h2 className="text-lg font-semibold text-stone-800">{title}</h2>
-      </div>
-      <div className="space-y-3">
-        {data.map((item) => {
-          const displayName = labelMap?.[item.name] || item.name;
-          const barColor = colorMap?.[item.name] || item.color || '#9ca3af';
-          return (
-            <div key={item.name}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-stone-600 truncate" title={displayName}>
-                  {displayName}
-                </span>
-                <span className="text-sm font-medium text-stone-800 ml-2">
-                  {item.value.toLocaleString()} ({item.percentage.toFixed(1)}%)
-                </span>
-              </div>
-              <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${item.percentage}%`,
-                    backgroundColor: barColor
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-        {data.length === 0 && (
-          <p className="text-sm text-stone-400 text-center py-4">Sin datos</p>
-        )}
-      </div>
     </div>
   );
 }
