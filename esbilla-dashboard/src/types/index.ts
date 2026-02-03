@@ -55,6 +55,13 @@ export interface CookieCategory {
 }
 
 /**
+ * Configuración del sitio (wrapper para diferentes tipos de settings)
+ */
+export interface SiteSettings {
+  banner?: BannerSettings;
+}
+
+/**
  * Sitio/Dominio
  */
 export interface Site {
@@ -64,7 +71,7 @@ export interface Site {
   organizationId?: string;        // Para SaaS
 
   // Configuración
-  settings: BannerSettings;
+  settings?: SiteSettings;
 
   // Autenticación del SDK
   apiKey: string;
