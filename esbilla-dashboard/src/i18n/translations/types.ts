@@ -65,12 +65,48 @@ export interface Translations {
     approveViewer: string;
     reject: string;
     confirmDelete: string;
+    organizations: string;
+    sites: string;
+    allSites: string;
+    noAccess: string;
+    addToOrg: string;
+    addToSite: string;
+    selectOrganization: string;
+    selectSite: string;
+    accessLevel: string;
     roles: {
       superadmin: string;
-      admin: string;
-      viewer: string;
       pending: string;
+      org_owner: string;
+      org_admin: string;
+      org_viewer: string;
+      site_admin: string;
+      site_viewer: string;
     };
+  };
+
+  organizations: {
+    title: string;
+    subtitle: string;
+    createOrg: string;
+    editOrg: string;
+    deleteOrg: string;
+    confirmDelete: string;
+    name: string;
+    namePlaceholder: string;
+    legalName: string;
+    taxId: string;
+    plan: string;
+    billingEmail: string;
+    plans: {
+      free: string;
+      pro: string;
+      enterprise: string;
+    };
+    noOrgs: string;
+    noOrgsMessage: string;
+    sitesCount: string;
+    usersCount: string;
   };
 
   footprint: {
