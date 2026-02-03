@@ -1,9 +1,10 @@
 /**
- * ESBILLA CMP - SDK v1.1 (Modular & Configurable)
+ * ESBILLA CMP - SDK v1.3 (Modular & Configurable)
  * Arquitectura modular: estilos, plantillas y configuración externos
+ * Incluye captura de atribución de marketing (UTM, click IDs)
  */
 (function() {
-  const SDK_VERSION = '1.1.0';
+  const SDK_VERSION = '1.3.0';
   const script = document.currentScript;
   const cmpId = script.getAttribute('data-id') || 'default';
   const siteApiKey = script.getAttribute('data-key') || '';
@@ -17,6 +18,141 @@
   let currentLang = 'es';
   let templateHtml = '';
   let footprintId = '';
+
+  // ============================================
+  // MARKETING ATTRIBUTION - Parámetros de tráfico
+  // ============================================
+  // Lista de parámetros de marketing a capturar
+  const MARKETING_PARAMS = [
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+    'utm_content',
+    'utm_term',
+    'gclid',      // Google Ads
+    'fbclid',     // Facebook/Meta
+    'ttclid',     // TikTok
+    'msclkid',    // Microsoft/Bing Ads
+    'li_fat_id',  // LinkedIn
+    'twclid',     // Twitter/X
+    'dclid'       // Google Display & Video 360
+  ];
+
+  const ATTRIBUTION_TEMP_KEY = 'esbilla_temp_attribution';
+  const ATTRIBUTION_PERSISTENT_KEY = 'esbilla_attribution';
+
+  /**
+   * Captura los parámetros de marketing de la URL actual
+   * Se ejecuta al inicio para no perder datos antes del consentimiento
+   * Almacena temporalmente en sessionStorage (volátil)
+   */
+  function captureTrafficParams() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const attribution = {};
+      let hasParams = false;
+
+      // Extraer parámetros de marketing
+      MARKETING_PARAMS.forEach(param => {
+        const value = urlParams.get(param);
+        if (value) {
+          attribution[param] = value;
+          hasParams = true;
+        }
+      });
+
+      // Solo guardar si hay parámetros
+      if (hasParams) {
+        // Añadir metadata de contexto
+        attribution._captured_at = new Date().toISOString();
+        attribution._landing_page = window.location.href;
+        attribution._referrer = document.referrer || null;
+
+        // Guardar en sessionStorage (temporal, se borra al cerrar navegador)
+        sessionStorage.setItem(ATTRIBUTION_TEMP_KEY, JSON.stringify(attribution));
+        console.log('[Esbilla] Parámetros de atribución capturados:', attribution);
+      }
+    } catch (e) {
+      console.warn('[Esbilla] Error capturando parámetros de tráfico:', e);
+    }
+  }
+
+  /**
+   * Obtiene los datos de atribución disponibles
+   * Prioriza localStorage (persistido) sobre sessionStorage (temporal)
+   * Siempre incluye el footprintId para cruce de datos
+   */
+  function getAttributionData() {
+    try {
+      // Primero intentar localStorage (datos ya consentidos)
+      let data = localStorage.getItem(ATTRIBUTION_PERSISTENT_KEY);
+      if (data) {
+        const parsed = JSON.parse(data);
+        parsed.footprintId = footprintId;
+        return parsed;
+      }
+
+      // Fallback a sessionStorage (datos temporales pre-consentimiento)
+      data = sessionStorage.getItem(ATTRIBUTION_TEMP_KEY);
+      if (data) {
+        const parsed = JSON.parse(data);
+        parsed.footprintId = footprintId;
+        return parsed;
+      }
+    } catch (e) {
+      console.warn('[Esbilla] Error leyendo datos de atribución:', e);
+    }
+    return null;
+  }
+
+  /**
+   * Maneja los datos de atribución según el consentimiento del usuario
+   * @param {boolean} marketingConsented - Si el usuario aceptó marketing
+   */
+  function handleAttributionConsent(marketingConsented) {
+    try {
+      if (marketingConsented) {
+        // Usuario aceptó marketing: mover datos a localStorage persistente
+        const tempData = sessionStorage.getItem(ATTRIBUTION_TEMP_KEY);
+        if (tempData) {
+          localStorage.setItem(ATTRIBUTION_PERSISTENT_KEY, tempData);
+          sessionStorage.removeItem(ATTRIBUTION_TEMP_KEY);
+          console.log('[Esbilla] Atribución persistida en localStorage');
+        }
+
+        // Notificar al dataLayer que la atribución está lista
+        pushAttributionToDataLayer();
+      } else {
+        // Usuario rechazó marketing: eliminar todos los datos de atribución
+        sessionStorage.removeItem(ATTRIBUTION_TEMP_KEY);
+        localStorage.removeItem(ATTRIBUTION_PERSISTENT_KEY);
+        console.log('[Esbilla] Datos de atribución eliminados (marketing rechazado)');
+      }
+    } catch (e) {
+      console.warn('[Esbilla] Error manejando consentimiento de atribución:', e);
+    }
+  }
+
+  /**
+   * Envía los datos de atribución al dataLayer de GTM
+   * Solo se ejecuta cuando hay consentimiento de marketing
+   */
+  function pushAttributionToDataLayer() {
+    const attribution = getAttributionData();
+    if (!attribution) return;
+
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'esbilla_attribution_ready',
+      esbilla_attribution: {
+        ...attribution,
+        footprintId: footprintId,
+        siteId: cmpId,
+        timestamp: new Date().toISOString()
+      }
+    });
+    console.log('[Esbilla] Atribución enviada al dataLayer');
+  }
 
   // ============================================
   // CROSS-DOMAIN STORAGE - Cookies y localStorage
@@ -190,6 +326,10 @@
   // ============================================
   async function init() {
     try {
+      // A0. CAPTURA PREVENTIVA: Capturar parámetros de marketing ANTES de cualquier otra cosa
+      // Esto asegura que no se pierdan los UTMs aunque el usuario tarde en dar consentimiento
+      captureTrafficParams();
+
       // A. Cargar manifest de opciones disponibles
       const manifestRes = await fetch(`${apiBase}/config/manifest.json`);
       manifest = await manifestRes.json();
@@ -242,6 +382,13 @@
       if (savedConsent) {
         const oldConsent = JSON.parse(savedConsent);
         updateConsentMode(oldConsent);
+
+        // ATRIBUCIÓN: Si ya tiene consentimiento de marketing, procesar nuevos UTMs
+        if (oldConsent.marketing) {
+          // Mover cualquier dato temporal nuevo a persistente
+          handleAttributionConsent(true);
+        }
+
         showMosca();
       } else {
         renderBanner();
@@ -697,6 +844,9 @@
       consentAction = 'update';
     }
 
+    // ATRIBUCIÓN: Manejar datos de marketing según consentimiento
+    handleAttributionConsent(choices.marketing);
+
     // Metadata enriquecida
     const metadata = {
       domain: window.location.hostname,
@@ -711,19 +861,30 @@
       consentVersion: config.consentVersion || '1.0'
     };
 
+    // Preparar payload para la API
+    const payload = {
+      siteId: cmpId,
+      apiKey: siteApiKey,
+      footprintId,
+      choices,
+      action: consentAction,
+      metadata,
+      timestamp: new Date().toISOString()
+    };
+
+    // ATRIBUCIÓN: Incluir datos si marketing aceptado y hay datos disponibles
+    if (choices.marketing) {
+      const attribution = getAttributionData();
+      if (attribution) {
+        payload.attribution = attribution;
+      }
+    }
+
     // Log en el backend
     fetch(`${apiBase}/api/consent/log`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        siteId: cmpId,
-        apiKey: siteApiKey,
-        footprintId,
-        choices,
-        action: consentAction,
-        metadata,
-        timestamp: new Date().toISOString()
-      })
+      body: JSON.stringify(payload)
     }).catch(e => console.warn('[Esbilla] Error logging consent:', e));
 
     document.getElementById('esbilla-wrapper')?.classList.add('esbilla-hidden');

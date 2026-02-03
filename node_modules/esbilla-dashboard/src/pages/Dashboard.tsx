@@ -42,6 +42,15 @@ interface BreakdownItem {
   color?: string;
 }
 
+interface SourceAcceptanceItem {
+  source: string;
+  total: number;
+  accepted: number;
+  rejected: number;
+  customized: number;
+  acceptanceRate: number;
+}
+
 // Colores para gráficos
 const COLORS = ['#22c55e', '#ef4444', '#f59e0b'];
 const BROWSER_COLORS: Record<string, string> = {
@@ -66,6 +75,21 @@ const ACTION_COLORS: Record<string, string> = {
   'reject_all': '#ef4444',
   'customize': '#f59e0b',
   'update': '#3b82f6'
+};
+const SOURCE_COLORS: Record<string, string> = {
+  'google': '#4285F4',
+  'facebook': '#1877F2',
+  'twitter': '#1DA1F2',
+  'instagram': '#E4405F',
+  'linkedin': '#0A66C2',
+  'tiktok': '#000000',
+  'youtube': '#FF0000',
+  'bing': '#008373',
+  'organic': '#22c55e',
+  'direct': '#6b7280',
+  'email': '#f59e0b',
+  'referral': '#8b5cf6',
+  'unknown': '#9ca3af'
 };
 const LANG_COLORS: Record<string, string> = {
   'es': '#DC2626',
@@ -157,6 +181,13 @@ export function DashboardPage() {
   const [browserStats, setBrowserStats] = useState<BreakdownItem[]>([]);
   const [osStats, setOsStats] = useState<BreakdownItem[]>([]);
   const [deviceStats, setDeviceStats] = useState<BreakdownItem[]>([]);
+  const [sourceStats, setSourceStats] = useState<BreakdownItem[]>([]);
+  const [sourceAcceptance, setSourceAcceptance] = useState<SourceAcceptanceItem[]>([]);
+
+  // Filtros adicionales
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
+  const [selectedBrowser, setSelectedBrowser] = useState<string>('all');
+  const [selectedSource, setSelectedSource] = useState<string>('all');
 
   // Date range state
   const [datePreset, setDatePreset] = useState<DateRangePreset>('30d');
@@ -169,7 +200,7 @@ export function DashboardPage() {
 
   useEffect(() => {
     loadStats();
-  }, [selectedSiteId, datePreset, customStartDate, customEndDate]);
+  }, [selectedSiteId, datePreset, customStartDate, customEndDate, selectedLanguage, selectedBrowser, selectedSource]);
 
   async function loadSites() {
     if (!db || !isAdmin) return;
@@ -276,9 +307,25 @@ export function DashboardPage() {
       const browserMap = new Map<string, number>();
       const osMap = new Map<string, number>();
       const deviceMap = new Map<string, number>();
+      const sourceMap = new Map<string, number>();
+      // Mapa para ratio de aceptación por fuente: source -> {total, accepted, rejected, customized}
+      const sourceAcceptanceMap = new Map<string, { total: number; accepted: number; rejected: number; customized: number }>();
 
       snapshot.forEach((doc) => {
         const data = doc.data();
+
+        // Extraer datos para filtrado
+        const lang = data.metadata?.language || 'unknown';
+        const ua = data.userAgent || '';
+        const { browser } = parseUserAgent(ua);
+        const attribution = data.attribution;
+        const source = attribution?.utm_source || (attribution ? 'paid' : 'organic');
+
+        // Aplicar filtros del cliente (post-query filtering)
+        if (selectedLanguage !== 'all' && lang !== selectedLanguage) return;
+        if (selectedBrowser !== 'all' && browser !== selectedBrowser) return;
+        if (selectedSource !== 'all' && source !== selectedSource) return;
+
         total++;
 
         const choices = data.choices || {};
@@ -302,7 +349,6 @@ export function DashboardPage() {
         dailyMap.set(dateKey, existing);
 
         // Estadísticas por idioma
-        const lang = data.metadata?.language || 'unknown';
         langMap.set(lang, (langMap.get(lang) || 0) + 1);
 
         // Estadísticas por dominio
@@ -314,11 +360,21 @@ export function DashboardPage() {
         actionMap.set(action, (actionMap.get(action) || 0) + 1);
 
         // Estadísticas por navegador, SO y dispositivo
-        const ua = data.userAgent || '';
-        const { browser, os, deviceType } = parseUserAgent(ua);
+        const { os, deviceType } = parseUserAgent(ua);
         browserMap.set(browser, (browserMap.get(browser) || 0) + 1);
         osMap.set(os, (osMap.get(os) || 0) + 1);
         deviceMap.set(deviceType, (deviceMap.get(deviceType) || 0) + 1);
+
+        // Estadísticas por fuente de tráfico
+        sourceMap.set(source, (sourceMap.get(source) || 0) + 1);
+
+        // Ratio de aceptación por fuente
+        const sourceData = sourceAcceptanceMap.get(source) || { total: 0, accepted: 0, rejected: 0, customized: 0 };
+        sourceData.total++;
+        if (isAccepted) sourceData.accepted++;
+        else if (isRejected) sourceData.rejected++;
+        else sourceData.customized++;
+        sourceAcceptanceMap.set(source, sourceData);
       });
 
       // Calcular tendencia
@@ -372,6 +428,18 @@ export function DashboardPage() {
       setBrowserStats(toBreakdown(browserMap, BROWSER_COLORS));
       setOsStats(toBreakdown(osMap, OS_COLORS));
       setDeviceStats(toBreakdown(deviceMap));
+      setSourceStats(toBreakdown(sourceMap, SOURCE_COLORS));
+
+      // Convertir sourceAcceptanceMap a array ordenado por total
+      const sourceAcceptanceArray: SourceAcceptanceItem[] = Array.from(sourceAcceptanceMap.entries())
+        .map(([source, data]) => ({
+          source,
+          ...data,
+          acceptanceRate: data.total > 0 ? (data.accepted / data.total) * 100 : 0
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 10);
+      setSourceAcceptance(sourceAcceptanceArray);
 
     } catch (err: unknown) {
       console.error('Error cargando estadísticas:', err);
@@ -496,6 +564,57 @@ export function DashboardPage() {
                   ))}
                 </select>
               </div>
+            )}
+
+            {/* Language filter */}
+            {languageStats.length > 0 && (
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500"
+                title="Filtrar por idioma"
+              >
+                <option value="all">Idioma: Todos</option>
+                {languageStats.map((lang) => (
+                  <option key={lang.name} value={lang.name}>
+                    {lang.name.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Browser filter */}
+            {browserStats.length > 0 && (
+              <select
+                value={selectedBrowser}
+                onChange={(e) => setSelectedBrowser(e.target.value)}
+                className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500"
+                title="Filtrar por navegador"
+              >
+                <option value="all">Navegador: Todos</option>
+                {browserStats.map((browser) => (
+                  <option key={browser.name} value={browser.name}>
+                    {browser.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Traffic source filter */}
+            {sourceStats.length > 0 && (
+              <select
+                value={selectedSource}
+                onChange={(e) => setSelectedSource(e.target.value)}
+                className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500"
+                title="Filtrar por fuente de tráfico"
+              >
+                <option value="all">Fuente: Todas</option>
+                {sourceStats.map((source) => (
+                  <option key={source.name} value={source.name}>
+                    {source.name}
+                  </option>
+                ))}
+              </select>
             )}
 
             {/* Refresh button */}
@@ -718,6 +837,103 @@ export function DashboardPage() {
             icon={<Globe2 size={18} className="text-green-500" />}
             data={domainStats}
           />
+        </div>
+
+        {/* Charts Row 5: Traffic Sources + Acceptance by Source */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Fuentes de tráfico */}
+          <BreakdownCard
+            title="Fuentes de Tráfico"
+            icon={<TrendingUp size={18} className="text-purple-500" />}
+            data={sourceStats}
+            colorMap={SOURCE_COLORS}
+            labelMap={{
+              'organic': 'Orgánico',
+              'paid': 'Pago (sin UTM)',
+              'direct': 'Directo',
+              'google': 'Google',
+              'facebook': 'Facebook',
+              'twitter': 'Twitter/X',
+              'instagram': 'Instagram',
+              'linkedin': 'LinkedIn',
+              'tiktok': 'TikTok',
+              'email': 'Email',
+              'referral': 'Referido',
+              'unknown': 'Desconocido'
+            }}
+          />
+
+          {/* Ratio de aceptación por fuente */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle size={18} className="text-green-500" />
+              <h2 className="text-lg font-semibold text-stone-800">Ratio Aceptación por Fuente</h2>
+            </div>
+            {sourceAcceptance.length > 0 ? (
+              <div className="space-y-4">
+                {sourceAcceptance.map((item) => {
+                  const acceptedWidth = item.total > 0 ? (item.accepted / item.total) * 100 : 0;
+                  const rejectedWidth = item.total > 0 ? (item.rejected / item.total) * 100 : 0;
+                  const customizedWidth = 100 - acceptedWidth - rejectedWidth;
+                  return (
+                    <div key={item.source}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm text-stone-600 capitalize">
+                          {item.source === 'organic' ? 'Orgánico' :
+                           item.source === 'paid' ? 'Pago' : item.source}
+                        </span>
+                        <span className="text-sm font-medium text-green-600">
+                          {item.acceptanceRate.toFixed(1)}% aceptan
+                        </span>
+                      </div>
+                      <div className="flex h-3 rounded-full overflow-hidden bg-stone-100">
+                        <div
+                          className="bg-green-500 transition-all"
+                          style={{ width: `${acceptedWidth}%` }}
+                          title={`Aceptados: ${item.accepted}`}
+                        />
+                        <div
+                          className="bg-amber-500 transition-all"
+                          style={{ width: `${customizedWidth}%` }}
+                          title={`Personalizados: ${item.customized}`}
+                        />
+                        <div
+                          className="bg-red-500 transition-all"
+                          style={{ width: `${rejectedWidth}%` }}
+                          title={`Rechazados: ${item.rejected}`}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-stone-400 mt-1">
+                        <span>{item.total.toLocaleString()} total</span>
+                        <div className="flex gap-3">
+                          <span className="text-green-600">{item.accepted} ✓</span>
+                          <span className="text-amber-600">{item.customized} ⚙</span>
+                          <span className="text-red-600">{item.rejected} ✗</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-stone-400 text-center py-8">
+                Sin datos de atribución. Los datos aparecerán cuando los usuarios lleguen con parámetros UTM.
+              </p>
+            )}
+            <div className="mt-4 pt-4 border-t border-stone-100">
+              <div className="flex items-center justify-center gap-4 text-xs">
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 bg-green-500 rounded" /> Aceptado
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 bg-amber-500 rounded" /> Personalizado
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 bg-red-500 rounded" /> Rechazado
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Today's summary */}

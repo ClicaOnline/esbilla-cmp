@@ -142,6 +142,8 @@ app.post('/api/consent/log', async (req, res) => {
     action,
     metadata,
     timestamp,
+    // Atribución de marketing (SDK v1.3+)
+    attribution,
     // Campos legacy (retrocompatibilidad)
     cmpId,
     lang,
@@ -223,7 +225,11 @@ app.post('/api/consent/log', async (req, res) => {
 
     // Campo TTL para eliminación automática (3 años)
     // Firestore TTL policy debe configurarse en este campo
-    expiresAt: admin.apps.length ? admin.firestore.Timestamp.fromDate(expiresAt) : expiresAt
+    expiresAt: admin.apps.length ? admin.firestore.Timestamp.fromDate(expiresAt) : expiresAt,
+
+    // Atribución de marketing (SDK v1.3+)
+    // Solo presente cuando el usuario acepta marketing y hay datos de UTM/click IDs
+    attribution: attribution || null
   };
 
   // Si Firestore ta disponible, guardar nel hórreu

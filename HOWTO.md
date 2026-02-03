@@ -105,26 +105,120 @@ En Firebase Console → Firestore → Rules:
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Usuarios: solo admins pueden escribir
+
+    // ============================================
+    // FUNCIONES HELPER
+    // ============================================
+
+    // Obtener datos del usuario actual
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Verificar si es superadmin
+    function isSuperAdmin() {
+      return getUserData().globalRole == 'superadmin';
+    }
+
+    // Verificar acceso a organización
+    function hasOrgAccess(orgId) {
+      let user = getUserData();
+      return user.globalRole == 'superadmin' || orgId in user.orgAccess;
+    }
+
+    // Verificar rol de organización
+    function getOrgRole(orgId) {
+      let user = getUserData();
+      if (user.globalRole == 'superadmin') return 'superadmin';
+      return user.orgAccess[orgId].role;
+    }
+
+    // Verificar si puede escribir en organización
+    function canWriteOrg(orgId) {
+      let role = getOrgRole(orgId);
+      return role == 'superadmin' || role == 'org_owner' || role == 'org_admin';
+    }
+
+    // ============================================
+    // REGLAS POR COLECCIÓN
+    // ============================================
+
+    // Organizaciones
+    match /organizations/{orgId} {
+      // Leer: usuarios con acceso a la org
+      allow read: if request.auth != null && hasOrgAccess(orgId);
+
+      // Crear: solo superadmin
+      allow create: if request.auth != null && isSuperAdmin();
+
+      // Actualizar: org_owner o superadmin (facturación y config)
+      allow update: if request.auth != null &&
+        (isSuperAdmin() || getOrgRole(orgId) == 'org_owner');
+
+      // Eliminar: solo superadmin
+      allow delete: if request.auth != null && isSuperAdmin();
+    }
+
+    // Usuarios
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Leer su propio perfil: siempre permitido
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Leer otros usuarios: superadmin o misma organización
+      allow read: if request.auth != null && isSuperAdmin();
+
+      // Crear: cualquier usuario autenticado (login inicial)
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Actualizar propio perfil (campos limitados)
+      allow update: if request.auth != null && request.auth.uid == userId &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['displayName', 'photoURL', 'lastLogin']);
+
+      // Actualizar otros: superadmin o org_owner/org_admin de la misma org
+      allow update: if request.auth != null && isSuperAdmin();
+
+      // Eliminar: solo superadmin
+      allow delete: if request.auth != null && isSuperAdmin();
     }
 
-    // Consentimientos: API puede escribir, admins pueden leer
-    match /consents/{consentId} {
-      allow read: if request.auth != null;
-      allow write: if true; // La API escribe sin auth (usar Cloud Functions para validar)
-    }
-
-    // Sitios: admins pueden gestionar
+    // Sitios
     match /sites/{siteId} {
+      // Leer: usuarios autenticados con acceso al sitio o su organización
       allow read: if request.auth != null;
-      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // Crear: superadmin o org_owner/org_admin de la organización
+      allow create: if request.auth != null &&
+        (isSuperAdmin() || canWriteOrg(request.resource.data.organizationId));
+
+      // Actualizar: superadmin, org_owner/org_admin, o site_admin
+      allow update: if request.auth != null &&
+        (isSuperAdmin() || canWriteOrg(resource.data.organizationId) ||
+         (getUserData().siteAccess[siteId] != null &&
+          getUserData().siteAccess[siteId].role == 'site_admin'));
+
+      // Eliminar: superadmin o org_owner de la organización
+      allow delete: if request.auth != null &&
+        (isSuperAdmin() || getOrgRole(resource.data.organizationId) == 'org_owner');
+    }
+
+    // Consentimientos
+    match /consents/{consentId} {
+      // Leer: usuarios autenticados (se filtra en la app por acceso a sitio)
+      allow read: if request.auth != null;
+
+      // Escribir: API sin auth (Cloud Run service account)
+      // En producción, usar Cloud Functions o IAM para validar
+      allow write: if true;
     }
   }
 }
 ```
+
+> **Nota de seguridad:** Las reglas anteriores son un punto de partida. En producción:
+> - Usa Cloud Functions para validar escrituras de consents desde la API
+> - Configura IAM para que solo el service account de Cloud Run pueda escribir
+> - Considera usar Firebase App Check para validar el origen de las peticiones
 
 ---
 
@@ -157,34 +251,158 @@ El primer usuario necesita ser promovido manualmente a admin:
 
 ---
 
-## Sistema de Usuarios y Roles
+## Sistema de Usuarios y Permisos Jerárquicos
+
+Esbilla CMP implementa un sistema de permisos jerárquico similar a Google Analytics, con tres niveles:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    PLATAFORMA                           │
+│                   (superadmin)                          │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+        ▼                 ▼                 ▼
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+│  ORGANIZACIÓN │ │  ORGANIZACIÓN │ │  ORGANIZACIÓN │
+│   (empresa)   │ │   (empresa)   │ │   (empresa)   │
+│  org_owner    │ │  org_admin    │ │  org_viewer   │
+└───────┬───────┘ └───────┬───────┘ └───────┬───────┘
+        │                 │                 │
+   ┌────┼────┐       ┌────┼────┐       ┌────┼────┐
+   ▼    ▼    ▼       ▼    ▼    ▼       ▼    ▼    ▼
+┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐┌─────┐
+│SITIO││SITIO││SITIO││SITIO││SITIO││SITIO││SITIO││SITIO│
+│.com ││.es  ││.fr  ││.com ││.es  ││.com ││.es  ││.fr  │
+└─────┘└─────┘└─────┘└─────┘└─────┘└─────┘└─────┘└─────┘
+```
+
+### Niveles de jerarquía
+
+| Nivel | Entidad | Descripción |
+|-------|---------|-------------|
+| **Plataforma** | Sistema | Acceso global a todas las organizaciones y sitios |
+| **Organización** | Empresa | Entidad fiscal que agrupa múltiples dominios/sitios |
+| **Sitio** | Dominio | Un dominio o grupo de subdominios relacionados |
 
 ### Roles disponibles
 
+#### Nivel Plataforma
 | Rol | Permisos |
 |-----|----------|
-| `admin` | Ver estadísticas, gestionar usuarios, configurar sitios |
-| `viewer` | Ver estadísticas, buscar footprints |
+| `superadmin` | Acceso total a toda la plataforma, todas las organizaciones y sitios |
 | `pending` | Sin acceso (esperando aprobación) |
+
+#### Nivel Organización
+| Rol | Permisos |
+|-----|----------|
+| `org_owner` | Propietario: gestión completa + facturación + puede delegar a otros usuarios |
+| `org_admin` | Administrador: gestionar sitios y usuarios de la org (sin acceso a facturación) |
+| `org_viewer` | Lector: ver estadísticas de todos los sitios de la organización |
+
+#### Nivel Sitio
+| Rol | Permisos |
+|-----|----------|
+| `site_admin` | Administrar configuración del sitio específico |
+| `site_viewer` | Solo lectura del sitio específico |
+
+### Cascada de permisos
+
+Los permisos fluyen de niveles superiores a inferiores:
+
+```
+superadmin ──────────────────────────────────────────► Todo
+     │
+     ▼
+org_owner ───► Organización + Todos sus sitios + Facturación
+     │
+     ▼
+org_admin ───► Organización + Todos sus sitios (sin facturación)
+     │
+     ▼
+org_viewer ──► Lectura de todos los sitios de la org
+     │
+     ▼
+site_admin ──► Solo el sitio asignado (gestión)
+     │
+     ▼
+site_viewer ─► Solo el sitio asignado (lectura)
+```
+
+### Matriz de permisos detallada
+
+| Acción | superadmin | org_owner | org_admin | org_viewer | site_admin | site_viewer |
+|--------|:----------:|:---------:|:---------:|:----------:|:----------:|:-----------:|
+| Ver estadísticas del sitio | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Exportar datos | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Configurar banner | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Crear/eliminar sitios | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Gestionar usuarios de org | ✅ | ✅ | ✅* | ❌ | ❌ | ❌ |
+| Ver/editar facturación | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Crear organizaciones | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+
+*org_admin solo puede gestionar usuarios de nivel igual o inferior (org_viewer, site_admin, site_viewer)
+
+### Casos de uso
+
+#### Empresa con múltiples dominios
+```
+Organización: "Acme Corp" (org_owner: ceo@acme.com)
+├── Sitio: acme.com (sitio principal)
+├── Sitio: acme.es (versión española)
+├── Sitio: shop.acme.com (tienda online)
+└── Usuarios:
+    ├── marketing@acme.com → org_viewer (ve todo, no edita)
+    ├── webmaster@acme.com → org_admin (gestiona todos los sitios)
+    └── freelance@agencia.com → site_admin de shop.acme.com solamente
+```
+
+#### Agencia con múltiples clientes
+```
+Organización: "Agencia Digital"
+└── El superadmin crea organizaciones separadas para cada cliente
+
+Organización: "Cliente A"
+├── Sitio: clientea.com
+└── Usuarios:
+    ├── contacto@clientea.com → org_viewer (su empresa)
+    └── gestor@agencia.com → org_admin (la agencia)
+```
 
 ### Flujo de aprobación
 
 ```
 Usuario nuevo → Login con Google → Estado: pending
-                                        ↓
-                           Admin aprueba → Estado: viewer/admin
-                                        ↓
-                              Acceso al dashboard
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    ▼                   ▼                   ▼
+            Superadmin lo        Org_owner lo         Se rechaza
+            asigna a una       asigna a sitios       la solicitud
+            organización        de su org
+                    │                   │
+                    ▼                   ▼
+              org_owner/           site_admin/
+              org_admin/           site_viewer
+              org_viewer
 ```
 
-### Gestión de usuarios (solo admins)
+### Gestión de usuarios
 
-1. Accede al dashboard como admin
-2. Ve a **Usuarios** en el menú lateral
-3. En "Pendientes de Aprobación":
-   - **Aprobar (Viewer)**: acceso solo lectura
-   - **Admin**: acceso completo
-   - **Rechazar**: elimina el usuario
+1. **Como superadmin:**
+   - Crear organizaciones
+   - Asignar usuarios a organizaciones con rol org_owner/org_admin/org_viewer
+   - Ver y gestionar todos los usuarios del sistema
+
+2. **Como org_owner/org_admin:**
+   - Ver usuarios de tu organización
+   - Aprobar usuarios pendientes asignándoles acceso a tu organización
+   - Dar acceso directo a sitios específicos (útil para freelancers/agencias)
+   - Revocar acceso a usuarios de nivel igual o inferior
+
+3. **Como site_admin:**
+   - Solo puede gestionar la configuración del sitio
+   - No puede gestionar otros usuarios
 
 ---
 
@@ -278,16 +496,104 @@ npm test -w esbilla-public -- --run
 
 ## Estructura de datos en Firestore
 
+### Colección: `organizations`
+
+```json
+{
+  "id": "org_abc123xyz789",
+  "name": "Acme Corporation",
+  "legalName": "Acme Corp S.L.",
+  "taxId": "B12345678",
+  "plan": "pro",
+  "maxSites": 10,
+  "maxConsentsPerMonth": 100000,
+  "billingEmail": "billing@acme.com",
+  "billingAddress": {
+    "street": "Calle Principal 123",
+    "city": "Madrid",
+    "postalCode": "28001",
+    "country": "ES"
+  },
+  "createdAt": "2024-01-15T10:30:00Z",
+  "createdBy": "uid-del-superadmin",
+  "updatedAt": "2024-01-20T15:45:00Z"
+}
+```
+
 ### Colección: `users`
 
 ```json
 {
+  "id": "uid-firebase",
   "email": "usuario@ejemplo.com",
   "displayName": "Nombre Usuario",
   "photoURL": "https://...",
-  "role": "admin",
+  "globalRole": "pending",
+  "orgAccess": {
+    "org_abc123xyz789": {
+      "organizationId": "org_abc123xyz789",
+      "organizationName": "Acme Corporation",
+      "role": "org_admin",
+      "addedAt": "2024-01-16T09:00:00Z",
+      "addedBy": "uid-del-org-owner"
+    }
+  },
+  "siteAccess": {
+    "site_xyz789abc123": {
+      "siteId": "site_xyz789abc123",
+      "siteName": "Blog Personal",
+      "organizationId": "org_otro123",
+      "role": "site_viewer",
+      "addedAt": "2024-01-17T11:00:00Z",
+      "addedBy": "uid-del-site-owner"
+    }
+  },
   "createdAt": "2024-01-15T10:30:00Z",
-  "lastLogin": "2024-01-20T15:45:00Z"
+  "lastLogin": "2024-01-20T15:45:00Z",
+  "createdBy": "uid-quien-aprobo"
+}
+```
+
+### Colección: `sites`
+
+```json
+{
+  "id": "site_abc123def456",
+  "name": "Mi Web Principal",
+  "domains": ["ejemplo.com", "www.ejemplo.com"],
+  "organizationId": "org_abc123xyz789",
+  "apiKey": "esb_xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "settings": {
+    "banner": {
+      "layout": "modal",
+      "colors": {
+        "primary": "#FFBF00",
+        "secondary": "#E5E7EB",
+        "background": "#FFFFFF",
+        "text": "#1C1917"
+      },
+      "font": "system",
+      "buttonStyle": "equal",
+      "labels": {
+        "acceptAll": "Aceptar todas",
+        "rejectAll": "Rechazar todas",
+        "customize": "Personalizar",
+        "acceptEssential": "Solo esenciales"
+      },
+      "categories": [
+        { "id": "essential", "name": "Esenciales", "required": true },
+        { "id": "analytics", "name": "Analíticas", "required": false },
+        { "id": "marketing", "name": "Marketing", "required": false }
+      ]
+    }
+  },
+  "stats": {
+    "totalConsents": 15234,
+    "lastConsentAt": "2024-01-20T15:45:00Z"
+  },
+  "createdAt": "2024-01-15T10:30:00Z",
+  "createdBy": "uid-del-creador",
+  "updatedAt": "2024-01-20T15:45:00Z"
 }
 ```
 
@@ -295,34 +601,55 @@ npm test -w esbilla-public -- --run
 
 ```json
 {
-  "cmpId": "mi-sitio-001",
+  "siteId": "site_abc123def456",
+  "projectId": "site_abc123def456",
   "footprintId": "ESB-A7F3B2C1",
+  "userHash": "sha256-anonimizado",
+  "bannerVersion": "1.3.0",
   "choices": {
     "analytics": true,
     "marketing": false
   },
-  "timestamp": "2024-01-20T15:45:00Z",
-  "lang": "es",
-  "userAgent": "Mozilla/5.0...",
+  "action": "customize",
+  "metadata": {
+    "domain": "ejemplo.com",
+    "pageUrl": "https://ejemplo.com/productos",
+    "referrer": "https://google.com",
+    "language": "es",
+    "timezone": "Europe/Madrid",
+    "screenWidth": 1920,
+    "screenHeight": 1080,
+    "sdkVersion": "1.3.0",
+    "consentVersion": "1.0"
+  },
+  "attribution": {
+    "utm_source": "google",
+    "utm_medium": "cpc",
+    "utm_campaign": "spring_sale",
+    "gclid": "abc123xyz"
+  },
   "ipHash": "a1b2c3d4e5f6",
-  "createdAt": "2024-01-20T15:45:00Z"
+  "userAgent": "Mozilla/5.0...",
+  "timestamp": "2024-01-20T15:45:00Z",
+  "createdAt": "2024-01-20T15:45:00Z",
+  "expiresAt": "2027-01-20T15:45:00Z"
 }
 ```
 
-### Colección: `sites` (futuro)
+### Índices recomendados
 
-```json
-{
-  "name": "Mi Web",
-  "domain": "ejemplo.com",
-  "ownerId": "uid-del-admin",
-  "config": {
-    "layout": "modal",
-    "theme": "default",
-    "colors": { "primary": "#FFBF00" }
-  },
-  "createdAt": "2024-01-15T10:30:00Z"
-}
+```bash
+# Índice para búsqueda de historial por footprint
+gcloud firestore indexes composite create \
+  --collection-group=consents \
+  --field-config=field-path=footprintId,order=ascending \
+  --field-config=field-path=createdAt,order=descending
+
+# Índice para estadísticas por sitio y fecha
+gcloud firestore indexes composite create \
+  --collection-group=consents \
+  --field-config=field-path=siteId,order=ascending \
+  --field-config=field-path=createdAt,order=descending
 ```
 
 ---

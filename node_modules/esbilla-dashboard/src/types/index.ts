@@ -1,19 +1,101 @@
 // ============================================
-// TIPOS PARA MODELO MULTI-TENANT
+// TIPOS PARA MODELO MULTI-TENANT JERÁRQUICO
+// ============================================
+// Arquitectura similar a Google Analytics:
+// Platform (superadmin) → Organization → Site
+//
+// Jerarquía de permisos:
+// - superadmin: acceso total a toda la plataforma
+// - org_owner: propietario de organización (billing + gestión completa)
+// - org_admin: admin de organización (gestión de sitios y usuarios)
+// - org_viewer: lector de organización (acceso lectura a todos los sitios)
+// - site_admin: admin de sitio específico
+// - site_viewer: lector de sitio específico
 // ============================================
 
 /**
- * Organización (para modelo SaaS)
+ * Organización (entidad fiscal con múltiples dominios)
+ * Equivalente a "Cuenta" en Google Analytics
  */
 export interface Organization {
   id: string;
-  name: string;
+  name: string;                       // Nombre de la organización/empresa
+  legalName?: string;                 // Razón social
+  taxId?: string;                     // NIF/CIF (opcional)
+
+  // Plan y límites
   plan: 'free' | 'pro' | 'enterprise';
   maxSites: number;
   maxConsentsPerMonth: number;
+
+  // Facturación
   billingEmail: string;
+  billingAddress?: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+
+  // Metadatos
   createdAt: Date;
+  createdBy: string;                  // UID del usuario que la creó
   updatedAt?: Date;
+}
+
+// ============================================
+// ROLES Y PERMISOS JERÁRQUICOS
+// ============================================
+
+/**
+ * Roles a nivel de plataforma (global)
+ */
+export type GlobalRole = 'superadmin' | 'pending';
+
+/**
+ * Roles a nivel de organización
+ */
+export type OrganizationRole = 'org_owner' | 'org_admin' | 'org_viewer';
+
+/**
+ * Roles a nivel de sitio
+ */
+export type SiteRole = 'site_admin' | 'site_viewer';
+
+/**
+ * Acceso de usuario a una organización
+ */
+export interface OrganizationAccess {
+  organizationId: string;
+  organizationName?: string;          // Cache para UI
+  role: OrganizationRole;
+  addedAt: Date;
+  addedBy: string;                    // UID de quien otorgó el acceso
+}
+
+/**
+ * Acceso de usuario a un sitio específico
+ * Solo necesario si el usuario NO tiene acceso a nivel org
+ */
+export interface SiteAccess {
+  siteId: string;
+  siteName?: string;                  // Cache para UI
+  organizationId: string;             // Referencia a la org del sitio
+  role: SiteRole;
+  addedAt: Date;
+  addedBy: string;
+}
+
+/**
+ * Mapa de permisos efectivos del usuario
+ * Calculado a partir de orgAccess y siteAccess
+ */
+export interface EffectivePermissions {
+  canManageOrganization: boolean;     // Puede editar org, ver billing
+  canManageUsers: boolean;            // Puede aprobar/editar usuarios
+  canManageSites: boolean;            // Puede crear/editar sitios
+  canViewStats: boolean;              // Puede ver estadísticas
+  canExportData: boolean;             // Puede exportar datos
 }
 
 /**
@@ -89,28 +171,7 @@ export interface Site {
 }
 
 /**
- * Roles de usuario en un sitio
- */
-export type SiteRole = 'owner' | 'admin' | 'viewer';
-
-/**
- * Acceso de usuario a un sitio
- */
-export interface SiteAccess {
-  role: SiteRole;
-  siteId: string;
-  siteName?: string;
-  addedAt: Date;
-  addedBy: string;
-}
-
-/**
- * Roles globales del sistema
- */
-export type GlobalRole = 'superadmin' | 'admin' | 'viewer' | 'pending';
-
-/**
- * Usuario del dashboard
+ * Usuario del dashboard con permisos jerárquicos
  */
 export interface DashboardUser {
   id: string;
@@ -118,19 +179,44 @@ export interface DashboardUser {
   displayName: string;
   photoURL: string;
 
-  // Rol global (superadmin = acceso total, otros = basado en siteAccess)
+  // Rol a nivel de plataforma
+  // superadmin = acceso total a todo
+  // pending = esperando aprobación
   globalRole: GlobalRole;
 
-  // Acceso a sitios específicos
-  siteAccess: Record<string, SiteAccess>;
+  // Acceso a organizaciones (por orgId)
+  // org_owner/org_admin/org_viewer dan acceso a TODOS los sitios de la org
+  orgAccess: Record<string, OrganizationAccess>;
 
-  // Para SaaS
-  organizationId?: string;
+  // Acceso directo a sitios específicos (por siteId)
+  // Solo necesario si el usuario NO tiene acceso a nivel de org
+  // Útil para dar acceso a freelancers/agencias a sitios específicos
+  siteAccess: Record<string, SiteAccess>;
 
   // Metadatos
   createdAt: Date;
   lastLogin: Date;
-  createdBy?: string;
+  createdBy?: string;                 // UID de quien creó/aprobó el usuario
+}
+
+// ============================================
+// LEGACY SUPPORT (retrocompatibilidad)
+// ============================================
+
+/**
+ * @deprecated Usar OrganizationRole o SiteRole
+ */
+export type LegacyGlobalRole = 'superadmin' | 'admin' | 'viewer' | 'pending';
+
+/**
+ * @deprecated Usar SiteAccess con el nuevo modelo
+ */
+export interface LegacySiteAccess {
+  role: 'owner' | 'admin' | 'viewer';
+  siteId: string;
+  siteName?: string;
+  addedAt: Date;
+  addedBy: string;
 }
 
 /**
@@ -273,4 +359,222 @@ export function generateSiteId(): string {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+}
+
+/**
+ * Genera un ID de organización
+ */
+export function generateOrgId(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = 'org_';
+  for (let i = 0; i < 12; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// ============================================
+// FUNCIONES DE PERMISOS
+// ============================================
+
+/**
+ * Verifica si un usuario tiene acceso a una organización
+ */
+export function hasOrgAccess(user: DashboardUser, orgId: string): boolean {
+  if (user.globalRole === 'superadmin') return true;
+  return orgId in user.orgAccess;
+}
+
+/**
+ * Verifica si un usuario tiene acceso a un sitio
+ */
+export function hasSiteAccess(user: DashboardUser, siteId: string, site?: Site): boolean {
+  // Superadmin tiene acceso a todo
+  if (user.globalRole === 'superadmin') return true;
+
+  // Acceso directo al sitio
+  if (siteId in user.siteAccess) return true;
+
+  // Acceso vía organización (si conocemos la org del sitio)
+  if (site?.organizationId && site.organizationId in user.orgAccess) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Obtiene el rol efectivo de un usuario en una organización
+ */
+export function getOrgRole(user: DashboardUser, orgId: string): OrganizationRole | 'superadmin' | null {
+  if (user.globalRole === 'superadmin') return 'superadmin';
+  return user.orgAccess[orgId]?.role || null;
+}
+
+/**
+ * Obtiene el rol efectivo de un usuario en un sitio
+ */
+export function getSiteRole(
+  user: DashboardUser,
+  siteId: string,
+  site?: Site
+): OrganizationRole | SiteRole | 'superadmin' | null {
+  // Superadmin tiene acceso total
+  if (user.globalRole === 'superadmin') return 'superadmin';
+
+  // Primero verificar acceso a nivel de organización (hereda a todos los sitios)
+  if (site?.organizationId && user.orgAccess[site.organizationId]) {
+    return user.orgAccess[site.organizationId].role;
+  }
+
+  // Acceso directo al sitio
+  return user.siteAccess[siteId]?.role || null;
+}
+
+/**
+ * Calcula los permisos efectivos de un usuario para una organización
+ */
+export function getOrgPermissions(user: DashboardUser, orgId: string): EffectivePermissions {
+  const role = getOrgRole(user, orgId);
+
+  if (!role) {
+    return {
+      canManageOrganization: false,
+      canManageUsers: false,
+      canManageSites: false,
+      canViewStats: false,
+      canExportData: false,
+    };
+  }
+
+  switch (role) {
+    case 'superadmin':
+    case 'org_owner':
+      return {
+        canManageOrganization: true,
+        canManageUsers: true,
+        canManageSites: true,
+        canViewStats: true,
+        canExportData: true,
+      };
+    case 'org_admin':
+      return {
+        canManageOrganization: false,  // No puede cambiar billing
+        canManageUsers: true,
+        canManageSites: true,
+        canViewStats: true,
+        canExportData: true,
+      };
+    case 'org_viewer':
+      return {
+        canManageOrganization: false,
+        canManageUsers: false,
+        canManageSites: false,
+        canViewStats: true,
+        canExportData: true,
+      };
+    default:
+      return {
+        canManageOrganization: false,
+        canManageUsers: false,
+        canManageSites: false,
+        canViewStats: false,
+        canExportData: false,
+      };
+  }
+}
+
+/**
+ * Calcula los permisos efectivos de un usuario para un sitio
+ */
+export function getSitePermissions(
+  user: DashboardUser,
+  siteId: string,
+  site?: Site
+): EffectivePermissions {
+  const role = getSiteRole(user, siteId, site);
+
+  if (!role) {
+    return {
+      canManageOrganization: false,
+      canManageUsers: false,
+      canManageSites: false,
+      canViewStats: false,
+      canExportData: false,
+    };
+  }
+
+  // Si el rol viene de la organización, usa permisos de org
+  if (role === 'superadmin' || role === 'org_owner' || role === 'org_admin' || role === 'org_viewer') {
+    return {
+      canManageOrganization: role === 'superadmin' || role === 'org_owner',
+      canManageUsers: role === 'superadmin' || role === 'org_owner' || role === 'org_admin',
+      canManageSites: role !== 'org_viewer',
+      canViewStats: true,
+      canExportData: true,
+    };
+  }
+
+  // Permisos a nivel de sitio
+  switch (role) {
+    case 'site_admin':
+      return {
+        canManageOrganization: false,
+        canManageUsers: false,          // Solo puede gestionar el sitio, no usuarios de la org
+        canManageSites: true,
+        canViewStats: true,
+        canExportData: true,
+      };
+    case 'site_viewer':
+      return {
+        canManageOrganization: false,
+        canManageUsers: false,
+        canManageSites: false,
+        canViewStats: true,
+        canExportData: false,
+      };
+    default:
+      return {
+        canManageOrganization: false,
+        canManageUsers: false,
+        canManageSites: false,
+        canViewStats: false,
+        canExportData: false,
+      };
+  }
+}
+
+/**
+ * Verifica si un usuario puede gestionar a otro usuario
+ * (solo puede gestionar usuarios de nivel igual o inferior)
+ */
+export function canManageUser(
+  manager: DashboardUser,
+  target: DashboardUser,
+  context: { orgId?: string; siteId?: string }
+): boolean {
+  // Superadmin puede gestionar a cualquiera
+  if (manager.globalRole === 'superadmin') return true;
+
+  // Nadie puede gestionar a un superadmin
+  if (target.globalRole === 'superadmin') return false;
+
+  // Verificar contexto de organización
+  if (context.orgId) {
+    const managerRole = getOrgRole(manager, context.orgId);
+    const targetRole = getOrgRole(target, context.orgId);
+
+    // Solo org_owner y org_admin pueden gestionar usuarios
+    if (managerRole !== 'org_owner' && managerRole !== 'org_admin') return false;
+
+    // org_owner puede gestionar a cualquiera en su org
+    if (managerRole === 'org_owner') return true;
+
+    // org_admin puede gestionar viewers y site-level users
+    if (managerRole === 'org_admin') {
+      return targetRole !== 'org_owner' && targetRole !== 'org_admin';
+    }
+  }
+
+  return false;
 }
