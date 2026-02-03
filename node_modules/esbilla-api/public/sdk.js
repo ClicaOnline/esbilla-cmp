@@ -19,17 +19,135 @@
   let footprintId = '';
 
   // ============================================
+  // CROSS-DOMAIN STORAGE - Cookies y localStorage
+  // ============================================
+
+  // Obtiene el dominio padre para cookies cross-subdomain
+  // Ej: "app.empresa.com" -> ".empresa.com"
+  function getParentDomain() {
+    const hostname = window.location.hostname;
+    // Si es localhost o IP, no usar dominio padre
+    if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      return null;
+    }
+    const parts = hostname.split('.');
+    // Si tiene más de 2 partes (ej: app.empresa.com), usar .empresa.com
+    if (parts.length > 2) {
+      return '.' + parts.slice(-2).join('.');
+    }
+    // Si son 2 partes (ej: empresa.com), usar .empresa.com
+    if (parts.length === 2) {
+      return '.' + hostname;
+    }
+    return null;
+  }
+
+  // Guarda un valor en cookie con dominio padre (cross-subdomain)
+  function setCrossDomainCookie(name, value, days = 365) {
+    const domain = getParentDomain();
+    const expires = new Date();
+    expires.setDate(expires.getDate() + days);
+
+    let cookieStr = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+    if (domain) {
+      cookieStr += `;domain=${domain}`;
+    }
+    document.cookie = cookieStr;
+  }
+
+  // Lee un valor de cookie
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+  }
+
+  // Guarda en localStorage Y en cookie cross-domain
+  function setStorageItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn('[Esbilla] localStorage non disponible:', e);
+    }
+    setCrossDomainCookie(key, value);
+  }
+
+  // Lee de cookie primero (cross-domain), fallback a localStorage
+  function getStorageItem(key) {
+    // Prioridad: cookie (cross-domain) > localStorage
+    const cookieVal = getCookie(key);
+    if (cookieVal) {
+      // Sincronizar localStorage si difiere
+      try {
+        const localVal = localStorage.getItem(key);
+        if (localVal !== cookieVal) {
+          localStorage.setItem(key, cookieVal);
+        }
+      } catch (e) { /* ignorar */ }
+      return cookieVal;
+    }
+    // Fallback a localStorage
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ============================================
+  // SINCRONIZACIÓN CON SERVIDOR (CROSS-DOMAIN)
+  // ============================================
+  // Sincroniza el footprint y consentimiento con el servidor
+  // para soportar cross-domain cuando hay múltiples dominios en el mismo tenant
+  async function syncWithServer() {
+    try {
+      const localFootprint = getStorageItem('esbilla_footprint');
+
+      const response = await fetch(`${apiBase}/api/consent/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          siteId: cmpId,
+          footprintId: localFootprint,
+          domain: window.location.hostname
+        })
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const syncData = await response.json();
+
+      // Guardar info del tenant para uso posterior
+      if (syncData.tenantId) {
+        config.tenantId = syncData.tenantId;
+      }
+      if (syncData.crossDomains) {
+        config.crossDomains = syncData.crossDomains;
+      }
+
+      return syncData;
+    } catch (err) {
+      console.warn('[Esbilla] Error sincronizando con servidor:', err);
+      return null;
+    }
+  }
+
+  // ============================================
   // FOOTPRINT ID - Identificador único de usuario
   // ============================================
   function getFootprintId() {
-    // Intentar recuperar el ID existente
-    let id = localStorage.getItem('esbilla_footprint');
+    // Intentar recuperar el ID existente (cookie cross-domain o localStorage)
+    let id = getStorageItem('esbilla_footprint');
 
     if (!id) {
       // Generar nuevo UUID y formatear como ESB-XXXXXXXX
       const uuid = crypto.randomUUID();
       id = 'ESB-' + uuid.split('-')[0].toUpperCase();
-      localStorage.setItem('esbilla_footprint', id);
+      setStorageItem('esbilla_footprint', id);
+    } else {
+      // Asegurar que está en ambos storages
+      setStorageItem('esbilla_footprint', id);
     }
 
     return id;
@@ -90,6 +208,10 @@
       // D2. Obtener/Generar footprintId
       footprintId = getFootprintId();
 
+      // D3. Sincronizar con API (cross-domain)
+      // Busca si hay consentimiento previo de otros dominios del mismo tenant
+      const syncResult = await syncWithServer();
+
       // E. Cargar estilos (CSS externos)
       await loadStyles();
 
@@ -100,8 +222,22 @@
       applyCustomColors();
 
       // H. Renderizar o mostrar mosca
-      if (localStorage.getItem('esbilla_consent')) {
-        const oldConsent = JSON.parse(localStorage.getItem('esbilla_consent'));
+      // Prioridad: syncResult > localStorage/cookie
+      let savedConsent = getStorageItem('esbilla_consent');
+
+      // Si la sincronización trajo un consentimiento más reciente de otro dominio, usarlo
+      if (syncResult?.lastConsent && !savedConsent) {
+        savedConsent = JSON.stringify(syncResult.lastConsent.choices);
+        setStorageItem('esbilla_consent', savedConsent);
+        // También sincronizar el idioma si viene del servidor
+        if (syncResult.lastConsent.language) {
+          setStorageItem('esbilla_lang', syncResult.lastConsent.language);
+          currentLang = syncResult.lastConsent.language;
+        }
+      }
+
+      if (savedConsent) {
+        const oldConsent = JSON.parse(savedConsent);
         updateConsentMode(oldConsent);
         showMosca();
       } else {
@@ -115,8 +251,8 @@
   }
 
   function detectLanguage() {
-    // 1. Preferencia guardada
-    const savedLang = localStorage.getItem('esbilla_lang');
+    // 1. Preferencia guardada (cross-domain)
+    const savedLang = getStorageItem('esbilla_lang');
     if (savedLang && translations[savedLang]) {
       currentLang = savedLang;
       return;
@@ -346,7 +482,7 @@
         if (newLang !== currentLang) {
           currentLang = newLang;
           if (config.features?.rememberLanguage !== false) {
-            localStorage.setItem('esbilla_lang', newLang);
+            setStorageItem('esbilla_lang', newLang);
           }
           const settingsOpen = !!document.getElementById('esbilla-settings-panel');
           renderBanner(settingsOpen);
@@ -369,8 +505,8 @@
     }
 
     const t = translations[currentLang] || translations['es'] || {};
-    const savedConsent = localStorage.getItem('esbilla_consent');
-    const consent = savedConsent ? JSON.parse(savedConsent) : { analytics: false, marketing: false };
+    const savedConsentStr = getStorageItem('esbilla_consent');
+    const consent = savedConsentStr ? JSON.parse(savedConsentStr) : { analytics: false, marketing: false };
 
     settingsPanel = document.createElement('div');
     settingsPanel.id = 'esbilla-settings-panel';
@@ -467,10 +603,10 @@
   function saveConsent(choices, action = 'customize') {
     updateConsentMode(choices);
 
-    const previousConsent = localStorage.getItem('esbilla_consent');
+    const previousConsent = getStorageItem('esbilla_consent');
     const isUpdate = !!previousConsent;
 
-    localStorage.setItem('esbilla_consent', JSON.stringify(choices));
+    setStorageItem('esbilla_consent', JSON.stringify(choices));
 
     // Determinar acción si no se especificó
     let consentAction = action;

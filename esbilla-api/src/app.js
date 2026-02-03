@@ -309,16 +309,10 @@ app.get('/api/consent/history/:footprintId', async (req, res) => {
   }
 
   try {
-    // Buscar todos los registros con este footprintId
+    // Buscar todos los registros con este footprintId (de todos los dominios)
     const consentsRef = db.collection('consents');
-    /*const q = consentsRef
-      .where('footprintId', '==', footprintId)
-      .orderBy('createdAt', 'desc')
-      .limit(100); // Límite de seguridad
-    */
-
     const q = consentsRef
-      .where('user_hash', '==', footprintId)
+      .where('footprintId', '==', footprintId)
       .orderBy('createdAt', 'desc')
       .limit(100); // Límite de seguridad
 
@@ -375,6 +369,84 @@ app.get('/api/consent/history/:footprintId', async (req, res) => {
       error: 'Error interno al obtener el historial',
       code: 'INTERNAL_ERROR',
       records: []
+    });
+  }
+});
+
+// ============================================
+// RUTA: SINCRONIZACIÓN DE FOOTPRINT (CROSS-DOMAIN)
+// ============================================
+// Permite sincronizar el footprint entre dominios del mismo tenant.
+// Busca si ya existe un consentimiento previo desde cualquier dominio
+// del tenant y devuelve el footprint + último consentimiento.
+// ============================================
+app.post('/api/consent/sync', async (req, res) => {
+  const { siteId, footprintId } = req.body;
+
+  // Validación básica
+  if (!siteId) {
+    return res.status(400).json({
+      error: 'siteId requerido',
+      code: 'MISSING_SITE_ID'
+    });
+  }
+
+  if (!db) {
+    return res.status(503).json({
+      error: 'Servicio no disponible',
+      code: 'DB_NOT_AVAILABLE'
+    });
+  }
+
+  try {
+    // 1. Obtener configuración del sitio para ver sus crossDomains
+    const siteDoc = await db.collection('sites').doc(siteId).get();
+    const siteConfig = siteDoc.exists ? siteDoc.data() : {};
+    const tenantId = siteConfig.tenantId || siteId;
+    const crossDomains = siteConfig.crossDomains || [];
+
+    // 2. Si hay footprintId, buscar último consentimiento de este footprint
+    //    en cualquier dominio del tenant (cross-domain)
+    if (footprintId) {
+      const consentsRef = db.collection('consents');
+      const q = consentsRef
+        .where('footprintId', '==', footprintId)
+        .orderBy('createdAt', 'desc')
+        .limit(1);
+
+      const snapshot = await q.get();
+
+      if (!snapshot.empty) {
+        const lastConsent = snapshot.docs[0].data();
+        return res.json({
+          synced: true,
+          footprintId,
+          tenantId,
+          crossDomains,
+          lastConsent: {
+            choices: lastConsent.choices,
+            language: lastConsent.metadata?.language,
+            timestamp: lastConsent.timestamp,
+            domain: lastConsent.metadata?.domain
+          }
+        });
+      }
+    }
+
+    // 3. No hay consentimiento previo
+    return res.json({
+      synced: false,
+      footprintId: footprintId || null,
+      tenantId,
+      crossDomains,
+      lastConsent: null
+    });
+
+  } catch (err) {
+    console.error('Error en sincronización:', err);
+    return res.status(500).json({
+      error: 'Error interno',
+      code: 'INTERNAL_ERROR'
     });
   }
 });

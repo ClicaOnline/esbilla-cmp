@@ -154,7 +154,8 @@
       <li>Haz clic en la mosca para volver a ver el banner</li>
       <li>Puedes saber el historial de tus consentimientos en la sección de transparencia</li>
     </ol>
-    <p class="info">El Footprint ID se guarda en localStorage como <code>esbilla_footprint</code></p>
+    <p class="info">El Footprint ID se guarda en localStorage y cookies (cross-domain) como <code>esbilla_footprint</code></p>
+    <p class="info">🌐 <strong>Cross-domain:</strong> El historial muestra consentimientos de todos los dominios del mismo tenant.</p>
   </div>
 
   <!-- <div class="test-section">
@@ -198,10 +199,48 @@
   </div>
 
   <script>
+    // ============================================
+    // FUNCIONES HELPER PARA CROSS-DOMAIN STORAGE
+    // ============================================
+    function getCookie(name) {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    function getParentDomain() {
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) return null;
+      const parts = hostname.split('.');
+      if (parts.length > 2) return '.' + parts.slice(-2).join('.');
+      if (parts.length === 2) return '.' + hostname;
+      return null;
+    }
+
+    function deleteCookie(name) {
+      const domain = getParentDomain();
+      // Borrar en dominio actual
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      // Borrar en dominio padre si existe
+      if (domain) {
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`;
+      }
+    }
+
+    // Lee de cookie primero (cross-domain), fallback a localStorage
+    function getStorageItem(key) {
+      const cookieVal = getCookie(key);
+      if (cookieVal) return cookieVal;
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    }
+
     // Mostrar estado actual
     function updateDisplay() {
-      const footprint = localStorage.getItem('esbilla_footprint') || 'No generado';
-      const consent = localStorage.getItem('esbilla_consent');
+      const footprint = getStorageItem('esbilla_footprint') || 'No generado';
+      const consent = getStorageItem('esbilla_consent');
 
       document.getElementById('footprint-display').textContent = footprint;
       document.getElementById('consent-display').textContent = consent || 'Ninguno';
@@ -209,6 +248,7 @@
 
     function clearConsent() {
       localStorage.removeItem('esbilla_consent');
+      deleteCookie('esbilla_consent');
       alert('Consentimiento borrado. Recarga la página para ver el banner.');
       updateDisplay();
     }
@@ -216,6 +256,8 @@
     function clearFootprint() {
       localStorage.removeItem('esbilla_footprint');
       localStorage.removeItem('esbilla_consent');
+      deleteCookie('esbilla_footprint');
+      deleteCookie('esbilla_consent');
       alert('Footprint y consentimiento borrados. Recarga la página.');
       updateDisplay();
     }
@@ -233,7 +275,7 @@
     let consentHistoryData = [];
 
     async function loadConsentHistory() {
-      const footprint = localStorage.getItem('esbilla_footprint');
+      const footprint = getStorageItem('esbilla_footprint');
       const container = document.getElementById('consent-history-container');
 
       if (!footprint) {
@@ -358,7 +400,7 @@
     }
 
     function exportMyData() {
-      const footprint = localStorage.getItem('esbilla_footprint');
+      const footprint = getStorageItem('esbilla_footprint');
 
       if (consentHistoryData.length === 0) {
         alert('Primero carga tu historial antes de exportar.');
