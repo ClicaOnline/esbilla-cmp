@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "vitest run"
+        "test": "vitest run",
+        "generate-data": "node scripts/generate-synthetic-data.js",
+        "generate-data:dry": "set DRY_RUN=true && node scripts/generate-synthetic-data.js"
   },
   "keywords": [],
   "author": "",
