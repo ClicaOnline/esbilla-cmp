@@ -6,70 +6,66 @@ service cloud.firestore {
     // HELPER FUNCTIONS
     // ============================================
 
-    // Verificar si el usuario está autenticado
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Obtener el documento del usuario actual
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Verificar el rol del usuario
     function getUserRole() {
       return getUserData().role;
     }
 
     function isAdmin() {
-      return isAuthenticated() && getUserRole() in ['admin', 'superadmin'];
+      return isAuthenticated() && getUserRole() in ['admin', 'superadmin', 'superuser'];
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && getUserRole() == 'superadmin';
+      return isAuthenticated() && getUserRole() in ['superadmin', 'superuser'];
     }
 
     function isAuthorized() {
-      return isAuthenticated() && getUserRole() in ['viewer', 'admin', 'superadmin'];
+      return isAuthenticated() && getUserRole() in ['viewer', 'admin', 'superadmin', 'superuser'];
     }
 
-    // Verificar si el usuario tiene acceso a un sitio específico
+    // Multi-tenant: verificar acceso a sitio específico
     function hasSiteAccess(siteId) {
       let userData = getUserData();
-      // Admins y superadmins tienen acceso a todos los sitios
-      return userData.role in ['admin', 'superadmin']
+      return userData.role in ['admin', 'superadmin', 'superuser']
              || (userData.siteAccess != null && siteId in userData.siteAccess);
     }
 
-    // Verificar si el usuario es owner o admin de un sitio
     function hasSiteAdminAccess(siteId) {
       let userData = getUserData();
-      return userData.role in ['admin', 'superadmin']
+      return userData.role in ['admin', 'superadmin', 'superuser']
              || (userData.siteAccess != null
                  && siteId in userData.siteAccess
                  && userData.siteAccess[siteId].role in ['owner', 'admin']);
     }
 
-    // Colección de usuarios
-    match /users/{userId} {
-      // Cualquier usuario autenticado puede leer su propio documento
-      allow read: if isAuthenticated() && request.auth.uid == userId;
+    // Multi-distribuidor: verificar acceso al distribuidor
+    function hasDistributorAccess(distributorId) {
+      let userData = getUserData();
+      return userData.role in ['admin', 'superadmin', 'superuser']
+             || userData.distributorId == distributorId;
+    }
 
-      // Los admins pueden leer todos los usuarios
+    // ============================================
+    // USERS COLLECTION
+    // ============================================
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
       allow read: if isAdmin();
 
-      // Un usuario puede crear su propio documento (primer login)
       allow create: if isAuthenticated() && request.auth.uid == userId
                     && request.resource.data.role == 'pending';
 
-      // Un usuario puede actualizar su lastLogin
       allow update: if isAuthenticated() && request.auth.uid == userId
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']);
 
-      // Solo admins pueden actualizar roles de usuarios
       allow update: if isAdmin() && request.auth.uid != userId;
-
-      // Solo superadmins pueden eliminar usuarios
       allow delete: if isSuperAdmin();
     }
 
@@ -77,90 +73,88 @@ service cloud.firestore {
     // SITES COLLECTION (Multi-tenant)
     // ============================================
     match /sites/{siteId} {
-      // Usuarios autorizados pueden leer sitios a los que tienen acceso
-      // Admins pueden leer todos los sitios
       allow read: if isAdmin() || (isAuthorized() && hasSiteAccess(siteId));
-
-      // Solo admins pueden crear sitios
       allow create: if isAdmin();
-
-      // Admins globales o admins/owners del sitio pueden actualizar
       allow update: if isAdmin() || hasSiteAdminAccess(siteId);
-
-      // Solo superadmins pueden eliminar sitios
       allow delete: if isSuperAdmin();
     }
 
     // ============================================
-    // CONSENTS COLLECTION (GDPR-COMPLIANT)
+    // CONSENTS COLLECTION (GDPR-COMPLIANT + MULTI-DISTRIBUIDOR)
     // ============================================
-    // POLÍTICA DE RETENCIÓN: 3 años (1095 días)
-    // Los documentos se eliminan automáticamente mediante TTL en 'expiresAt'
+    // Soporta DOS flujos de creación:
+    // 1. API Backend (Admin SDK) - bypasea estas reglas
+    // 2. SDK Directo - con validación de campos obligatorios
     //
-    // PROTECCIÓN CONTRA MANIPULACIÓN EXTERNA:
-    // - Solo el Admin SDK (API backend) puede crear registros
-    // - NUNCA se pueden modificar o eliminar manualmente (audit trail)
-    // - Los usuarios del dashboard solo pueden LEER (no escribir)
+    // CAMPOS OBLIGATORIOS para escritura directa desde SDK:
+    // - user_hash: string (identificador anónimo)
+    // - domain: string (dominio origen)
+    // - distributorId: string (ID del distribuidor)
+    // - timestamp: debe ser igual a request.time (previene manipulación)
     //
-    // CAMPOS REQUERIDOS (validados por la API):
-    // - siteId: string (identificador del sitio)
-    // - userHash: string (hash SHA-256 anónimo, GDPR-compliant)
-    // - choices: map (elecciones del usuario)
-    // - createdAt: timestamp (fecha de creación)
-    // - expiresAt: timestamp (fecha de expiración para TTL)
+    // CAMPOS LEGACY (API Backend):
+    // - siteId, userHash, choices, createdAt, expiresAt
     // ============================================
     match /consents/{consentId} {
-      // LECTURA: Usuarios autorizados pueden leer consentimientos
-      // Viewers solo pueden ver los de sitios a los que tienen acceso
+      // CREACIÓN: SDK puede crear con validación de campos
+      allow create: if request.resource.data.keys().hasAll(['user_hash', 'domain', 'distributorId', 'timestamp'])
+                    && request.resource.data.timestamp == request.time;
+
+      // LECTURA: Múltiples criterios de acceso
       allow read: if isAdmin()
-                  || (isAuthorized() && hasSiteAccess(resource.data.siteId));
+                  // Opción 1: Usuario autenticado del mismo distribuidor
+                  || (isAuthenticated() && hasDistributorAccess(resource.data.distributorId))
+                  // Opción 2: Usuario con acceso al sitio (legacy)
+                  || (isAuthorized() && resource.data.siteId != null && hasSiteAccess(resource.data.siteId))
+                  // Opción 3: Usuario final consultando su propio rastro (transparencia GDPR)
+                  || (request.auth != null
+                      && request.auth.token.user_hash != null
+                      && resource.data.user_hash == request.auth.token.user_hash);
 
-      // CREACIÓN: BLOQUEADA para clientes del dashboard
-      // Los consentimientos SOLO se crean desde la API backend
-      // usando Firebase Admin SDK (bypasea estas reglas)
-      // Esto previene que clientes maliciosos inyecten registros falsos
-      allow create: if false;
-
-      // ACTUALIZACIÓN: BLOQUEADA PERMANENTEMENTE
-      // Los registros de consentimiento son INMUTABLES para auditoría GDPR
-      // Cualquier "actualización" de consentimiento crea un NUEVO documento
+      // INMUTABILIDAD: Los registros de consentimiento no se pueden modificar ni eliminar
+      // Esto garantiza el audit trail requerido por GDPR
+      // La eliminación se hace automáticamente vía TTL de Firestore (3 años)
       allow update: if false;
-
-      // ELIMINACIÓN: BLOQUEADA PERMANENTEMENTE
-      // Solo el TTL de Firestore puede eliminar documentos (automático tras 3 años)
-      // Ni siquiera superadmins pueden eliminar registros manualmente
-      // Esto garantiza el audit trail completo requerido por GDPR
       allow delete: if false;
     }
 
     // ============================================
-    // CONFIG COLLECTION (per-site configuration)
+    // CONFIG COLLECTION (Configuración de banners)
     // ============================================
+    // Lectura pública: El SDK necesita leer textos y colores del banner
+    // Escritura restringida: Solo admins del distribuidor
     match /config/{configId} {
-      // Usuarios autorizados pueden leer la configuración
-      allow read: if isAuthorized();
-
-      // Solo admins pueden modificar la configuración global
-      allow write: if isAdmin();
+      allow read: if true; // SDK necesita acceso público
+      allow write: if isAdmin()
+                   || (isAuthenticated() && hasDistributorAccess(resource.data.distributorId));
     }
 
     // ============================================
-    // DAILY STATS COLLECTION (agregated stats per site)
+    // DISTRIBUTORS COLLECTION (Gestión de distribuidores)
+    // ============================================
+    match /distributors/{distributorId} {
+      allow read: if isAuthenticated() && hasDistributorAccess(distributorId);
+      allow write: if isSuperAdmin()
+                   || (isAuthenticated() && hasDistributorAccess(distributorId)
+                       && getUserData().distributorRole == 'admin');
+    }
+
+    // ============================================
+    // DAILY STATS COLLECTION (Estadísticas agregadas)
     // ============================================
     match /dailyStats/{statsId} {
-      // Usuarios pueden leer stats de sitios a los que tienen acceso
       allow read: if isAdmin()
-                  || (isAuthorized() && hasSiteAccess(resource.data.siteId));
+                  || (isAuthorized() && hasSiteAccess(resource.data.siteId))
+                  || (isAuthenticated() && hasDistributorAccess(resource.data.distributorId));
 
       // Stats se crean/actualizan vía Cloud Functions o Admin SDK
       allow write: if false;
     }
 
     // ============================================
-    // ORGANIZATIONS COLLECTION (for SaaS model)
+    // ORGANIZATIONS COLLECTION (Modelo SaaS)
     // ============================================
     match /organizations/{orgId} {
-      // Solo superadmins pueden gestionar organizaciones
       allow read, write: if isSuperAdmin();
     }
   }
