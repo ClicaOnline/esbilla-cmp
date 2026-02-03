@@ -68,8 +68,8 @@ export function UrlStatsPage() {
   const [sortField, setSortField] = useState<SortField>('total');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
-  // i18n fallback for urlStats
-  const urlStatsT = (t as Record<string, unknown>).urlStats as Record<string, string> | undefined;
+  // Access urlStats translations (already defined in types)
+  const urlStatsT = t.urlStats;
 
   useEffect(() => {
     loadSites();
