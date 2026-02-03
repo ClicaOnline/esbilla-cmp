@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, query, orderBy, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
+import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
+import type { Site } from '../types';
 import {
   Palette,
   Layout as LayoutIcon,
@@ -11,7 +15,10 @@ import {
   RotateCcw,
   Check,
   X,
-  Eye
+  Eye,
+  Globe2,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 type BannerLayout = 'modal' | 'bar' | 'corner';
@@ -64,9 +71,82 @@ const defaultConfig: BannerConfig = {
 
 export function SettingsPage() {
   const { t } = useI18n();
+  const { isAdmin } = useAuth();
   const [config, setConfig] = useState<BannerConfig>(defaultConfig);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [showLegalPreview, setShowLegalPreview] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Site selection state
+  const [sites, setSites] = useState<Site[]>([]);
+  const [selectedSiteId, setSelectedSiteId] = useState<string>('');
+  const [loadingSites, setLoadingSites] = useState(true);
+
+  // Load sites on mount
+  useEffect(() => {
+    loadSites();
+  }, []);
+
+  // Load site settings when selection changes
+  useEffect(() => {
+    if (selectedSiteId) {
+      loadSiteSettings(selectedSiteId);
+    }
+  }, [selectedSiteId]);
+
+  async function loadSites() {
+    if (!db || !isAdmin) {
+      setLoadingSites(false);
+      return;
+    }
+
+    try {
+      const q = query(collection(db, 'sites'), orderBy('name', 'asc'));
+      const snapshot = await getDocs(q);
+      const siteList: Site[] = [];
+      snapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
+        siteList.push({
+          id: docSnapshot.id,
+          name: data.name,
+          domains: data.domains || [],
+          settings: data.settings,
+          apiKey: data.apiKey,
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          createdBy: data.createdBy,
+        });
+      });
+      setSites(siteList);
+
+      // Auto-select first site
+      if (siteList.length > 0 && !selectedSiteId) {
+        setSelectedSiteId(siteList[0].id);
+      }
+    } catch (err) {
+      console.error('Error loading sites:', err);
+      setError('Error al cargar sitios');
+    } finally {
+      setLoadingSites(false);
+    }
+  }
+
+  function loadSiteSettings(siteId: string) {
+    const site = sites.find(s => s.id === siteId);
+    if (site?.settings?.banner) {
+      // Merge with defaults to handle missing fields
+      setConfig({
+        ...defaultConfig,
+        ...site.settings.banner,
+        colors: { ...defaultConfig.colors, ...site.settings.banner.colors },
+        labels: { ...defaultConfig.labels, ...site.settings.banner.labels },
+        legal: { ...defaultConfig.legal, ...site.settings.banner.legal },
+      });
+    } else {
+      setConfig(defaultConfig);
+    }
+    setSaved(false);
+  }
 
   const updateConfig = <K extends keyof BannerConfig>(
     key: K,
@@ -100,11 +180,37 @@ export function SettingsPage() {
     setSaved(false);
   };
 
-  const handleSave = () => {
-    // TODO: Save to Firestore
-    console.log('Saving config:', config);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    if (!selectedSiteId || !db) {
+      setError('Selecciona un sitio para guardar');
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const siteRef = doc(db, 'sites', selectedSiteId);
+      await updateDoc(siteRef, {
+        'settings.banner': config,
+        updatedAt: serverTimestamp()
+      });
+
+      // Update local sites list
+      setSites(prev => prev.map(site =>
+        site.id === selectedSiteId
+          ? { ...site, settings: { ...site.settings, banner: config } }
+          : site
+      ));
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setError('Error al guardar la configuración');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -112,16 +218,43 @@ export function SettingsPage() {
     setSaved(false);
   };
 
+  if (loadingSites) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-stone-800">{t.settings.title}</h1>
             <p className="text-stone-500">{t.settings.subtitle}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Site selector */}
+            {sites.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Globe2 size={18} className="text-stone-400" />
+                <select
+                  value={selectedSiteId}
+                  onChange={(e) => setSelectedSiteId(e.target.value)}
+                  className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                >
+                  {sites.map((site) => (
+                    <option key={site.id} value={site.id}>
+                      {site.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <button
               onClick={handleReset}
               className="flex items-center gap-2 px-4 py-2 text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 transition-colors"
@@ -131,13 +264,36 @@ export function SettingsPage() {
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition-colors"
+              disabled={saving || !selectedSiteId}
+              className="flex items-center gap-2 px-4 py-2 text-white bg-amber-500 rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saved ? <Check size={18} /> : <Save size={18} />}
-              {saved ? t.settings.saved : t.settings.saveChanges}
+              {saving ? <Loader2 size={18} className="animate-spin" /> : saved ? <Check size={18} /> : <Save size={18} />}
+              {saving ? 'Guardando...' : saved ? t.settings.saved : t.settings.saveChanges}
             </button>
           </div>
         </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+            <div>
+              <p className="text-red-800 font-medium">Error</p>
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {/* No sites warning */}
+        {sites.length === 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="text-amber-500 flex-shrink-0 mt-0.5" size={20} />
+            <div>
+              <p className="text-amber-800 font-medium">Sin sitios configurados</p>
+              <p className="text-amber-600 text-sm">Crea un sitio en la sección "Sitios" para poder configurar el banner.</p>
+            </div>
+          </div>
+        )}
 
         {/* Layout Section */}
         <section className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">

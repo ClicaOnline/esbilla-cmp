@@ -10,7 +10,8 @@ import {
   LogOut,
   ChevronRight,
   Globe,
-  Globe2
+  Globe2,
+  Link2
 } from 'lucide-react';
 import './Layout.css';
 
@@ -18,11 +19,12 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-type NavKey = 'dashboard' | 'sites' | 'users' | 'footprint' | 'settings';
+type NavKey = 'dashboard' | 'sites' | 'users' | 'footprint' | 'urlStats' | 'settings';
 
 const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
   { key: 'dashboard', href: '/', icon: LayoutDashboard },
   { key: 'sites', href: '/sites', icon: Globe2, adminOnly: true },
+  { key: 'urlStats', href: '/url-stats', icon: Link2 },
   { key: 'users', href: '/users', icon: Users, adminOnly: true },
   { key: 'footprint', href: '/footprint', icon: Search },
   { key: 'settings', href: '/settings', icon: Settings, adminOnly: true },

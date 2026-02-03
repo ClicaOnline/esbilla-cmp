@@ -198,6 +198,9 @@
       const configRes = await fetch(`${apiBase}/api/config/${cmpId}`);
       config = await configRes.json();
 
+      // B2. Aplicar configuración de banner del dashboard
+      applyBannerSettings();
+
       // C. Cargar traducciones
       const i18nRes = await fetch(`${apiBase}/i18n/config.json`);
       translations = await i18nRes.json();
@@ -270,6 +273,62 @@
   }
 
   // ============================================
+  // APLICAR CONFIGURACIÓN DEL BANNER (DASHBOARD)
+  // ============================================
+  // Aplica la configuración personalizada del banner guardada en Firestore
+  // desde el dashboard de administración.
+  function applyBannerSettings() {
+    const bannerSettings = config.settings?.banner;
+    if (!bannerSettings) return;
+
+    // Aplicar layout
+    if (bannerSettings.layout) {
+      config.layout = bannerSettings.layout;
+    }
+
+    // Aplicar colores (merge con existentes)
+    if (bannerSettings.colors) {
+      config.colors = {
+        ...config.colors,
+        primary: bannerSettings.colors.primary,
+        secondary: bannerSettings.colors.secondary,
+        background: bannerSettings.colors.background,
+        text: bannerSettings.colors.text
+      };
+    }
+
+    // Aplicar tipografía
+    if (bannerSettings.font && bannerSettings.font !== 'system') {
+      const fontMap = {
+        'inter': '"Inter", sans-serif',
+        'roboto': '"Roboto", sans-serif',
+        'opensans': '"Open Sans", sans-serif',
+        'lato': '"Lato", sans-serif',
+        'montserrat': '"Montserrat", sans-serif'
+      };
+      config.typography = {
+        ...config.typography,
+        fontFamily: fontMap[bannerSettings.font] || null
+      };
+    }
+
+    // Aplicar estilo de botones
+    if (bannerSettings.buttonStyle) {
+      config.buttonStyle = bannerSettings.buttonStyle;
+    }
+
+    // Aplicar etiquetas personalizadas
+    if (bannerSettings.labels) {
+      config.labels = bannerSettings.labels;
+    }
+
+    // Aplicar aviso legal
+    if (bannerSettings.legal) {
+      config.legal = bannerSettings.legal;
+    }
+  }
+
+  // ============================================
   // 4. CARGA DE ESTILOS EXTERNOS
   // ============================================
   async function loadStyles() {
@@ -315,20 +374,21 @@
   // 5. APLICAR COLORES PERSONALIZADOS
   // ============================================
   function applyCustomColors() {
-    if (!config.colors) return;
-
     const root = document.documentElement;
-    const colors = config.colors;
 
-    if (colors.primary) root.style.setProperty('--esbilla-primary', colors.primary);
-    if (colors.primaryHover) root.style.setProperty('--esbilla-primary-hover', colors.primaryHover);
-    if (colors.secondary) root.style.setProperty('--esbilla-secondary', colors.secondary);
-    if (colors.background) root.style.setProperty('--esbilla-background', colors.background);
-    if (colors.backgroundEnd) root.style.setProperty('--esbilla-background-end', colors.backgroundEnd);
-    if (colors.text) root.style.setProperty('--esbilla-text', colors.text);
-    if (colors.textMuted) root.style.setProperty('--esbilla-text-muted', colors.textMuted);
-    if (colors.border) root.style.setProperty('--esbilla-border', colors.border);
-    if (colors.overlay) root.style.setProperty('--esbilla-overlay', colors.overlay);
+    // Aplicar colores si existen
+    if (config.colors) {
+      const colors = config.colors;
+      if (colors.primary) root.style.setProperty('--esbilla-primary', colors.primary);
+      if (colors.primaryHover) root.style.setProperty('--esbilla-primary-hover', colors.primaryHover);
+      if (colors.secondary) root.style.setProperty('--esbilla-secondary', colors.secondary);
+      if (colors.background) root.style.setProperty('--esbilla-background', colors.background);
+      if (colors.backgroundEnd) root.style.setProperty('--esbilla-background-end', colors.backgroundEnd);
+      if (colors.text) root.style.setProperty('--esbilla-text', colors.text);
+      if (colors.textMuted) root.style.setProperty('--esbilla-text-muted', colors.textMuted);
+      if (colors.border) root.style.setProperty('--esbilla-border', colors.border);
+      if (colors.overlay) root.style.setProperty('--esbilla-overlay', colors.overlay);
+    }
 
     // Dimensiones personalizadas
     if (config.dimensions) {
@@ -345,6 +405,13 @@
       if (typo.fontFamily) root.style.setProperty('--esbilla-font-family', typo.fontFamily);
       if (typo.titleSize) root.style.setProperty('--esbilla-font-size-title', typo.titleSize);
       if (typo.textSize) root.style.setProperty('--esbilla-font-size-text', typo.textSize);
+    }
+
+    // Estilo de botones (igual peso vs destacar aceptar)
+    if (config.buttonStyle === 'acceptHighlight') {
+      root.style.setProperty('--esbilla-btn-reject-bg', 'transparent');
+      root.style.setProperty('--esbilla-btn-reject-border', '1px solid var(--esbilla-secondary, #6B7280)');
+      root.style.setProperty('--esbilla-btn-reject-color', 'var(--esbilla-text, #1F2937)');
     }
 
     // Posición de la mosca
@@ -383,6 +450,19 @@
     Object.keys(t).forEach(key => {
       html = html.replaceAll(`{{${key}}}`, t[key]);
     });
+
+    // Aplicar etiquetas personalizadas del dashboard (sobrescriben traducciones)
+    if (config.labels) {
+      if (config.labels.acceptAll) {
+        html = html.replaceAll('{{accept}}', config.labels.acceptAll);
+      }
+      if (config.labels.rejectAll) {
+        html = html.replaceAll('{{reject}}', config.labels.rejectAll);
+      }
+      if (config.labels.customize) {
+        html = html.replaceAll('{{settings}}', config.labels.customize);
+      }
+    }
 
     // Reemplazar icono de config
     html = html.replaceAll('{{icon}}', config.icon || '🌽');
