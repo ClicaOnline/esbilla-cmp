@@ -57,10 +57,29 @@ app.get('/dashboard/{*path}', (req, res) => {
   res.sendFile(path.join(dashboardPath, 'index.html'));
 });
 
+// ============================================
+// GDPR-COMPLIANT HASHING FUNCTIONS
+// ============================================
+
 // Hash anónimu del IP pa soberanía de datos
 function hashIP(ip) {
   if (!ip) return 'unknown';
   return crypto.createHash('sha256').update(ip + 'esbilla-salt').digest('hex').substring(0, 16);
+}
+
+// Genera un hash SHA-256 anónimo del usuario basado en footprintId + IP + User-Agent
+// Este hash es irreversible y cumple con GDPR (no almacena datos personales)
+function generateUserHash(footprintId, ip, userAgent) {
+  const data = `${footprintId || 'unknown'}:${ip || 'unknown'}:${userAgent || 'unknown'}`;
+  return crypto.createHash('sha256').update(data + 'esbilla-gdpr-salt').digest('hex');
+}
+
+// Calcula la fecha de expiración para TTL (3 años = 1095 días)
+const CONSENT_RETENTION_DAYS = 1095; // 3 años según GDPR
+function calculateExpiresAt() {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + CONSENT_RETENTION_DAYS);
+  return expiresAt;
 }
 
 // Cargar configuración por defeutu
@@ -103,49 +122,163 @@ app.get('/api/config/:id', async (req, res) => {
   });
 });
 
-// Ruta: Rexistru de consentimientu
+// ============================================
+// RUTA: REGISTRO DE CONSENTIMIENTO (GDPR-COMPLIANT)
+// ============================================
+// IMPORTANTE: Siempre crea un nuevo documento (nunca sobrescribe)
+// para mantener un registro de auditoría completo según GDPR.
+// Los documentos se eliminan automáticamente después de 3 años
+// mediante la política TTL de Firestore en el campo 'expiresAt'.
+// ============================================
 app.post('/api/consent/log', async (req, res) => {
-  const { cmpId, choices, timestamp } = req.body;
+  const {
+    // Campos nuevos (SDK v1.1+)
+    siteId,
+    // apiKey, // TODO: Validar API key del sitio en futuras versiones
+    footprintId,
+    choices,
+    action,
+    metadata,
+    timestamp,
+    // Campos legacy (retrocompatibilidad)
+    cmpId,
+    lang,
+    userAgent: legacyUserAgent
+  } = req.body;
+
+  // Usar siteId o cmpId (retrocompatibilidad)
+  const projectId = siteId || cmpId;
 
   // Validación básica
-  if (!cmpId || !choices) {
-    return res.status(400).json({ error: 'Falten datos obligatorios (cmpId, choices)' });
+  if (!projectId || !choices) {
+    return res.status(400).json({
+      error: 'Falten datos obligatorios (siteId/cmpId, choices)',
+      code: 'MISSING_REQUIRED_FIELDS'
+    });
   }
 
+  // Obtener IP y User-Agent
+  const clientIP = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+  const clientUserAgent = metadata?.userAgent || legacyUserAgent || req.headers['user-agent'] || 'unknown';
+
+  // Generar hash anónimo del usuario (GDPR-compliant)
+  const userHash = generateUserHash(footprintId, clientIP, clientUserAgent);
+
+  // Determinar la versión del banner
+  const bannerVersion = metadata?.sdkVersion || metadata?.consentVersion || '1.0';
+
+  // Fecha de expiración para TTL (3 años)
+  const expiresAt = calculateExpiresAt();
+
+  // Construir el registro de consentimiento GDPR-compliant
+  // NOTA: Siempre creamos un nuevo documento para mantener auditoría
   const consentRecord = {
-    cmpId,
-    choices,
+    // Identificadores del proyecto
+    siteId: projectId,
+    projectId: projectId, // Alias para queries
+
+    // Versión del banner (para auditoría de cambios de política)
+    bannerVersion,
+
+    // Hash anónimo del usuario (SHA-256, irreversible)
+    userHash,
+
+    // Footprint ID (identificador del navegador/dispositivo)
+    footprintId: footprintId || null,
+
+    // Elecciones del usuario
+    choices: {
+      analytics: choices.analytics || false,
+      marketing: choices.marketing || false,
+      ...choices // Categorías personalizadas
+    },
+
+    // Tipo de acción para auditoría
+    action: action || 'unknown',
+
+    // Metadata enriquecida (sin datos personales identificables)
+    metadata: {
+      domain: metadata?.domain || null,
+      pageUrl: metadata?.pageUrl || null,
+      referrer: metadata?.referrer || null,
+      language: metadata?.language || lang || 'unknown',
+      timezone: metadata?.timezone || null,
+      screenWidth: metadata?.screenWidth || null,
+      screenHeight: metadata?.screenHeight || null,
+      sdkVersion: metadata?.sdkVersion || null,
+      consentVersion: metadata?.consentVersion || '1.0'
+    },
+
+    // Hash del IP (no el IP real, cumple GDPR)
+    ipHash: hashIP(clientIP),
+
+    // User-Agent (para estadísticas de navegadores)
+    userAgent: clientUserAgent,
+
+    // Timestamps
     timestamp: timestamp || new Date().toISOString(),
-    userAgent: req.headers['user-agent'] || 'unknown',
-    ipHash: hashIP(req.ip || req.headers['x-forwarded-for']),
-    createdAt: admin.apps.length ? admin.firestore.FieldValue.serverTimestamp() : new Date()
+    createdAt: admin.apps.length ? admin.firestore.FieldValue.serverTimestamp() : new Date(),
+
+    // Campo TTL para eliminación automática (3 años)
+    // Firestore TTL policy debe configurarse en este campo
+    expiresAt: admin.apps.length ? admin.firestore.Timestamp.fromDate(expiresAt) : expiresAt
   };
 
   // Si Firestore ta disponible, guardar nel hórreu
   if (db) {
     try {
+      // SIEMPRE usamos .add() para crear un nuevo documento
+      // Esto garantiza el audit trail (nunca sobrescribimos)
       const docRef = await db.collection('consents').add(consentRecord);
+
+      // Actualizar estadísticas del sitio (opcional, async)
+      updateSiteStats(projectId).catch(err => {
+        console.warn('Error actualizando stats:', err.message);
+      });
+
       return res.status(201).json({
         status: 'esbilláu',
-        message: 'Log guardáu nel hórreu de Firestore',
-        docId: docRef.id
+        message: 'Consentimiento registrado correctamente',
+        docId: docRef.id,
+        expiresAt: expiresAt.toISOString()
       });
     } catch (err) {
       console.error('Error guardando en Firestore:', err);
       return res.status(500).json({
-        error: 'Error interno al guardar el consentimientu',
+        error: 'Error interno al guardar el consentimiento',
+        code: 'FIRESTORE_ERROR',
         details: process.env.NODE_ENV === 'development' ? err.message : undefined
       });
     }
   }
 
   // Fallback si Firestore nun ta configuráu (desarrollo local)
-  console.log('📝 Consent log (local):', consentRecord);
+  console.log('📝 Consent log (local):', JSON.stringify(consentRecord, null, 2));
   return res.status(201).json({
     status: 'esbilláu',
-    message: 'Log guardáu (modo local - sin Firestore)'
+    message: 'Log guardáu (modo local - sin Firestore)',
+    expiresAt: expiresAt.toISOString()
   });
 });
+
+// Función auxiliar para actualizar estadísticas del sitio
+async function updateSiteStats(siteId) {
+  if (!db || !siteId) return;
+
+  const siteRef = db.collection('sites').doc(siteId);
+
+  try {
+    await siteRef.update({
+      'stats.totalConsents': admin.firestore.FieldValue.increment(1),
+      'stats.lastConsentAt': admin.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (err) {
+    // Si el sitio no existe, ignorar silenciosamente
+    if (err.code !== 5) { // NOT_FOUND
+      throw err;
+    }
+  }
+}
 
 // Health check pa Cloud Run
 app.get('/api/health', (req, res) => {

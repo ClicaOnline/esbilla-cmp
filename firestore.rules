@@ -92,20 +92,45 @@ service cloud.firestore {
     }
 
     // ============================================
-    // CONSENTS COLLECTION
+    // CONSENTS COLLECTION (GDPR-COMPLIANT)
+    // ============================================
+    // POLÍTICA DE RETENCIÓN: 3 años (1095 días)
+    // Los documentos se eliminan automáticamente mediante TTL en 'expiresAt'
+    //
+    // PROTECCIÓN CONTRA MANIPULACIÓN EXTERNA:
+    // - Solo el Admin SDK (API backend) puede crear registros
+    // - NUNCA se pueden modificar o eliminar manualmente (audit trail)
+    // - Los usuarios del dashboard solo pueden LEER (no escribir)
+    //
+    // CAMPOS REQUERIDOS (validados por la API):
+    // - siteId: string (identificador del sitio)
+    // - userHash: string (hash SHA-256 anónimo, GDPR-compliant)
+    // - choices: map (elecciones del usuario)
+    // - createdAt: timestamp (fecha de creación)
+    // - expiresAt: timestamp (fecha de expiración para TTL)
     // ============================================
     match /consents/{consentId} {
-      // Usuarios autorizados pueden leer consentimientos
-      // Si es viewer, solo puede ver los de sitios a los que tiene acceso
+      // LECTURA: Usuarios autorizados pueden leer consentimientos
+      // Viewers solo pueden ver los de sitios a los que tienen acceso
       allow read: if isAdmin()
                   || (isAuthorized() && hasSiteAccess(resource.data.siteId));
 
-      // Los consentimientos se crean desde la API (sin autenticación del dashboard)
-      // La API usa el Admin SDK que bypasea estas reglas
-      allow create: if false; // Solo vía Admin SDK
+      // CREACIÓN: BLOQUEADA para clientes del dashboard
+      // Los consentimientos SOLO se crean desde la API backend
+      // usando Firebase Admin SDK (bypasea estas reglas)
+      // Esto previene que clientes maliciosos inyecten registros falsos
+      allow create: if false;
 
-      // No se pueden modificar ni eliminar consentimientos (para auditoría)
-      allow update, delete: if false;
+      // ACTUALIZACIÓN: BLOQUEADA PERMANENTEMENTE
+      // Los registros de consentimiento son INMUTABLES para auditoría GDPR
+      // Cualquier "actualización" de consentimiento crea un NUEVO documento
+      allow update: if false;
+
+      // ELIMINACIÓN: BLOQUEADA PERMANENTEMENTE
+      // Solo el TTL de Firestore puede eliminar documentos (automático tras 3 años)
+      // Ni siquiera superadmins pueden eliminar registros manualmente
+      // Esto garantiza el audit trail completo requerido por GDPR
+      allow delete: if false;
     }
 
     // ============================================

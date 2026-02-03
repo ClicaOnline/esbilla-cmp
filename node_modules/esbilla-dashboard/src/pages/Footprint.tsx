@@ -110,7 +110,7 @@ export function FootprintPage() {
         const siteId = data.siteId || data.cmpId;
 
         // Filter by site if selected
-        if (selectedSiteId !== 'all' && cmpId !== selectedSiteId) {
+        if (selectedSiteId !== 'all' && siteId !== selectedSiteId) {
           return;
         }
 
