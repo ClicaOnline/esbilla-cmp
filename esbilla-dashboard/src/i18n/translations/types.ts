@@ -20,6 +20,7 @@ export interface Translations {
     sites: string;
     users: string;
     footprint: string;
+    urlStats: string;
     settings: string;
     logout: string;
     controlPanel: string;
@@ -134,6 +135,21 @@ export interface Translations {
     never: string;
     viewStats: string;
     configure: string;
+  };
+
+  urlStats: {
+    title: string;
+    subtitle: string;
+    uniqueUrls: string;
+    totalEvents: string;
+    exportCsv: string;
+    acceptAll: string;
+    rejectAll: string;
+    customize: string;
+    lastEvent: string;
+    noData: string;
+    noDataMessage: string;
+    showing: string;
   };
 
   settings: {

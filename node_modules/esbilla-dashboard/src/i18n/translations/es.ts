@@ -24,6 +24,7 @@ export const es: Translations = {
     sites: 'Sitios',
     users: 'Usuarios',
     footprint: 'Buscar Footprint',
+    urlStats: 'URLs',
     settings: 'Configuración',
     logout: 'Cerrar sesión',
     controlPanel: 'Panel de Control',
@@ -144,6 +145,22 @@ export const es: Translations = {
     never: 'Nunca',
     viewStats: 'Ver estadísticas',
     configure: 'Configurar',
+  },
+
+  // URL Stats page
+  urlStats: {
+    title: 'Estadísticas por URL',
+    subtitle: 'Consentimientos agrupados por página',
+    uniqueUrls: 'URLs únicas',
+    totalEvents: 'eventos totales',
+    exportCsv: 'Exportar CSV',
+    acceptAll: 'Aceptar',
+    rejectAll: 'Rechazar',
+    customize: 'Personalizar',
+    lastEvent: 'Último evento',
+    noData: 'Sin datos',
+    noDataMessage: 'No hay eventos de consentimiento en este período',
+    showing: 'Mostrando',
   },
 
   // Settings page
