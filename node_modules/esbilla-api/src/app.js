@@ -311,8 +311,14 @@ app.get('/api/consent/history/:footprintId', async (req, res) => {
   try {
     // Buscar todos los registros con este footprintId
     const consentsRef = db.collection('consents');
-    const q = consentsRef
+    /*const q = consentsRef
       .where('footprintId', '==', footprintId)
+      .orderBy('createdAt', 'desc')
+      .limit(100); // Límite de seguridad
+    */
+
+    const q = consentsRef
+      .where('user_hash', '==', footprintId)
       .orderBy('createdAt', 'desc')
       .limit(100); // Límite de seguridad
 

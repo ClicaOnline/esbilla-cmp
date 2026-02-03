@@ -139,21 +139,29 @@
   </div>
 
   <div class="test-section">
+    <h3 class="font-bold text-amber-800">Zona de Pruebas de Consentimiento</h3>
+  <p class="text-sm text-amber-700 mb-4">
+    ⚠️ **Advertencia:** Al interactuar con el banner, se modificarán tus preferencias reales de cookies para este dominio.
+  </p>
+  <button id="btn-test-banner" class="bg-amber-600 text-white px-4 py-2 rounded shadow hover:bg-amber-700 transition">
+    Probar el Banner
+  </button>
     <h2>Instrucciones</h2>
     <ol>
-      <li>Al cargar la página, debería aparecer el banner de cookies</li>
+      <li>Esta es una página de prueba, Puedes probar el banner en el botón de arriba</li>
       <li>Acepta o rechaza las cookies</li>
-      <li>Debería aparecer "la mosca" con el Footprint ID (ej: <code>🍪 ESB-A7F3B2C1</code>)</li>
+      <li>Debería aparecer "la mosca" Opcionalmente con el Footprint ID (ej: <code>🍪 ESB-A7F3B2C1</code>)</li>
       <li>Haz clic en la mosca para volver a ver el banner</li>
+      <li>Puedes saber el historial de tus consentimientos en la sección de transparencia</li>
     </ol>
     <p class="info">El Footprint ID se guarda en localStorage como <code>esbilla_footprint</code></p>
   </div>
 
-  <div class="test-section">
+  <!-- <div class="test-section">
     <h2>Verificar en Dashboard</h2>
     <p>Una vez aceptes/rechaces, busca tu Footprint ID en:</p>
     <p><a href="/dashboard/footprint" target="_blank">Dashboard → Buscar Footprint</a></p>
-  </div>
+  </div> -->
 
   <!-- SECCIÓN DE TRANSPARENCIA: Muestra todos los datos guardados del usuario -->
   <div class="test-section transparency-section">
