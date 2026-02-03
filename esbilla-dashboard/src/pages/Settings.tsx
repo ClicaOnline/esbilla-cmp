@@ -196,10 +196,19 @@ export function SettingsPage() {
         updatedAt: serverTimestamp()
       });
 
-      // Update local sites list
+      // Update local sites list - preserve categories from existing settings
       setSites(prev => prev.map(site =>
         site.id === selectedSiteId
-          ? { ...site, settings: { ...site.settings, banner: config } }
+          ? {
+              ...site,
+              settings: {
+                ...site.settings,
+                banner: {
+                  ...config,
+                  categories: site.settings?.banner?.categories || []
+                }
+              }
+            }
           : site
       ));
 

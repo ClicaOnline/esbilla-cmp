@@ -53,3 +53,17 @@
     }
 
 - Añadir distributorId al schema de consents para queries segmentadas por distribuidor.
+
+Semana 1 (Ahora):
+├── Día 1-2: Configurar entornos (Opción 1)
+│   ├── Crear proyecto Firebase staging
+│   ├── Crear Cloud Run staging  
+│   ├── Configurar GitHub Actions para staging/prod
+│   └── DNS para subdominios staging
+
+Semana 2-3:
+└── Implementar SaaS (Opción 2)
+    ├── Registro público + verificación email
+    ├── Integración Stripe
+    ├── Planes y límites
+    └── Onboarding self-service
