@@ -13,6 +13,11 @@ import type {
   OrganizationRole,
   GlobalRole
 } from '../types';
+import { usePagination } from '../hooks/usePagination';
+import { useSearch } from '../hooks/useSearch';
+import { Pagination } from '../components/shared/Pagination';
+import { SearchInput } from '../components/shared/SearchInput';
+import { PageSizeSelector } from '../components/shared/PageSizeSelector';
 import {
   Shield, Eye, Clock, Trash2, Check, X, Crown,
   Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save
@@ -42,6 +47,8 @@ export function UsersPage() {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [activeTab, setActiveTab] = useState<'orgs' | 'sites'>('orgs');
+  const [modalOrgSearch, setModalOrgSearch] = useState('');
+  const [modalSiteSearch, setModalSiteSearch] = useState('');
 
   // Create user modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -52,6 +59,10 @@ export function UsersPage() {
   const [newUserSiteAccess, setNewUserSiteAccess] = useState<Record<string, SiteRole>>({});
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+
+  // Search and pagination state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     loadData();
@@ -401,6 +412,18 @@ export function UsersPage() {
     Object.keys(u.siteAccess || {}).length > 0
   );
 
+  // Search and pagination for active users
+  const { filteredData: filteredActiveUsers } = useSearch({
+    data: activeUsers,
+    searchKeys: ['email', 'displayName'],
+    searchTerm
+  });
+
+  const { currentPage, totalPages, pageData: paginatedUsers, goToPage } = usePagination({
+    data: filteredActiveUsers,
+    pageSize
+  });
+
   if (loading) {
     return (
       <Layout>
@@ -491,9 +514,20 @@ export function UsersPage() {
         {/* Active users */}
         <div className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-stone-200">
-            <h2 className="text-lg font-semibold text-stone-800">
-              {t.users.activeUsers} ({activeUsers.length})
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-stone-800">
+                {t.users.activeUsers} ({filteredActiveUsers.length})
+              </h2>
+              <PageSizeSelector
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+              />
+            </div>
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Buscar por email o nombre..."
+            />
           </div>
 
           <table className="w-full">
@@ -517,7 +551,7 @@ export function UsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200">
-              {activeUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-stone-50">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -584,6 +618,17 @@ export function UsersPage() {
               ))}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-stone-200">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+              />
+            </div>
+          )}
         </div>
 
         {/* Access Management Modal */}
@@ -638,7 +683,19 @@ export function UsersPage() {
                     <p className="text-center text-stone-500 py-8">{t.organizations?.noOrgs || 'No organizations'}</p>
                   ) : (
                     <div className="space-y-3">
-                      {organizations.map((org) => {
+                      <SearchInput
+                        value={modalOrgSearch}
+                        onChange={setModalOrgSearch}
+                        placeholder="Buscar organizaciones..."
+                        className="mb-4"
+                      />
+                      {organizations
+                        .filter(org =>
+                          modalOrgSearch.trim() === '' ||
+                          org.name.toLowerCase().includes(modalOrgSearch.toLowerCase()) ||
+                          org.legalName?.toLowerCase().includes(modalOrgSearch.toLowerCase())
+                        )
+                        .map((org) => {
                         const access = selectedUser.orgAccess?.[org.id];
                         const hasAccess = !!access;
 
@@ -709,7 +766,19 @@ export function UsersPage() {
                         {/* Help text explaining site-level access */}
                         Direct site access is useful for freelancers or agencies who need access to specific sites without organization-level permissions.
                       </p>
-                      {sites.map((site) => {
+                      <SearchInput
+                        value={modalSiteSearch}
+                        onChange={setModalSiteSearch}
+                        placeholder="Buscar sitios..."
+                        className="mb-4"
+                      />
+                      {sites
+                        .filter(site =>
+                          modalSiteSearch.trim() === '' ||
+                          site.name.toLowerCase().includes(modalSiteSearch.toLowerCase()) ||
+                          site.domains.some(d => d.toLowerCase().includes(modalSiteSearch.toLowerCase()))
+                        )
+                        .map((site) => {
                         const access = selectedUser.siteAccess?.[site.id];
                         const hasAccess = !!access;
                         // Check if user already has access via org

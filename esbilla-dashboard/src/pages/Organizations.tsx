@@ -4,12 +4,17 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import type { Organization, Site } from '../types';
+import type { Organization, Site, DashboardUser } from '../types';
 import { generateOrgId } from '../types';
 import {
   Building2, Plus, Edit2, Trash2, X, Copy, Check,
   CreditCard, Globe2, Users, AlertTriangle
 } from 'lucide-react';
+import { usePagination } from '../hooks/usePagination';
+import { useSearch } from '../hooks/useSearch';
+import { Pagination } from '../components/shared/Pagination';
+import { SearchInput } from '../components/shared/SearchInput';
+import { PageSizeSelector } from '../components/shared/PageSizeSelector';
 
 // Generate a UUID tracking ID for the organization
 function generateTrackingId(): string {
@@ -79,6 +84,7 @@ export function OrganizationsPage() {
   const { t } = useI18n();
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
+  const [users, setUsers] = useState<DashboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
@@ -92,6 +98,33 @@ export function OrganizationsPage() {
     billingEmail: '',
     billingAddress: { ...EMPTY_ADDRESS },
     plan: 'free'
+  });
+
+  // Search and pagination state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [pageSize, setPageSize] = useState(25);
+
+  // Users modal state
+  const [showUsersModal, setShowUsersModal] = useState(false);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
+  const [selectedUserRole, setSelectedUserRole] = useState<'org_viewer' | 'org_admin' | 'org_owner'>('org_viewer');
+
+  // Use search hook
+  const { filteredData: filteredOrgs } = useSearch({
+    data: organizations,
+    searchKeys: ['name', 'legalName', 'taxId', 'billingEmail'],
+    searchTerm
+  });
+
+  // Use pagination hook
+  const {
+    currentPage,
+    totalPages,
+    pageData: paginatedOrgs,
+    goToPage
+  } = usePagination({
+    data: filteredOrgs,
+    pageSize
   });
 
   useEffect(() => {
@@ -150,6 +183,29 @@ export function OrganizationsPage() {
       });
 
       setSites(siteList);
+
+      // Load users to count per organization
+      const usersQ = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+      const usersSnapshot = await getDocs(usersQ);
+
+      const userList: DashboardUser[] = [];
+      usersSnapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
+        userList.push({
+          id: docSnapshot.id,
+          email: data.email || '',
+          displayName: data.displayName || '',
+          photoURL: data.photoURL || '',
+          globalRole: data.globalRole || 'pending',
+          orgAccess: data.orgAccess || {},
+          siteAccess: data.siteAccess || {},
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          lastLogin: data.lastLogin?.toDate?.() || new Date(),
+          createdBy: data.createdBy
+        });
+      });
+
+      setUsers(userList);
     } catch (err) {
       console.error('Error loading data:', err);
     } finally {
@@ -311,6 +367,119 @@ export function OrganizationsPage() {
     return sites.filter(s => s.organizationId === orgId).length;
   }
 
+  function getUsersWithOrgAccess(orgId: string): number {
+    return users.filter(u =>
+      u.globalRole === 'superadmin' || orgId in (u.orgAccess || {})
+    ).length;
+  }
+
+  function openUsersModal(orgId: string) {
+    setSelectedOrgId(orgId);
+    setShowUsersModal(true);
+  }
+
+  async function handleAddUserToOrg(userId: string) {
+    if (!selectedOrgId || !db || !user) return;
+
+    const org = organizations.find(o => o.id === selectedOrgId);
+    if (!org) return;
+
+    try {
+      const orgAccess = {
+        organizationId: selectedOrgId,
+        organizationName: org.name,
+        role: selectedUserRole,
+        addedAt: new Date(),
+        addedBy: user.uid
+      };
+
+      await updateDoc(doc(db, 'users', userId), {
+        [`orgAccess.${selectedOrgId}`]: orgAccess
+      });
+
+      // Actualizar state local
+      setUsers(users.map(u => u.id === userId ? {
+        ...u,
+        orgAccess: { ...u.orgAccess, [selectedOrgId]: orgAccess }
+      } : u));
+
+      alert('✅ Usuario añadido a la organización');
+    } catch (err) {
+      console.error('Error adding user to org:', err);
+      alert('❌ Error al añadir usuario');
+    }
+  }
+
+  async function handleRemoveUserFromOrg(userId: string, orgId: string) {
+    if (!db) return;
+
+    if (!confirm('¿Estás seguro de remover el acceso de este usuario a la organización?')) {
+      return;
+    }
+
+    try {
+      const userRef = doc(db, 'users', userId);
+      const userDoc = await getDocs(query(collection(db, 'users')));
+      const userData = userDoc.docs.find(d => d.id === userId)?.data();
+
+      if (userData?.orgAccess) {
+        const updatedOrgAccess = { ...userData.orgAccess };
+        delete updatedOrgAccess[orgId];
+
+        await updateDoc(userRef, {
+          orgAccess: updatedOrgAccess
+        });
+
+        // Actualizar state local
+        setUsers(users.map(u => {
+          if (u.id === userId) {
+            const updatedAccess = { ...u.orgAccess };
+            delete updatedAccess[orgId];
+            return { ...u, orgAccess: updatedAccess };
+          }
+          return u;
+        }));
+
+        alert('✅ Usuario removido de la organización');
+      }
+    } catch (err) {
+      console.error('Error removing user from org:', err);
+      alert('❌ Error al remover usuario');
+    }
+  }
+
+  async function handleChangeUserRole(userId: string, orgId: string, newRole: 'org_viewer' | 'org_admin' | 'org_owner') {
+    if (!db) return;
+
+    try {
+      const userToUpdate = users.find(u => u.id === userId);
+      if (!userToUpdate || !userToUpdate.orgAccess[orgId]) return;
+
+      const updatedOrgAccess = {
+        ...userToUpdate.orgAccess[orgId],
+        role: newRole
+      };
+
+      await updateDoc(doc(db, 'users', userId), {
+        [`orgAccess.${orgId}.role`]: newRole
+      });
+
+      // Actualizar state local
+      setUsers(users.map(u => u.id === userId ? {
+        ...u,
+        orgAccess: {
+          ...u.orgAccess,
+          [orgId]: updatedOrgAccess
+        }
+      } : u));
+
+      alert('✅ Rol actualizado');
+    } catch (err) {
+      console.error('Error changing user role:', err);
+      alert('❌ Error al cambiar rol');
+    }
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -345,8 +514,28 @@ export function OrganizationsPage() {
           )}
         </div>
 
+        {/* Search and filters */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-stone-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <SearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Buscar por nombre, CIF, email..."
+              className="flex-1"
+            />
+            <PageSizeSelector
+              pageSize={pageSize}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+          <div className="mt-2 text-sm text-stone-500">
+            Mostrando {paginatedOrgs.length} de {filteredOrgs.length} organizaciones
+            {searchTerm && ` (filtrado de ${organizations.length} total)`}
+          </div>
+        </div>
+
         {/* Organizations list */}
-        {organizations.length === 0 ? (
+        {filteredOrgs.length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center border border-stone-200">
             <Building2 size={48} className="mx-auto text-stone-300 mb-4" />
             <h3 className="text-lg font-medium text-stone-700">
@@ -358,7 +547,7 @@ export function OrganizationsPage() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {organizations.map((org) => {
+            {paginatedOrgs.map((org) => {
               const sitesCount = getSitesCount(org.id);
               const isAtLimit = sitesCount >= org.maxSites;
 
@@ -445,6 +634,20 @@ export function OrganizationsPage() {
                       </div>
                     </div>
 
+                    {/* Users with access */}
+                    <div>
+                      <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Usuarios</p>
+                      <div className="flex items-center gap-2">
+                        <Users size={16} className="text-stone-400" />
+                        <button
+                          onClick={() => openUsersModal(org.id)}
+                          className="text-lg font-semibold text-stone-800 hover:text-amber-600 transition-colors"
+                        >
+                          {getUsersWithOrgAccess(org.id)}
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Consents limit */}
                     <div>
                       <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Consentimientos/mes</p>
@@ -471,6 +674,18 @@ export function OrganizationsPage() {
               );
             })}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex justify-center">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+                showFirstLast={true}
+              />
+            </div>
+          )}
         )}
 
         {/* Create/Edit Modal */}
@@ -731,6 +946,143 @@ export function OrganizationsPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Users Management Modal */}
+        {showUsersModal && selectedOrgId && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 shrink-0">
+                <div>
+                  <h2 className="text-lg font-semibold text-stone-800">
+                    Usuarios con Acceso
+                  </h2>
+                  <p className="text-sm text-stone-500">
+                    {organizations.find(o => o.id === selectedOrgId)?.name}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowUsersModal(false)}
+                  className="p-2 text-stone-400 hover:bg-stone-100 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Current users */}
+                <div className="space-y-3 mb-6">
+                  {users
+                    .filter(u => u.globalRole === 'superadmin' || selectedOrgId in (u.orgAccess || {}))
+                    .map(u => {
+                      const isSuperadmin = u.globalRole === 'superadmin';
+                      const currentRole = isSuperadmin ? 'superadmin' : u.orgAccess[selectedOrgId]?.role;
+
+                      return (
+                        <div
+                          key={u.id}
+                          className="flex items-center justify-between p-4 bg-stone-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={u.photoURL}
+                              alt={u.displayName}
+                              className="w-10 h-10 rounded-full"
+                            />
+                            <div>
+                              <p className="font-medium text-stone-800">{u.displayName}</p>
+                              <p className="text-sm text-stone-500">{u.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {isSuperadmin ? (
+                              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                Superadmin
+                              </span>
+                            ) : (
+                              <>
+                                <select
+                                  value={currentRole}
+                                  onChange={(e) => handleChangeUserRole(
+                                    u.id,
+                                    selectedOrgId,
+                                    e.target.value as 'org_viewer' | 'org_admin' | 'org_owner'
+                                  )}
+                                  className="px-3 py-1 border border-stone-200 rounded-lg text-sm bg-white"
+                                >
+                                  <option value="org_viewer">Viewer</option>
+                                  <option value="org_admin">Admin</option>
+                                  <option value="org_owner">Owner</option>
+                                </select>
+
+                                <button
+                                  onClick={() => handleRemoveUserFromOrg(u.id, selectedOrgId)}
+                                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                  title="Remover acceso"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                  {users.filter(u => u.globalRole === 'superadmin' || selectedOrgId in (u.orgAccess || {})).length === 0 && (
+                    <p className="text-center text-stone-500 py-8">
+                      No hay usuarios con acceso a esta organización
+                    </p>
+                  )}
+                </div>
+
+                {/* Add user section */}
+                <div className="border-t border-stone-200 pt-6">
+                  <h3 className="text-sm font-medium text-stone-700 mb-3">
+                    Añadir Usuario
+                  </h3>
+
+                  <div className="flex flex-col gap-3">
+                    <select
+                      className="px-3 py-2 border border-stone-200 rounded-lg bg-white"
+                      defaultValue=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleAddUserToOrg(e.target.value);
+                          e.target.value = '';
+                        }
+                      }}
+                    >
+                      <option value="">Seleccionar usuario...</option>
+                      {users
+                        .filter(u => u.globalRole !== 'superadmin' && !(selectedOrgId in (u.orgAccess || {})))
+                        .map(u => (
+                          <option key={u.id} value={u.id}>
+                            {u.displayName} ({u.email})
+                          </option>
+                        ))}
+                    </select>
+
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-stone-600">Rol:</label>
+                      <select
+                        value={selectedUserRole}
+                        onChange={(e) => setSelectedUserRole(e.target.value as 'org_viewer' | 'org_admin' | 'org_owner')}
+                        className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm bg-white"
+                      >
+                        <option value="org_viewer">Viewer (solo lectura)</option>
+                        <option value="org_admin">Admin (gestión de sitios y usuarios)</option>
+                        <option value="org_owner">Owner (acceso completo + billing)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
