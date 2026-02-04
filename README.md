@@ -12,7 +12,7 @@ En el contexto de la privacidad, **Esbilla-CMP** nace con esa filosofía:
 * **Desgrana** la complejidad del cumplimiento legal (RGPD/ePrivacy).
 * **Separa** los datos necesarios de los que no lo son.
 * **Limpia** el flujo de navegación de scripts no autorizados, dejando solo lo que el usuario ha decidido aceptar.
-y apoyado en la comunidad porque para la esbilla se llama a los vecinos
+y apoyado en la comunidad porque para la esbilla se llama a los vecinos.
 
 ---
 
