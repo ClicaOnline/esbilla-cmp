@@ -15,6 +15,7 @@ import { useSearch } from '../hooks/useSearch';
 import { Pagination } from '../components/shared/Pagination';
 import { SearchInput } from '../components/shared/SearchInput';
 import { PageSizeSelector } from '../components/shared/PageSizeSelector';
+import { UserSearchSelector } from '../components/shared/UserSearchSelector';
 
 // Generate a UUID tracking ID for the organization
 function generateTrackingId(): string {
@@ -546,7 +547,8 @@ export function OrganizationsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <>
+            <div className="grid gap-4">
             {paginatedOrgs.map((org) => {
               const sitesCount = getSitesCount(org.id);
               const isAtLimit = sitesCount >= org.maxSites;
@@ -675,17 +677,18 @@ export function OrganizationsPage() {
             })}
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex justify-center">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={goToPage}
-                showFirstLast={true}
-              />
-            </div>
-          )}
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={goToPage}
+                  showFirstLast={true}
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* Create/Edit Modal */}
@@ -1048,25 +1051,16 @@ export function OrganizationsPage() {
                   </h3>
 
                   <div className="flex flex-col gap-3">
-                    <select
-                      className="px-3 py-2 border border-stone-200 rounded-lg bg-white"
-                      defaultValue=""
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          handleAddUserToOrg(e.target.value);
-                          e.target.value = '';
-                        }
-                      }}
-                    >
-                      <option value="">Seleccionar usuario...</option>
-                      {users
-                        .filter(u => u.globalRole !== 'superadmin' && !(selectedOrgId in (u.orgAccess || {})))
-                        .map(u => (
-                          <option key={u.id} value={u.id}>
-                            {u.displayName} ({u.email})
-                          </option>
-                        ))}
-                    </select>
+                    <UserSearchSelector
+                      users={users}
+                      onSelect={(user) => handleAddUserToOrg(user.id)}
+                      excludeUserIds={[
+                        ...users
+                          .filter(u => u.globalRole === 'superadmin' || (selectedOrgId && selectedOrgId in (u.orgAccess || {})))
+                          .map(u => u.id)
+                      ]}
+                      placeholder="Buscar usuario por email o nombre..."
+                    />
 
                     <div className="flex items-center gap-2">
                       <label className="text-sm text-stone-600">Rol:</label>
@@ -1080,6 +1074,10 @@ export function OrganizationsPage() {
                         <option value="org_owner">Owner (acceso completo + billing)</option>
                       </select>
                     </div>
+
+                    <p className="text-xs text-stone-500 mt-2">
+                      💡 <strong>Tip:</strong> Escribe el email o nombre del usuario para buscarlo rápidamente. El usuario será añadido con el rol seleccionado.
+                    </p>
                   </div>
                 </div>
               </div>

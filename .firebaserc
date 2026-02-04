@@ -1,0 +1,30 @@
+{
+  "projects": {
+    "default": "esbilla-production",
+    "production": "esbilla-production",
+    "development": "esbilla-development"
+  },
+  "targets": {
+    "esbilla-production": {
+      "hosting": {
+        "prod": [
+          "esbilla-production"
+        ],
+        "dashboard-prod": [
+          "esbilla-app"
+        ]
+      }
+    },
+    "esbilla-development": {
+      "hosting": {
+        "dev": [
+          "esbilla-development"
+        ],
+        "dashboard-dev": [
+          "esbilla-app-dev"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
