@@ -34,6 +34,106 @@ if (!admin.apps.length) {
 const app = express();
 
 // ============================================
+// SECURITY: RATE LIMITING (Anti-spam)
+// ============================================
+// Límite de peticiones por IP para prevenir spam/DoS
+// Funciona en memoria (adecuado para Cloud Run con autoscaling)
+
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minuto
+const RATE_LIMIT_MAX_REQUESTS = 30; // máx 30 req/min por IP (suficiente para uso normal)
+
+/**
+ * Middleware de rate limiting por IP
+ * Retorna 429 si se excede el límite
+ */
+function rateLimitMiddleware(req, res, next) {
+  // Obtener IP del cliente (considerando proxies)
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+                   req.headers['x-real-ip'] ||
+                   req.connection?.remoteAddress ||
+                   req.ip ||
+                   'unknown';
+
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+  // Obtener o crear registro para esta IP
+  let record = rateLimitStore.get(clientIp);
+  if (!record || record.windowStart < windowStart) {
+    record = { windowStart: now, count: 0 };
+  }
+
+  record.count++;
+  rateLimitStore.set(clientIp, record);
+
+  // Limpiar registros antiguos periódicamente (cada 100 requests)
+  if (rateLimitStore.size > 1000) {
+    for (const [ip, r] of rateLimitStore.entries()) {
+      if (r.windowStart < windowStart) {
+        rateLimitStore.delete(ip);
+      }
+    }
+  }
+
+  if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+    console.warn(`[RateLimit] IP ${clientIp} excedió límite: ${record.count}/${RATE_LIMIT_MAX_REQUESTS} req/min`);
+    return res.status(429).json({
+      error: 'Demasiadas peticiones',
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: `Límite de ${RATE_LIMIT_MAX_REQUESTS} peticiones por minuto excedido. Intenta de nuevo en unos segundos.`,
+      retryAfter: Math.ceil((record.windowStart + RATE_LIMIT_WINDOW_MS - now) / 1000)
+    });
+  }
+
+  next();
+}
+
+// ============================================
+// SECURITY: REQUEST VALIDATION (Anti-bot)
+// ============================================
+// Validaciones básicas para detectar requests no-navegador
+
+/**
+ * Middleware para validar que el request parece venir de un navegador real
+ */
+function validateBrowserRequest(req, res, next) {
+  const userAgent = req.headers['user-agent'] || '';
+
+  // Rechazar requests sin User-Agent (bots básicos)
+  if (!userAgent || userAgent.length < 10) {
+    console.warn('[Security] Request sin User-Agent válido');
+    return res.status(400).json({
+      error: 'Request inválido',
+      code: 'INVALID_REQUEST',
+      message: 'Falta información del navegador'
+    });
+  }
+
+  // Detectar User-Agents sospechosos (curl, wget, scripts)
+  const suspiciousPatterns = [
+    /^curl\//i,
+    /^wget\//i,
+    /^python-requests\//i,
+    /^axios\//i,
+    /^node-fetch/i,
+    /^Go-http-client/i,
+    /^Java\//i
+  ];
+
+  if (suspiciousPatterns.some(pattern => pattern.test(userAgent))) {
+    console.warn(`[Security] User-Agent sospechoso: ${userAgent.substring(0, 50)}`);
+    return res.status(403).json({
+      error: 'Acceso denegado',
+      code: 'SUSPICIOUS_CLIENT',
+      message: 'Este endpoint solo acepta peticiones desde navegadores'
+    });
+  }
+
+  next();
+}
+
+// ============================================
 // SECURITY: DOMAIN WHITELIST CACHE & VALIDATION
 // ============================================
 
@@ -317,12 +417,16 @@ app.get('/api/config/:id', async (req, res) => {
 // - Verifica que el dominio desde el que se envía el hit está en
 //   la lista de dominios permitidos del sitio en Firestore.
 // - Si no coincide, devuelve 403 Forbidden.
+//
+// SECURITY: Rate limiting + validación de navegador
+// - Límite de 30 req/min por IP
+// - Rechaza requests sin User-Agent válido o con clientes sospechosos
 // ============================================
-app.post('/api/consent/log', async (req, res) => {
+app.post('/api/consent/log', rateLimitMiddleware, validateBrowserRequest, async (req, res) => {
   const {
     // Campos nuevos (SDK v1.1+)
     siteId,
-    // apiKey, // TODO: Validar API key del sitio en futuras versiones
+    // apiKey eliminado en SDK v1.4 - seguridad basada en dominio + rate limiting
     footprintId,
     choices,
     action,

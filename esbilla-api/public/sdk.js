@@ -1,13 +1,13 @@
 /**
- * ESBILLA CMP - SDK v1.3 (Modular & Configurable)
+ * ESBILLA CMP - SDK v1.4 (Modular & Configurable)
  * Arquitectura modular: estilos, plantillas y configuración externos
  * Incluye captura de atribución de marketing (UTM, click IDs)
+ * v1.4: Eliminado data-key (seguridad basada en validación de dominio + rate limiting)
  */
 (function() {
-  const SDK_VERSION = '1.3.0';
+  const SDK_VERSION = '1.4.0';
   const script = document.currentScript;
   const cmpId = script.getAttribute('data-id') || 'default';
-  const siteApiKey = script.getAttribute('data-key') || '';
   const gtmId = script.getAttribute('data-gtm');
   const apiBase = script.getAttribute('data-api') || script.src.replace('/sdk.js', '');
 
@@ -864,7 +864,6 @@
     // Preparar payload para la API
     const payload = {
       siteId: cmpId,
-      apiKey: siteApiKey,
       footprintId,
       choices,
       action: consentAction,

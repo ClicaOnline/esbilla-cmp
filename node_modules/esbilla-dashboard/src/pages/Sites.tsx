@@ -188,7 +188,8 @@ export function SitesPage() {
 
   function getIntegrationCode(site: Site): string {
     const apiUrl = import.meta.env.VITE_API_URL || 'https://esbilla-api-xxxxxxxx-ew.a.run.app';
-    return `<script src="${apiUrl}/sdk.js" data-id="${site.id}" data-key="${site.apiKey}"></script>`;
+    // SDK v1.4+: Seguridad basada en validación de dominio + rate limiting (sin API key pública)
+    return `<script src="${apiUrl}/sdk.js" data-id="${site.id}"></script>`;
   }
 
   if (loading) {

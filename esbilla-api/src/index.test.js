@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import app from './app';
 
+// User-Agent de navegador real para tests (requerido por validación anti-bot)
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
 describe('Esbilla API - Pruebes de Gobernanza', () => {
 
   it('Debería devolver la configuración correuta pol ID', async () => {
@@ -19,6 +22,7 @@ describe('Esbilla API - Pruebes de Gobernanza', () => {
     };
     const response = await request(app)
       .post('/api/consent/log')
+      .set('User-Agent', BROWSER_UA)
       .send(payload);
 
     expect(response.status).toBe(201);
@@ -28,6 +32,7 @@ describe('Esbilla API - Pruebes de Gobernanza', () => {
   it('Debería rexazar peticiones sin cmpId', async () => {
     const response = await request(app)
       .post('/api/consent/log')
+      .set('User-Agent', BROWSER_UA)
       .send({ choices: { analytics: true } });
 
     expect(response.status).toBe(400);
@@ -104,6 +109,7 @@ describe('Esbilla API - Consent con footprintId', () => {
     };
     const response = await request(app)
       .post('/api/consent/log')
+      .set('User-Agent', BROWSER_UA)
       .send(payload);
 
     expect(response.status).toBe(201);
@@ -117,9 +123,42 @@ describe('Esbilla API - Consent con footprintId', () => {
     };
     const response = await request(app)
       .post('/api/consent/log')
+      .set('User-Agent', BROWSER_UA)
       .send(payload);
 
     expect(response.status).toBe(201);
+  });
+
+});
+
+describe('Esbilla API - Security', () => {
+
+  it('Debería rechazar peticiones sin User-Agent', async () => {
+    const payload = {
+      cmpId: 'test-no-ua',
+      choices: { analytics: true, marketing: false }
+    };
+    const response = await request(app)
+      .post('/api/consent/log')
+      .set('User-Agent', '') // Sin User-Agent
+      .send(payload);
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('INVALID_REQUEST');
+  });
+
+  it('Debería rechazar peticiones de clientes sospechosos (curl)', async () => {
+    const payload = {
+      cmpId: 'test-curl',
+      choices: { analytics: true, marketing: false }
+    };
+    const response = await request(app)
+      .post('/api/consent/log')
+      .set('User-Agent', 'curl/7.68.0')
+      .send(payload);
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('SUSPICIOUS_CLIENT');
   });
 
 });
