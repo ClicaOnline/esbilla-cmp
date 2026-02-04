@@ -124,8 +124,11 @@ export function SitesPage() {
           name: data.name,
           legalName: data.legalName,
           taxId: data.taxId,
-          address: data.address,
+          plan: data.plan || 'free',
+          maxSites: data.maxSites || 5,
+          maxConsentsPerMonth: data.maxConsentsPerMonth || 10000,
           billingEmail: data.billingEmail,
+          billingAddress: data.billingAddress,
           createdAt: data.createdAt?.toDate?.() || new Date(),
           createdBy: data.createdBy,
           updatedAt: data.updatedAt?.toDate?.(),
@@ -332,6 +335,7 @@ export function SitesPage() {
       const siteAccess = {
         siteId: selectedSiteId,
         siteName: site.name,
+        organizationId: site.organizationId || '',
         role: selectedUserRole,
         addedAt: new Date(),
         addedBy: user.uid
@@ -716,12 +720,6 @@ export function SitesPage() {
             if (selectedSiteId in (u.siteAccess || {})) return true;
             if (site.organizationId && site.organizationId in (u.orgAccess || {})) return true;
             return false;
-          });
-
-          const usersWithoutAccess = users.filter(u => {
-            if (u.globalRole === 'superadmin') return false;
-            if (selectedSiteId in (u.siteAccess || {})) return false;
-            return true;
           });
 
           return (
