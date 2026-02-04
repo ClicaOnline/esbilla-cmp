@@ -127,13 +127,13 @@ interface DailyStatsDoc {
 
 /**
  * Carga estadísticas pre-agregadas de la colección stats
- * @param siteId - ID del sitio (o 'all' para todos)
+ * @param siteIds - Array de IDs a buscar (site.id + dominios) o 'all'
  * @param startDate - Fecha de inicio
  * @param endDate - Fecha de fin
  * @returns Estadísticas agregadas
  */
 async function loadPreAggregatedStats(
-  siteId: string,
+  siteIds: string[] | 'all',
   startDate: Date,
   endDate: Date
 ): Promise<{
@@ -153,11 +153,13 @@ async function loadPreAggregatedStats(
   const todayStr = new Date().toISOString().split('T')[0];
 
   // Construir query para obtener documentos de stats en el rango de fechas
+  // Si hay siteIds específicos, usamos 'in' para buscar por ID del sitio O sus dominios
   let q;
-  if (siteId && siteId !== 'all') {
+  if (siteIds !== 'all' && siteIds.length > 0) {
+    // Firestore 'in' soporta hasta 30 valores - suficiente para site.id + dominios
     q = query(
       statsRef,
-      where('siteId', '==', siteId),
+      where('siteId', 'in', siteIds.slice(0, 30)),
       where('date', '>=', startDateStr),
       where('date', '<=', endDateStr),
       orderBy('date', 'desc')
@@ -451,8 +453,15 @@ export function DashboardPage() {
       // ============================================
       const usePreAggregated = selectedLanguage === 'all' && selectedBrowser === 'all' && selectedSource === 'all';
 
+      // Obtener el sitio seleccionado para incluir sus dominios en la búsqueda
+      // Esto permite encontrar consentimientos guardados con siteId = dominio
+      const selectedSite = sites.find(s => s.id === selectedSiteId);
+      const siteIdsToSearch: string[] | 'all' = selectedSiteId === 'all'
+        ? 'all'
+        : [selectedSiteId, ...(selectedSite?.domains || [])];
+
       if (usePreAggregated) {
-        const preAggregated = await loadPreAggregatedStats(selectedSiteId, startDate, endDate);
+        const preAggregated = await loadPreAggregatedStats(siteIdsToSearch, startDate, endDate);
 
         if (preAggregated.hasData) {
           console.log('📊 Usando stats pre-agregados (optimizado)');
@@ -480,12 +489,13 @@ export function DashboardPage() {
       const consentsRef = collection(db, 'consents');
 
       // Build query
+      // Usamos 'in' para buscar por siteId del sitio O cualquiera de sus dominios
       let q;
       try {
-        if (selectedSiteId && selectedSiteId !== 'all') {
+        if (siteIdsToSearch !== 'all' && siteIdsToSearch.length > 0) {
           q = query(
             consentsRef,
-            where('siteId', '==', selectedSiteId),
+            where('siteId', 'in', siteIdsToSearch.slice(0, 30)),
             where('createdAt', '>=', Timestamp.fromDate(startDate)),
             where('createdAt', '<=', Timestamp.fromDate(endDate)),
             orderBy('createdAt', 'desc'),

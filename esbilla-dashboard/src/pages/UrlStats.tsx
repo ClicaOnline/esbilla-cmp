@@ -134,12 +134,18 @@ export function UrlStatsPage() {
       }
 
       // Build query
+      // Buscar por siteId del sitio O cualquiera de sus dominios configurados
+      const selectedSite = sites.find(s => s.id === selectedSiteId);
+      const siteIdsToSearch = selectedSiteId === 'all'
+        ? null
+        : [selectedSiteId, ...(selectedSite?.domains || [])];
+
       let q;
       try {
-        if (selectedSiteId && selectedSiteId !== 'all') {
+        if (siteIdsToSearch && siteIdsToSearch.length > 0) {
           q = query(
             consentsRef,
-            where('siteId', '==', selectedSiteId),
+            where('siteId', 'in', siteIdsToSearch.slice(0, 30)),
             where('createdAt', '>=', Timestamp.fromDate(startDate)),
             where('createdAt', '<=', Timestamp.fromDate(endDate)),
             orderBy('createdAt', 'desc'),
