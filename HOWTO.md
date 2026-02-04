@@ -597,6 +597,29 @@ npm test -w esbilla-public -- --run
 }
 ```
 
+{
+  orgAccess: {
+    "org_abc123": {
+      organizationId: "org_abc123",
+      organizationName: "Mi Empresa S.L.",
+      role: "org_admin" | "org_owner" | "org_viewer",
+      addedAt: Timestamp,
+      addedBy: "superadmin_uid"
+    }
+  },
+  siteAccess: {
+    "site_xyz789": {
+      siteId: "site_xyz789",
+      siteName: "example.com",
+      organizationId: "org_abc123",
+      role: "site_admin" | "site_viewer",
+      addedAt: Timestamp,
+      addedBy: "org_owner_uid"
+    }
+  }
+}
+
+
 ### Colección: `consents`
 
 ```json

@@ -4,8 +4,13 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import type { Site } from '../types';
+import type { Site, DashboardUser, Organization } from '../types';
 import { DEFAULT_BANNER_SETTINGS, generateApiKey, generateSiteId } from '../types';
+import { usePagination } from '../hooks/usePagination';
+import { useSearch } from '../hooks/useSearch';
+import { Pagination } from '../components/shared/Pagination';
+import { SearchInput } from '../components/shared/SearchInput';
+import { PageSizeSelector } from '../components/shared/PageSizeSelector';
 import {
   Plus,
   Globe2,
@@ -16,7 +21,9 @@ import {
   BarChart3,
   X,
   RefreshCw,
-  Code
+  Code,
+  Users,
+  Building2
 } from 'lucide-react';
 
 interface SiteFormData {
@@ -37,8 +44,19 @@ export function SitesPage() {
   const [expandedSite, setExpandedSite] = useState<string | null>(null);
   const [recalculating, setRecalculating] = useState<string | null>(null);
 
+  // New state for search, pagination, and users management
+  const [users, setUsers] = useState<DashboardUser[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [pageSize, setPageSize] = useState(25);
+  const [showUsersModal, setShowUsersModal] = useState(false);
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
+  const [selectedUserRole, setSelectedUserRole] = useState<'site_admin' | 'site_viewer'>('site_viewer');
+
   useEffect(() => {
     loadSites();
+    loadUsers();
+    loadOrganizations();
   }, []);
 
   async function loadSites() {
@@ -74,6 +92,47 @@ export function SitesPage() {
       console.error('Error loading sites:', err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadUsers() {
+    if (!db) return;
+
+    try {
+      const snapshot = await getDocs(collection(db, 'users'));
+      const userList: DashboardUser[] = [];
+      snapshot.forEach((docSnapshot) => {
+        userList.push({ id: docSnapshot.id, ...docSnapshot.data() } as DashboardUser);
+      });
+      setUsers(userList);
+    } catch (err) {
+      console.error('Error loading users:', err);
+    }
+  }
+
+  async function loadOrganizations() {
+    if (!db) return;
+
+    try {
+      const snapshot = await getDocs(collection(db, 'organizations'));
+      const orgList: Organization[] = [];
+      snapshot.forEach((docSnapshot) => {
+        const data = docSnapshot.data();
+        orgList.push({
+          id: docSnapshot.id,
+          name: data.name,
+          legalName: data.legalName,
+          taxId: data.taxId,
+          address: data.address,
+          billingEmail: data.billingEmail,
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          createdBy: data.createdBy,
+          updatedAt: data.updatedAt?.toDate?.(),
+        });
+      });
+      setOrganizations(orgList);
+    } catch (err) {
+      console.error('Error loading organizations:', err);
     }
   }
 
@@ -234,6 +293,121 @@ export function SitesPage() {
     return `<script src="${apiUrl}/sdk.js" data-id="${site.id}"></script>`;
   }
 
+  // Search and pagination hooks
+  const { filteredData: filteredSites } = useSearch({
+    data: sites,
+    searchKeys: ['name', 'domains'],
+    searchTerm
+  });
+
+  const { currentPage, totalPages, pageData: paginatedSites, goToPage } = usePagination({
+    data: filteredSites,
+    pageSize
+  });
+
+  // User management functions
+  function getUsersWithSiteAccess(siteId: string): number {
+    const site = sites.find(s => s.id === siteId);
+    return users.filter(u => {
+      if (u.globalRole === 'superadmin') return true;
+      if (siteId in (u.siteAccess || {})) return true;
+      if (site?.organizationId && site.organizationId in (u.orgAccess || {})) return true;
+      return false;
+    }).length;
+  }
+
+  function openUsersModal(siteId: string) {
+    setSelectedSiteId(siteId);
+    setShowUsersModal(true);
+  }
+
+  async function handleAddUserToSite(userId: string) {
+    if (!selectedSiteId || !db || !user) return;
+
+    const site = sites.find(s => s.id === selectedSiteId);
+    if (!site) return;
+
+    try {
+      const siteAccess = {
+        siteId: selectedSiteId,
+        siteName: site.name,
+        role: selectedUserRole,
+        addedAt: new Date(),
+        addedBy: user.uid
+      };
+
+      await updateDoc(doc(db, 'users', userId), {
+        [`siteAccess.${selectedSiteId}`]: siteAccess
+      });
+
+      // Update local state
+      setUsers(users.map(u =>
+        u.id === userId
+          ? { ...u, siteAccess: { ...u.siteAccess, [selectedSiteId]: siteAccess } }
+          : u
+      ));
+    } catch (err) {
+      console.error('Error adding user to site:', err);
+      alert('Error al añadir usuario al sitio');
+    }
+  }
+
+  async function handleRemoveUserFromSite(userId: string, siteId: string) {
+    if (!db) return;
+
+    if (!confirm('¿Quitar acceso a este sitio?')) return;
+
+    try {
+      const userDoc = await getDocs(query(collection(db, 'users')));
+      const userData = userDoc.docs.find(d => d.id === userId)?.data();
+
+      if (!userData) return;
+
+      const updatedSiteAccess = { ...(userData.siteAccess || {}) };
+      delete updatedSiteAccess[siteId];
+
+      await updateDoc(doc(db, 'users', userId), {
+        siteAccess: updatedSiteAccess
+      });
+
+      // Update local state
+      setUsers(users.map(u =>
+        u.id === userId
+          ? { ...u, siteAccess: updatedSiteAccess }
+          : u
+      ));
+    } catch (err) {
+      console.error('Error removing user from site:', err);
+      alert('Error al remover usuario del sitio');
+    }
+  }
+
+  async function handleChangeUserRole(userId: string, siteId: string, newRole: 'site_admin' | 'site_viewer') {
+    if (!db) return;
+
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        [`siteAccess.${siteId}.role`]: newRole
+      });
+
+      // Update local state
+      setUsers(users.map(u =>
+        u.id === userId && u.siteAccess?.[siteId]
+          ? {
+              ...u,
+              siteAccess: {
+                ...u.siteAccess,
+                [siteId]: { ...u.siteAccess[siteId], role: newRole }
+              }
+            }
+          : u
+      ));
+    } catch (err) {
+      console.error('Error changing user role:', err);
+      alert('Error al cambiar rol del usuario');
+    }
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -262,6 +436,27 @@ export function SitesPage() {
           </button>
         </div>
 
+        {/* Search and pagination controls */}
+        {sites.length > 0 && (
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-stone-200">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                placeholder="Buscar por nombre o dominio..."
+                className="flex-1"
+              />
+              <PageSizeSelector
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+              />
+            </div>
+            <div className="mt-2 text-sm text-stone-500">
+              Mostrando {paginatedSites.length} de {filteredSites.length} sitios
+            </div>
+          </div>
+        )}
+
         {/* Sites list */}
         {sites.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-stone-200 p-12 text-center">
@@ -278,7 +473,7 @@ export function SitesPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {sites.map((site) => (
+            {paginatedSites.map((site) => (
               <div
                 key={site.id}
                 className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden"
@@ -292,9 +487,20 @@ export function SitesPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-stone-800">{site.name}</h3>
-                        <p className="text-sm text-stone-500">
-                          {site.domains.join(', ') || 'No domains configured'}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          {site.organizationId && (
+                            <>
+                              <span className="text-xs text-stone-500 flex items-center gap-1">
+                                <Building2 size={12} />
+                                {organizations.find(o => o.id === site.organizationId)?.name || 'Organización'}
+                              </span>
+                              <span className="text-xs text-stone-400">•</span>
+                            </>
+                          )}
+                          <p className="text-sm text-stone-500">
+                            {site.domains.join(', ') || 'No domains configured'}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -340,6 +546,16 @@ export function SitesPage() {
                         : t.sites.never
                       }
                     </span>
+                  </div>
+                  <div className="text-stone-400">|</div>
+                  <div className="flex items-center gap-2">
+                    <Users size={16} className="text-stone-400" />
+                    <button
+                      onClick={() => openUsersModal(site.id)}
+                      className="text-stone-600 hover:text-amber-600 transition-colors"
+                    >
+                      <strong>{getUsersWithSiteAccess(site.id)}</strong> usuarios
+                    </button>
                   </div>
                   <div className="ml-auto">
                     <button
@@ -411,6 +627,18 @@ export function SitesPage() {
           </div>
         )}
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={goToPage}
+              showFirstLast={true}
+            />
+          </div>
+        )}
+
         {/* Create/Edit Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -476,6 +704,157 @@ export function SitesPage() {
             </div>
           </div>
         )}
+
+        {/* Users Management Modal */}
+        {showUsersModal && selectedSiteId && (() => {
+          const site = sites.find(s => s.id === selectedSiteId);
+          if (!site) return null;
+
+          const usersWithAccess = users.filter(u => {
+            if (u.globalRole === 'superadmin') return true;
+            if (selectedSiteId in (u.siteAccess || {})) return true;
+            if (site.organizationId && site.organizationId in (u.orgAccess || {})) return true;
+            return false;
+          });
+
+          const usersWithoutAccess = users.filter(u => {
+            if (u.globalRole === 'superadmin') return false;
+            if (selectedSiteId in (u.siteAccess || {})) return false;
+            return true;
+          });
+
+          return (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                {/* Header */}
+                <div className="sticky top-0 bg-white border-b border-stone-200 px-6 py-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-stone-800">
+                      Usuarios con acceso al sitio
+                    </h2>
+                    <p className="text-sm text-stone-500 mt-1">{site.name}</p>
+                  </div>
+                  <button
+                    onClick={() => setShowUsersModal(false)}
+                    className="p-2 text-stone-400 hover:bg-stone-100 rounded-lg transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Users list */}
+                <div className="p-6 space-y-3">
+                  {usersWithAccess.map(u => {
+                    const isSuperadmin = u.globalRole === 'superadmin';
+                    const hasDirectSiteAccess = selectedSiteId in (u.siteAccess || {});
+                    const hasOrgAccess = site.organizationId && site.organizationId in (u.orgAccess || {});
+                    const currentRole = hasDirectSiteAccess
+                      ? u.siteAccess?.[selectedSiteId]?.role
+                      : undefined;
+
+                    return (
+                      <div
+                        key={u.id}
+                        className="flex items-center justify-between p-4 bg-stone-50 rounded-lg"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={u.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.displayName || u.email)}`}
+                            alt={u.displayName}
+                            className="w-10 h-10 rounded-full"
+                          />
+                          <div>
+                            <p className="font-medium text-stone-800">
+                              {u.displayName || u.email}
+                            </p>
+                            <p className="text-sm text-stone-500">{u.email}</p>
+                            {hasOrgAccess && !hasDirectSiteAccess && (
+                              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                                <Check size={12} />
+                                Acceso vía {organizations.find(o => o.id === site.organizationId)?.name} ({u.orgAccess?.[site.organizationId!]?.role})
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {isSuperadmin ? (
+                            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                              Superadmin
+                            </span>
+                          ) : hasDirectSiteAccess ? (
+                            <>
+                              <select
+                                value={currentRole}
+                                onChange={(e) => handleChangeUserRole(u.id, selectedSiteId, e.target.value as 'site_admin' | 'site_viewer')}
+                                className="px-3 py-1.5 border border-stone-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                              >
+                                <option value="site_viewer">Viewer</option>
+                                <option value="site_admin">Admin</option>
+                              </select>
+                              <button
+                                onClick={() => handleRemoveUserFromSite(u.id, selectedSiteId)}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Quitar acceso"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          ) : (
+                            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                              Vía organización
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Add user section */}
+                <div className="border-t border-stone-200 p-6 bg-stone-50">
+                  <h3 className="text-sm font-medium text-stone-700 mb-3">
+                    Añadir usuario al sitio
+                  </h3>
+                  <div className="space-y-3">
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleAddUserToSite(e.target.value);
+                          e.target.value = '';
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    >
+                      <option value="">Seleccionar usuario...</option>
+                      {usersWithoutAccess.map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.displayName || u.email} ({u.email})
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="flex items-start gap-2">
+                      <select
+                        value={selectedUserRole}
+                        onChange={(e) => setSelectedUserRole(e.target.value as 'site_admin' | 'site_viewer')}
+                        className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+                      >
+                        <option value="site_viewer">Viewer (solo lectura)</option>
+                        <option value="site_admin">Admin (gestión completa del sitio)</option>
+                      </select>
+                    </div>
+
+                    <p className="text-xs text-stone-500">
+                      <strong>Nota:</strong> Los usuarios con acceso a la organización "{organizations.find(o => o.id === site.organizationId)?.name || 'la organización asociada'}"
+                      tienen acceso automático a todos sus sitios.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </Layout>
   );
