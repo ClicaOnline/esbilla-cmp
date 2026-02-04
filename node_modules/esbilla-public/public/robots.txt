@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Bloquear archivos de configuración o carpetas de build si estuvieran expuestas
+Disallow: /_astro/
+Disallow: /scripts/test.html
+# Si tienes una zona de login para usuarios en el dominio principal
+Disallow: /login
+
+# Apuntar al sitemap que genera Astro automáticamente (si usas @astrojs/sitemap)
+Sitemap: https://esbilla.com/sitemap-index.xml

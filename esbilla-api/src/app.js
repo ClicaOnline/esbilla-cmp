@@ -220,6 +220,12 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+app.use((req, res, next) => {
+  // Indica a los robots que ni siquiera intenten seguir enlaces en esta página
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  next();
+});
+
 app.use(express.json());
 
 // Servir ficheros estáticos del SDK
@@ -435,9 +441,11 @@ app.post('/api/consent/log', async (req, res) => {
     timestamp: timestamp || new Date().toISOString(),
     createdAt: admin.apps.length ? admin.firestore.FieldValue.serverTimestamp() : new Date(),
 
-    // Campo TTL para eliminación automática (3 años)
-    // Firestore TTL policy debe configurarse en este campo
+    // Campo TTL para eliminación automática (36 meses = 3 años)
+    // IMPORTANTE: Configurar TTL Policy en Firebase Console usando este campo
+    // La política TTL eliminará automáticamente documentos cuando deleteAt < now()
     expiresAt: admin.apps.length ? admin.firestore.Timestamp.fromDate(expiresAt) : expiresAt,
+    deleteAt: admin.apps.length ? admin.firestore.Timestamp.fromDate(expiresAt) : expiresAt,
 
     // Atribución de marketing (SDK v1.3+)
     // Solo presente cuando el usuario acepta marketing y hay datos de UTM/click IDs
@@ -451,7 +459,13 @@ app.post('/api/consent/log', async (req, res) => {
       // Esto garantiza el audit trail (nunca sobrescribimos)
       const docRef = await db.collection('consents').add(consentRecord);
 
-      // Actualizar estadísticas del sitio (opcional, async)
+      // Actualizar estadísticas pre-agregadas diarias (optimización de costes)
+      // Esto permite consultar stats sin leer toda la colección de consents
+      updateDailyStats(projectId, choices, action || 'unknown', metadata).catch(err => {
+        console.warn('Error actualizando stats diarios:', err.message);
+      });
+
+      // Actualizar estadísticas del sitio (legacy, opcional)
       updateSiteStats(projectId).catch(err => {
         console.warn('Error actualizando stats:', err.message);
       });
@@ -481,7 +495,70 @@ app.post('/api/consent/log', async (req, res) => {
   });
 });
 
-// Función auxiliar para actualizar estadísticas del sitio
+// ============================================
+// PRE-AGREGACIÓN: CONTADORES EN TIEMPO REAL
+// ============================================
+// Optimización de costes: en lugar de consultar la colección completa,
+// mantenemos contadores diarios pre-agregados que se incrementan
+// con cada consentimiento. Esto reduce las lecturas de N docs a 1 doc.
+// Documento: stats/{siteId}_daily_{YYYY-MM-DD}
+// ============================================
+
+/**
+ * Actualiza las estadísticas diarias pre-agregadas
+ * @param {string} siteId - ID del sitio
+ * @param {object} choices - Elecciones del usuario {analytics, marketing}
+ * @param {string} action - Tipo de acción (accept_all, reject_all, customize, update)
+ * @param {object} metadata - Metadata del consentimiento
+ */
+async function updateDailyStats(siteId, choices, action, metadata) {
+  if (!db || !siteId) return;
+
+  // Obtener fecha actual en formato YYYY-MM-DD
+  const today = new Date().toISOString().split('T')[0];
+  const statsDocId = `${siteId}_daily_${today}`;
+  const statsRef = db.collection('stats').doc(statsDocId);
+
+  // Preparar los incrementos
+  const increments = {
+    // Contadores básicos
+    total_hits: admin.firestore.FieldValue.increment(1),
+
+    // Contadores por elección de categoría
+    accepted_analytics: choices.analytics ? admin.firestore.FieldValue.increment(1) : admin.firestore.FieldValue.increment(0),
+    accepted_marketing: choices.marketing ? admin.firestore.FieldValue.increment(1) : admin.firestore.FieldValue.increment(0),
+
+    // Contadores por tipo de acción
+    [`action_${action}`]: admin.firestore.FieldValue.increment(1),
+
+    // Contadores por idioma (si está disponible)
+    ...(metadata?.language && {
+      [`lang_${metadata.language}`]: admin.firestore.FieldValue.increment(1)
+    }),
+
+    // Contadores por país (si está disponible)
+    ...(metadata?.country && {
+      [`country_${metadata.country}`]: admin.firestore.FieldValue.increment(1)
+    }),
+
+    // Metadata del documento
+    siteId: siteId,
+    date: today,
+    lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    // Usar set con merge para crear el documento si no existe
+    await statsRef.set(increments, { merge: true });
+  } catch (err) {
+    console.warn('Error actualizando stats diarios:', err.message);
+  }
+}
+
+/**
+ * Actualiza las estadísticas globales del sitio (legacy)
+ * @param {string} siteId - ID del sitio
+ */
 async function updateSiteStats(siteId) {
   if (!db || !siteId) return;
 
@@ -527,12 +604,14 @@ app.get('/api/consent/history/:footprintId', async (req, res) => {
   }
 
   try {
-    // Buscar todos los registros con este footprintId (de todos los dominios)
+    // Buscar registros con este footprintId (de todos los dominios)
+    // OPTIMIZACIÓN: Límite de 50 registros para evitar lecturas masivas accidentales
+    // Requiere índice compuesto: footprintId (Asc) + createdAt (Desc)
     const consentsRef = db.collection('consents');
     const q = consentsRef
       .where('footprintId', '==', footprintId)
       .orderBy('createdAt', 'desc')
-      .limit(100); // Límite de seguridad
+      .limit(50); // Límite optimizado para reducir costes
 
     const snapshot = await q.get();
 

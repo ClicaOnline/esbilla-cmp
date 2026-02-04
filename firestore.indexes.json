@@ -24,6 +24,29 @@
       ]
     },
     {
+      "collectionGroup": "consents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userHash", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "siteId", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "sites",
       "queryScope": "COLLECTION",
       "fields": [
@@ -41,7 +64,7 @@
   "fieldOverrides": [
     {
       "collectionGroup": "consents",
-      "fieldPath": "expiresAt",
+      "fieldPath": "deleteAt",
       "ttl": true,
       "indexes": []
     }

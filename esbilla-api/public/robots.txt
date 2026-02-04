@@ -1,0 +1,14 @@
+User-agent: *
+# Bloquear acceso a los endpoints de la API
+Disallow: /api/
+# Bloquear el panel de control para que no aparezca en Google
+Disallow: /dashboard/
+Disallow: /settings/
+# Evitar indexación de parámetros de búsqueda
+Disallow: /*?
+
+# Permitir que vean los assets estáticos si fuera necesario para el renderizado
+Allow: /static/
+Allow: /styles/
+
+Sitemap: https://api.esbilla.com/sitemap.xml

@@ -105,6 +105,196 @@ const LANG_COLORS: Record<string, string> = {
 };
 
 // ============================================
+// PRE-AGREGACIÓN: CARGA DE STATS OPTIMIZADOS
+// ============================================
+// En lugar de leer N documentos de consents, leemos 1 documento por día
+// de la colección stats. Esto reduce costes de lectura significativamente.
+// Formato: stats/{siteId}_daily_{YYYY-MM-DD}
+// ============================================
+
+interface DailyStatsDoc {
+  siteId: string;
+  date: string;
+  total_hits: number;
+  accepted_analytics: number;
+  accepted_marketing: number;
+  action_accept_all?: number;
+  action_reject_all?: number;
+  action_customize?: number;
+  action_update?: number;
+  [key: string]: unknown; // Para lang_* y country_*
+}
+
+/**
+ * Carga estadísticas pre-agregadas de la colección stats
+ * @param siteId - ID del sitio (o 'all' para todos)
+ * @param startDate - Fecha de inicio
+ * @param endDate - Fecha de fin
+ * @returns Estadísticas agregadas
+ */
+async function loadPreAggregatedStats(
+  siteId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<{
+  stats: Stats;
+  dailyData: DailyData[];
+  languageStats: BreakdownItem[];
+  actionStats: BreakdownItem[];
+  hasData: boolean;
+}> {
+  if (!db) {
+    return { stats: { total: 0, accepted: 0, rejected: 0, customized: 0, today: 0, trend: 0 }, dailyData: [], languageStats: [], actionStats: [], hasData: false };
+  }
+
+  const statsRef = collection(db, 'stats');
+  const startDateStr = startDate.toISOString().split('T')[0];
+  const endDateStr = endDate.toISOString().split('T')[0];
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // Construir query para obtener documentos de stats en el rango de fechas
+  let q;
+  if (siteId && siteId !== 'all') {
+    q = query(
+      statsRef,
+      where('siteId', '==', siteId),
+      where('date', '>=', startDateStr),
+      where('date', '<=', endDateStr),
+      orderBy('date', 'desc')
+    );
+  } else {
+    q = query(
+      statsRef,
+      where('date', '>=', startDateStr),
+      where('date', '<=', endDateStr),
+      orderBy('date', 'desc')
+    );
+  }
+
+  try {
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      return { stats: { total: 0, accepted: 0, rejected: 0, customized: 0, today: 0, trend: 0 }, dailyData: [], languageStats: [], actionStats: [], hasData: false };
+    }
+
+    // Agregar todos los documentos
+    let total = 0;
+    let acceptedAnalytics = 0;
+    let acceptedMarketing = 0;
+    let acceptAll = 0;
+    let rejectAll = 0;
+    let customize = 0;
+    let update = 0;
+    let today = 0;
+
+    const dailyMap = new Map<string, { total: number; accepted: number; rejected: number }>();
+    const langMap = new Map<string, number>();
+    const countryMap = new Map<string, number>();
+
+    // Para calcular tendencia
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoStr = weekAgo.toISOString().split('T')[0];
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    const twoWeeksAgoStr = twoWeeksAgo.toISOString().split('T')[0];
+    let thisWeek = 0;
+    let lastWeek = 0;
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data() as DailyStatsDoc;
+      const hits = data.total_hits || 0;
+      const date = data.date;
+
+      total += hits;
+      acceptedAnalytics += data.accepted_analytics || 0;
+      acceptedMarketing += data.accepted_marketing || 0;
+      acceptAll += data.action_accept_all || 0;
+      rejectAll += data.action_reject_all || 0;
+      customize += data.action_customize || 0;
+      update += data.action_update || 0;
+
+      // Hoy
+      if (date === todayStr) {
+        today += hits;
+      }
+
+      // Tendencia semanal
+      if (date >= weekAgoStr) {
+        thisWeek += hits;
+      } else if (date >= twoWeeksAgoStr) {
+        lastWeek += hits;
+      }
+
+      // Datos diarios para gráfico
+      const existing = dailyMap.get(date) || { total: 0, accepted: 0, rejected: 0 };
+      existing.total += hits;
+      existing.accepted += data.action_accept_all || 0;
+      existing.rejected += data.action_reject_all || 0;
+      dailyMap.set(date, existing);
+
+      // Extraer estadísticas de idioma y país de los campos dinámicos
+      Object.keys(data).forEach((key) => {
+        if (key.startsWith('lang_')) {
+          const lang = key.replace('lang_', '');
+          langMap.set(lang, (langMap.get(lang) || 0) + (data[key] as number || 0));
+        }
+        if (key.startsWith('country_')) {
+          const country = key.replace('country_', '');
+          countryMap.set(country, (countryMap.get(country) || 0) + (data[key] as number || 0));
+        }
+      });
+    });
+
+    // Calcular accepted/rejected/customized basado en las acciones
+    const accepted = acceptAll;
+    const rejected = rejectAll;
+    const customized = customize + update;
+    const trend = lastWeek > 0 ? ((thisWeek - lastWeek) / lastWeek) * 100 : 0;
+
+    // Convertir dailyMap a array ordenado
+    const dailyData: DailyData[] = Array.from(dailyMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-14)
+      .map(([date, data]) => ({
+        date: new Date(date).toLocaleDateString('es', { day: '2-digit', month: 'short' }),
+        ...data
+      }));
+
+    // Convertir langMap a BreakdownItem
+    const languageStats: BreakdownItem[] = Array.from(langMap.entries())
+      .map(([name, value]) => ({
+        name,
+        value,
+        percentage: total > 0 ? (value / total) * 100 : 0,
+        color: LANG_COLORS[name]
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+
+    // Estadísticas de acciones
+    const actionStats: BreakdownItem[] = [
+      { name: 'accept_all', value: acceptAll, percentage: total > 0 ? (acceptAll / total) * 100 : 0, color: ACTION_COLORS['accept_all'] },
+      { name: 'reject_all', value: rejectAll, percentage: total > 0 ? (rejectAll / total) * 100 : 0, color: ACTION_COLORS['reject_all'] },
+      { name: 'customize', value: customize, percentage: total > 0 ? (customize / total) * 100 : 0, color: ACTION_COLORS['customize'] },
+      { name: 'update', value: update, percentage: total > 0 ? (update / total) * 100 : 0, color: ACTION_COLORS['update'] }
+    ].filter(item => item.value > 0).sort((a, b) => b.value - a.value);
+
+    return {
+      stats: { total, accepted, rejected, customized, today, trend },
+      dailyData,
+      languageStats,
+      actionStats,
+      hasData: true
+    };
+  } catch (err) {
+    console.warn('Error cargando stats pre-agregados, usando fallback:', err);
+    return { stats: { total: 0, accepted: 0, rejected: 0, customized: 0, today: 0, trend: 0 }, dailyData: [], languageStats: [], actionStats: [], hasData: false };
+  }
+}
+
+// ============================================
 // PARSEO DE USER AGENT
 // ============================================
 function parseUserAgent(ua: string): { browser: string; os: string; deviceType: string } {
@@ -239,8 +429,6 @@ export function DashboardPage() {
     setError(null);
 
     try {
-      const consentsRef = collection(db, 'consents');
-
       // Calculate date range based on preset or custom dates
       let startDate: Date;
       let endDate: Date = new Date();
@@ -256,6 +444,40 @@ export function DashboardPage() {
         startDate = range.start;
         endDate = range.end;
       }
+
+      // ============================================
+      // OPTIMIZACIÓN: Intentar cargar stats pre-agregados primero
+      // Esto reduce lecturas de N documentos a ~30 documentos (1 por día)
+      // ============================================
+      const usePreAggregated = selectedLanguage === 'all' && selectedBrowser === 'all' && selectedSource === 'all';
+
+      if (usePreAggregated) {
+        const preAggregated = await loadPreAggregatedStats(selectedSiteId, startDate, endDate);
+
+        if (preAggregated.hasData) {
+          console.log('📊 Usando stats pre-agregados (optimizado)');
+          setStats(preAggregated.stats);
+          setDailyData(preAggregated.dailyData);
+          setLanguageStats(preAggregated.languageStats);
+          setActionStats(preAggregated.actionStats);
+          // Los stats detallados requieren query completo, mostrar vacíos
+          setBrowserStats([]);
+          setOsStats([]);
+          setDeviceStats([]);
+          setDomainStats([]);
+          setSourceStats([]);
+          setSourceAcceptance([]);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ============================================
+      // FALLBACK: Query completo a consents (más costoso)
+      // Se usa cuando hay filtros activos o no hay datos pre-agregados
+      // ============================================
+      console.log('📊 Usando query completo (fallback)');
+      const consentsRef = collection(db, 'consents');
 
       // Build query
       let q;
