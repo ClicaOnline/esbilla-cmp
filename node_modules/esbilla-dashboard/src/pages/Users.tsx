@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -15,7 +15,7 @@ import type {
 } from '../types';
 import {
   Shield, Eye, Clock, Trash2, Check, X, Crown,
-  Globe2, Plus, Building2, ChevronDown
+  Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save
 } from 'lucide-react';
 
 interface UserRecord {
@@ -42,6 +42,16 @@ export function UsersPage() {
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
   const [activeTab, setActiveTab] = useState<'orgs' | 'sites'>('orgs');
+
+  // Create user modal state
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserGlobalRole, setNewUserGlobalRole] = useState<GlobalRole>('pending');
+  const [newUserOrgAccess, setNewUserOrgAccess] = useState<Record<string, OrganizationRole>>({});
+  const [newUserSiteAccess, setNewUserSiteAccess] = useState<Record<string, SiteRole>>({});
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -154,6 +164,133 @@ export function UsersPage() {
   function openAccessModal(user: UserRecord) {
     setSelectedUser(user);
     setShowAccessModal(true);
+  }
+
+  function openCreateModal() {
+    setNewUserEmail('');
+    setNewUserName('');
+    setNewUserGlobalRole('pending');
+    setNewUserOrgAccess({});
+    setNewUserSiteAccess({});
+    setCreateError(null);
+    setShowCreateModal(true);
+  }
+
+  async function createUser() {
+    if (!isSuperAdmin || !db) return;
+    if (!newUserEmail || !newUserEmail.includes('@')) {
+      setCreateError('Email inválido');
+      return;
+    }
+
+    // Check if email already exists
+    const existingUser = users.find(u => u.email.toLowerCase() === newUserEmail.toLowerCase());
+    if (existingUser) {
+      setCreateError('Ya existe un usuario con este email');
+      return;
+    }
+
+    setCreateLoading(true);
+    setCreateError(null);
+
+    try {
+      // Generate a unique ID for the invited user (will be replaced when they login)
+      const inviteId = `invite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Build org access records
+      const orgAccessRecords: Record<string, OrganizationAccess> = {};
+      Object.entries(newUserOrgAccess).forEach(([orgId, role]) => {
+        const org = organizations.find(o => o.id === orgId);
+        orgAccessRecords[orgId] = {
+          organizationId: orgId,
+          organizationName: org?.name,
+          role,
+          addedAt: new Date(),
+          addedBy: currentUser?.uid || ''
+        };
+      });
+
+      // Build site access records
+      const siteAccessRecords: Record<string, SiteAccess> = {};
+      Object.entries(newUserSiteAccess).forEach(([siteId, role]) => {
+        const site = sites.find(s => s.id === siteId);
+        siteAccessRecords[siteId] = {
+          siteId,
+          siteName: site?.name,
+          organizationId: site?.organizationId || '',
+          role,
+          addedAt: new Date(),
+          addedBy: currentUser?.uid || ''
+        };
+      });
+
+      // Determine global role based on access
+      let globalRole: GlobalRole = newUserGlobalRole;
+      if (globalRole === 'pending' && (Object.keys(orgAccessRecords).length > 0 || Object.keys(siteAccessRecords).length > 0)) {
+        // If has any access, consider them approved but not superadmin
+        globalRole = 'pending'; // They'll get access via org/site, not global role
+      }
+
+      const newUser = {
+        email: newUserEmail.toLowerCase(),
+        displayName: newUserName || newUserEmail.split('@')[0],
+        photoURL: '',
+        globalRole,
+        orgAccess: orgAccessRecords,
+        siteAccess: siteAccessRecords,
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp(),
+        createdBy: currentUser?.uid || '',
+        invitedBy: currentUser?.uid || '',
+        isInvited: true, // Flag to indicate this is an invited user waiting for first login
+      };
+
+      await setDoc(doc(db, 'users', inviteId), newUser);
+
+      // Add to local state
+      setUsers([...users, {
+        id: inviteId,
+        email: newUser.email,
+        displayName: newUser.displayName,
+        photoURL: '',
+        globalRole: newUser.globalRole,
+        orgAccess: orgAccessRecords,
+        siteAccess: siteAccessRecords,
+        createdAt: new Date(),
+        lastLogin: new Date()
+      }]);
+
+      setShowCreateModal(false);
+    } catch (err) {
+      console.error('Error creating user:', err);
+      setCreateError('Error al crear el usuario');
+    } finally {
+      setCreateLoading(false);
+    }
+  }
+
+  function toggleNewUserOrgAccess(orgId: string, role: OrganizationRole | null) {
+    setNewUserOrgAccess(prev => {
+      const updated = { ...prev };
+      if (role === null) {
+        delete updated[orgId];
+      } else {
+        updated[orgId] = role;
+      }
+      return updated;
+    });
+  }
+
+  function toggleNewUserSiteAccess(siteId: string, role: SiteRole | null) {
+    setNewUserSiteAccess(prev => {
+      const updated = { ...prev };
+      if (role === null) {
+        delete updated[siteId];
+      } else {
+        updated[siteId] = role;
+      }
+      return updated;
+    });
   }
 
   async function updateOrgAccess(userId: string, orgId: string, role: OrganizationRole | null) {
@@ -278,9 +415,20 @@ export function UsersPage() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-stone-800">{t.users.title}</h1>
-          <p className="text-stone-500">{t.users.subtitle}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-stone-800">{t.users.title}</h1>
+            <p className="text-stone-500">{t.users.subtitle}</p>
+          </div>
+          {isSuperAdmin && (
+            <button
+              onClick={openCreateModal}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+            >
+              <UserPlus size={18} />
+              <span>{t.users.createUser || 'Crear Usuario'}</span>
+            </button>
+          )}
         </div>
 
         {/* Pending approvals */}
@@ -641,6 +789,247 @@ export function UsersPage() {
                   className="w-full py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
                 >
                   {t.common.cancel}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create User Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                    <UserPlus size={20} className="text-amber-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-stone-800">
+                      {t.users.createUser || 'Crear Usuario'}
+                    </h2>
+                    <p className="text-sm text-stone-500">
+                      {t.users.createUserDesc || 'Invita a un nuevo usuario y asigna permisos'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="p-2 text-stone-400 hover:bg-stone-100 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-stone-700 flex items-center gap-2">
+                    <Mail size={16} />
+                    {t.users.basicInfo || 'Información Básica'}
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        value={newUserEmail}
+                        onChange={(e) => setNewUserEmail(e.target.value)}
+                        placeholder="usuario@empresa.com"
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        {t.users.displayName || 'Nombre'}
+                      </label>
+                      <input
+                        type="text"
+                        value={newUserName}
+                        onChange={(e) => setNewUserName(e.target.value)}
+                        placeholder="Nombre del usuario"
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Global Role */}
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      {t.users.globalRole || 'Rol Global'}
+                    </label>
+                    <select
+                      value={newUserGlobalRole}
+                      onChange={(e) => setNewUserGlobalRole(e.target.value as GlobalRole)}
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    >
+                      <option value="pending">{t.users.roles.pending || 'Pendiente'}</option>
+                      <option value="superadmin">{t.users.roles.superadmin || 'Superadmin'}</option>
+                    </select>
+                    <p className="text-xs text-stone-500 mt-1">
+                      {newUserGlobalRole === 'superadmin'
+                        ? 'Tendrá acceso total a toda la plataforma'
+                        : 'Los permisos se definirán por organización/sitio'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Organization Access */}
+                {newUserGlobalRole !== 'superadmin' && organizations.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-stone-700 flex items-center gap-2">
+                      <Building2 size={16} />
+                      {t.users.orgAccess || 'Acceso a Organizaciones'}
+                    </h3>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {organizations.map((org) => {
+                        const hasAccess = org.id in newUserOrgAccess;
+                        return (
+                          <div
+                            key={org.id}
+                            className={`flex items-center justify-between p-3 rounded-lg border ${
+                              hasAccess ? 'border-amber-200 bg-amber-50' : 'border-stone-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Building2 size={16} className={hasAccess ? 'text-amber-600' : 'text-stone-400'} />
+                              <span className="text-sm text-stone-800">{org.name}</span>
+                            </div>
+                            {hasAccess ? (
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={newUserOrgAccess[org.id]}
+                                  onChange={(e) => toggleNewUserOrgAccess(org.id, e.target.value as OrganizationRole)}
+                                  className="text-xs border border-stone-200 rounded px-2 py-1"
+                                >
+                                  <option value="org_viewer">{t.users.roles.org_viewer}</option>
+                                  <option value="org_admin">{t.users.roles.org_admin}</option>
+                                  <option value="org_owner">{t.users.roles.org_owner}</option>
+                                </select>
+                                <button
+                                  onClick={() => toggleNewUserOrgAccess(org.id, null)}
+                                  className="p-1 text-red-500 hover:bg-red-50 rounded"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => toggleNewUserOrgAccess(org.id, 'org_viewer')}
+                                className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded hover:bg-amber-200"
+                              >
+                                <Plus size={12} className="inline mr-1" />
+                                Añadir
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Site Access */}
+                {newUserGlobalRole !== 'superadmin' && sites.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-stone-700 flex items-center gap-2">
+                      <Globe2 size={16} />
+                      {t.users.siteAccess || 'Acceso Directo a Sitios'}
+                    </h3>
+                    <p className="text-xs text-stone-500">
+                      Solo necesario si el usuario no tiene acceso a la organización del sitio
+                    </p>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {sites.map((site) => {
+                        const hasDirectAccess = site.id in newUserSiteAccess;
+                        const hasOrgAccess = site.organizationId && site.organizationId in newUserOrgAccess;
+                        return (
+                          <div
+                            key={site.id}
+                            className={`flex items-center justify-between p-3 rounded-lg border ${
+                              hasDirectAccess ? 'border-blue-200 bg-blue-50' :
+                              hasOrgAccess ? 'border-green-200 bg-green-50' :
+                              'border-stone-200'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Globe2 size={16} className={
+                                hasDirectAccess ? 'text-blue-600' :
+                                hasOrgAccess ? 'text-green-600' :
+                                'text-stone-400'
+                              } />
+                              <div>
+                                <span className="text-sm text-stone-800">{site.name}</span>
+                                {hasOrgAccess && (
+                                  <span className="text-xs text-green-600 ml-2">
+                                    (vía org)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {hasDirectAccess ? (
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={newUserSiteAccess[site.id]}
+                                  onChange={(e) => toggleNewUserSiteAccess(site.id, e.target.value as SiteRole)}
+                                  className="text-xs border border-stone-200 rounded px-2 py-1"
+                                >
+                                  <option value="site_viewer">{t.users.roles.site_viewer}</option>
+                                  <option value="site_admin">{t.users.roles.site_admin}</option>
+                                </select>
+                                <button
+                                  onClick={() => toggleNewUserSiteAccess(site.id, null)}
+                                  className="p-1 text-red-500 hover:bg-red-50 rounded"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ) : !hasOrgAccess ? (
+                              <button
+                                onClick={() => toggleNewUserSiteAccess(site.id, 'site_viewer')}
+                                className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                              >
+                                <Plus size={12} className="inline mr-1" />
+                                Añadir
+                              </button>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Error message */}
+                {createError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    {createError}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 py-4 border-t border-stone-200 flex gap-3">
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
+                >
+                  {t.common.cancel}
+                </button>
+                <button
+                  onClick={createUser}
+                  disabled={createLoading || !newUserEmail}
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {createLoading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  ) : (
+                    <>
+                      <Save size={18} />
+                      <span>{t.users.createUser || 'Crear Usuario'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

@@ -18,7 +18,15 @@
       "Bash(ls:*)",
       "Bash(ren generate-syntetic-data.js generate-synthetic-data.js)",
       "Bash(firebase deploy:*)",
-      "Bash(firebase firestore:databases:list:*)"
+      "Bash(firebase firestore:databases:list:*)",
+      "Bash(echo:*)",
+      "Bash(npm run build:public:*)",
+      "Bash(node -c:*)",
+      "Bash(set \"DRY_RUN=true\")",
+      "Bash(set \"DAYS=3\")",
+      "Bash(set \"RECORDS_PER_DAY=10\")",
+      "Bash(node scripts/generate-synthetic-data.js:*)",
+      "Bash(DRY_RUN=true DAYS=3 RECORDS_PER_DAY=10 node scripts/generate-synthetic-data.js:*)"
     ]
   }
 }

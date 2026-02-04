@@ -84,6 +84,13 @@ export interface Translations {
       site_admin: string;
       site_viewer: string;
     };
+    createUser: string;
+    createUserDesc: string;
+    basicInfo: string;
+    displayName: string;
+    globalRole: string;
+    orgAccess: string;
+    siteAccess: string;
   };
 
   organizations: {

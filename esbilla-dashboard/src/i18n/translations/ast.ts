@@ -91,6 +91,13 @@ export const ast: Translations = {
       site_admin: 'Admin Sitiu',
       site_viewer: 'Viewer Sitiu',
     },
+    createUser: 'Crear Usuariu',
+    createUserDesc: 'Invita a un nuevu usuariu y asigna permisos',
+    basicInfo: 'Información Básica',
+    displayName: 'Nome',
+    globalRole: 'Rol Global',
+    orgAccess: 'Accesu a Organizaciones',
+    siteAccess: 'Accesu Direutu a Sitios',
   },
 
   // Organizations page

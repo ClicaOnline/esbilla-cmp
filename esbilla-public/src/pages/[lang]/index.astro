@@ -54,51 +54,39 @@ const t = useTranslations(lang as any);
     </div>
   </section>
 
-
-<section class="py-24 bg-fondu">
-  <div class="max-w-4xl mx-auto px-6 space-y-12">
-    
-    <header>
-      <h2 class="text-4xl md:text-5xl font-artesana text-madera mb-6" set:html={t('story.title')} />
-      <div class="space-y-6 text-lg text-stone-600 leading-relaxed">
-        <p set:html={t('story.intro')} />
-        <p set:html={t('story.edu')} />
+  <section class="py-24 bg-white/40">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-artesana text-madera mb-4">{t('concepts.title')}</h2>
+        <div class="w-24 h-1 bg-maiz mx-auto rounded-full"></div>
       </div>
-    </header>
 
-    <div class="space-y-4">
-      <h3 class="text-2xl font-bold text-madera" set:html={t('story.esbillar.title')} />
-      <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.esbillar.body')} />
+      <div class="grid md:grid-cols-3 gap-12">
+        <article class="space-y-4">
+          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
+             <Panoya size="24" /> </div>
+          <h3 class="text-2xl font-bold text-madera">{t('concepts.cmp.title')}</h3>
+          <p class="text-stone-600 leading-relaxed">{t('concepts.cmp.desc')}</p>
+        </article>
+
+        <article class="space-y-4">
+          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
+             <Panoya size="24" /> </div>
+          <h3 class="text-2xl font-bold text-madera">{t('concepts.os.title')}</h3>
+          <p class="text-stone-600 leading-relaxed">{t('concepts.os.desc')}</p>
+        </article>
+
+        <article class="space-y-4">
+          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
+             <Panoya size="24" /> </div>
+          <h3 class="text-2xl font-bold text-madera">{t('concepts.gdpr.title')}</h3>
+          <p class="text-stone-600 leading-relaxed">{t('concepts.gdpr.desc')}</p>
+        </article>
+      </div>
     </div>
+  </section>
 
-    <div class="space-y-4">
-      <h3 class="text-2xl font-bold text-madera" set:html={t('story.moment.title')} />
-      <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.moment.body')} />
-    </div>
-
-    <div class="space-y-6">
-      <h3 class="text-2xl font-bold text-madera" set:html={t('story.open.title')} />
-      <ul class="space-y-6">
-        <li class="flex gap-4">
-          <span class="text-maiz text-2xl">•</span>
-          <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.open.andecha')} />
-        </li>
-        <li class="flex gap-4">
-          <span class="text-maiz text-2xl">•</span>
-          <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.open.horreo')} />
-        </li>
-      </ul>
-    </div>
-
-    <footer class="pt-8 border-t border-stone-200">
-      <p class="text-xl font-medium text-madera italic" set:html={t('story.close')} />
-    </footer>
-
-  </div>
-</section>
-
-
-<section class="py-24 bg-stone-50 border-y border-stone-200">
+ <section class="py-24 bg-stone-50 border-y border-stone-200">
   <div class="max-w-4xl mx-auto px-6">
     
     <header class="mb-16 text-center">
@@ -148,39 +136,12 @@ const t = useTranslations(lang as any);
     </div>
 
   </div>
-</section>
+</section> 
 
-<section class="py-24 bg-white/40">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl md:text-5xl font-artesana text-madera mb-4">{t('concepts.title')}</h2>
-        <div class="w-24 h-1 bg-maiz mx-auto rounded-full"></div>
-      </div>
 
-      <div class="grid md:grid-cols-3 gap-12">
-        <article class="space-y-4">
-          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
-             <Panoya size="24" /> </div>
-          <h3 class="text-2xl font-bold text-madera">{t('concepts.cmp.title')}</h3>
-          <p class="text-stone-600 leading-relaxed">{t('concepts.cmp.desc')}</p>
-        </article>
 
-        <article class="space-y-4">
-          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
-             <Panoya size="24" /> </div>
-          <h3 class="text-2xl font-bold text-madera">{t('concepts.os.title')}</h3>
-          <p class="text-stone-600 leading-relaxed">{t('concepts.os.desc')}</p>
-        </article>
 
-        <article class="space-y-4">
-          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
-             <Panoya size="24" /> </div>
-          <h3 class="text-2xl font-bold text-madera">{t('concepts.gdpr.title')}</h3>
-          <p class="text-stone-600 leading-relaxed">{t('concepts.gdpr.desc')}</p>
-        </article>
-      </div>
-    </div>
-  </section>
+
 
 <section class="py-24 bg-stone-50 border-y border-stone-200">
   <div class="max-w-5xl mx-auto px-6">
@@ -304,6 +265,50 @@ const t = useTranslations(lang as any);
       </div>
     </div>
   </section>
+
+<section class="py-24 bg-fondu">
+  <div class="max-w-4xl mx-auto px-6 space-y-12">
+    
+    <header>
+      <h2 class="text-4xl md:text-5xl font-artesana text-madera mb-6" set:html={t('story.title')} />
+      <div class="space-y-6 text-lg text-stone-600 leading-relaxed">
+        <p set:html={t('story.intro')} />
+        <p set:html={t('story.edu')} />
+      </div>
+    </header>
+
+    <div class="space-y-4">
+      <h3 class="text-2xl font-bold text-madera" set:html={t('story.esbillar.title')} />
+      <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.esbillar.body')} />
+    </div>
+
+    <div class="space-y-4">
+      <h3 class="text-2xl font-bold text-madera" set:html={t('story.moment.title')} />
+      <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.moment.body')} />
+    </div>
+
+    <div class="space-y-6">
+      <h3 class="text-2xl font-bold text-madera" set:html={t('story.open.title')} />
+      <ul class="space-y-6">
+        <li class="flex gap-4">
+          <span class="text-maiz text-2xl">•</span>
+          <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.open.andecha')} />
+        </li>
+        <li class="flex gap-4">
+          <span class="text-maiz text-2xl">•</span>
+          <p class="text-lg text-stone-600 leading-relaxed" set:html={t('story.open.horreo')} />
+        </li>
+      </ul>
+    </div>
+
+    <div class="pt-8 border-t border-stone-200">
+      <p class="text-xl font-medium text-madera italic" set:html={t('story.close')} />
+    </div>
+
+  </div>
+</section>
+
+
 
 </BaseLayout>
 

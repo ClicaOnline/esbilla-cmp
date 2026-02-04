@@ -73,17 +73,74 @@ const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
 ];
 
-// Zonas horarias
-const TIMEZONES = [
-  'Europe/Madrid',
-  'Europe/London',
-  'America/New_York',
-  'America/Los_Angeles',
-  'Europe/Paris',
-  'Europe/Berlin',
-  'America/Mexico_City',
-  'America/Bogota',
-  'America/Argentina/Buenos_Aires'
+// Zonas horarias con datos geográficos asociados
+const GEOLOCATIONS = [
+  { timezone: 'Europe/Madrid', country: 'ES', region: 'Madrid', city: 'Madrid' },
+  { timezone: 'Europe/Madrid', country: 'ES', region: 'Asturias', city: 'Oviedo' },
+  { timezone: 'Europe/Madrid', country: 'ES', region: 'Galicia', city: 'Santiago de Compostela' },
+  { timezone: 'Europe/Madrid', country: 'ES', region: 'Cataluña', city: 'Barcelona' },
+  { timezone: 'Europe/Madrid', country: 'ES', region: 'País Vasco', city: 'Bilbao' },
+  { timezone: 'Europe/London', country: 'GB', region: 'England', city: 'London' },
+  { timezone: 'America/New_York', country: 'US', region: 'New York', city: 'New York' },
+  { timezone: 'America/Los_Angeles', country: 'US', region: 'California', city: 'Los Angeles' },
+  { timezone: 'Europe/Paris', country: 'FR', region: 'Île-de-France', city: 'Paris' },
+  { timezone: 'Europe/Berlin', country: 'DE', region: 'Berlin', city: 'Berlin' },
+  { timezone: 'America/Mexico_City', country: 'MX', region: 'CDMX', city: 'Ciudad de México' },
+  { timezone: 'America/Bogota', country: 'CO', region: 'Bogotá', city: 'Bogotá' },
+  { timezone: 'America/Argentina/Buenos_Aires', country: 'AR', region: 'Buenos Aires', city: 'Buenos Aires' },
+  { timezone: 'Europe/Lisbon', country: 'PT', region: 'Lisboa', city: 'Lisboa' },
+  { timezone: 'Europe/Rome', country: 'IT', region: 'Lazio', city: 'Roma' }
+];
+
+// Rutas de página para generar URLs variadas
+const PAGE_PATHS = [
+  '/',
+  '/productos',
+  '/productos/categoria/electronica',
+  '/productos/categoria/ropa',
+  '/productos/detalle/123',
+  '/productos/detalle/456',
+  '/productos/detalle/789',
+  '/servicios',
+  '/servicios/consultoria',
+  '/servicios/desarrollo',
+  '/blog',
+  '/blog/articulo/como-proteger-datos',
+  '/blog/articulo/privacidad-web',
+  '/blog/articulo/gdpr-guia',
+  '/contacto',
+  '/sobre-nosotros',
+  '/precios',
+  '/registro',
+  '/login',
+  '/checkout',
+  '/checkout/pago',
+  '/checkout/confirmacion',
+  '/cuenta',
+  '/cuenta/pedidos',
+  '/cuenta/configuracion',
+  '/ayuda',
+  '/ayuda/faq',
+  '/legal/privacidad',
+  '/legal/terminos'
+];
+
+// Referrers realistas
+const REFERRERS = [
+  null,  // Acceso directo
+  null,
+  null,
+  'https://www.google.com/search?q=esbilla+cmp',
+  'https://www.google.com/search?q=gdpr+cookies',
+  'https://www.google.es/search?q=gestion+cookies',
+  'https://www.bing.com/search?q=consent+management',
+  'https://duckduckgo.com/?q=cookie+banner',
+  'https://www.facebook.com/',
+  'https://twitter.com/',
+  'https://www.linkedin.com/',
+  'https://t.co/abc123',
+  'https://www.reddit.com/r/webdev',
+  'https://news.ycombinator.com/'
 ];
 
 // Resoluciones de pantalla comunes
@@ -203,7 +260,9 @@ function generateConsentRecord(timestamp, existingFootprints = []) {
   const userAgent = randomChoice(USER_AGENTS);
   const ip = randomIP();
   const screen = randomChoice(SCREEN_SIZES);
-  const timezone = randomChoice(TIMEZONES);
+  const geo = randomChoice(GEOLOCATIONS);
+  const pagePath = randomChoice(PAGE_PATHS);
+  const referrer = randomChoice(REFERRERS);
 
   const expiresAt = new Date(timestamp);
   expiresAt.setDate(expiresAt.getDate() + 1095); // 3 años
@@ -225,10 +284,13 @@ function generateConsentRecord(timestamp, existingFootprints = []) {
     // Metadata
     metadata: {
       domain,
-      pageUrl: `https://${domain}/`,
-      referrer: Math.random() > 0.5 ? `https://google.com/search?q=esbilla` : null,
+      pageUrl: `https://${domain}${pagePath}`,
+      referrer,
       language,
-      timezone,
+      timezone: geo.timezone,
+      country: geo.country,
+      region: geo.region,
+      city: geo.city,
       screenWidth: screen.width,
       screenHeight: screen.height,
       sdkVersion: '1.1.0',
@@ -353,6 +415,36 @@ async function main() {
       console.log(`   ${lang}: ${count} (${pct}%)`);
     });
 
+  // Estadísticas de países
+  const countryStats = {};
+  allRecords.forEach(r => {
+    const country = r.metadata.country;
+    countryStats[country] = (countryStats[country] || 0) + 1;
+  });
+  console.log('\n🗺️  Distribución de países:');
+  Object.entries(countryStats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .forEach(([country, count]) => {
+      const pct = ((count / allRecords.length) * 100).toFixed(1);
+      console.log(`   ${country}: ${count} (${pct}%)`);
+    });
+
+  // Estadísticas de URLs (top 10)
+  const urlStats = {};
+  allRecords.forEach(r => {
+    const url = r.metadata.pageUrl;
+    urlStats[url] = (urlStats[url] || 0) + 1;
+  });
+  console.log('\n🔗 Top 10 URLs:');
+  Object.entries(urlStats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .forEach(([url, count]) => {
+      const pct = ((count / allRecords.length) * 100).toFixed(1);
+      console.log(`   ${url}: ${count} (${pct}%)`);
+    });
+
   if (CONFIG.DRY_RUN) {
     console.log('\n🧪 Modo DRY RUN - No se subieron datos');
     console.log('   Para subir datos, ejecuta sin DRY_RUN=true');
@@ -385,8 +477,89 @@ async function main() {
     process.stdout.write(`\r   Progreso: ${uploaded}/${allRecords.length} (${progress}%)`);
   }
 
-  console.log('\n\n✅ ¡Datos subidos exitosamente!');
+  console.log('\n\n✅ ¡Consents subidos exitosamente!');
   console.log(`   Total: ${allRecords.length} registros en la colección 'consents'`);
+
+  // ============================================
+  // GENERAR STATS PRE-AGREGADOS
+  // ============================================
+  // Crear documentos de estadísticas diarias pre-agregadas
+  // Formato: stats/{siteId}_daily_{YYYY-MM-DD}
+  // ============================================
+  console.log('\n📊 Generando stats pre-agregados...');
+
+  // Agrupar registros por fecha
+  const dailyStats = new Map();
+
+  allRecords.forEach(record => {
+    const dateStr = record.timestamp.split('T')[0];
+    const statsKey = `${record.siteId}_daily_${dateStr}`;
+
+    if (!dailyStats.has(statsKey)) {
+      dailyStats.set(statsKey, {
+        siteId: record.siteId,
+        date: dateStr,
+        total_hits: 0,
+        accepted_analytics: 0,
+        accepted_marketing: 0,
+        action_accept_all: 0,
+        action_reject_all: 0,
+        action_customize: 0,
+        action_update: 0,
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    const stats = dailyStats.get(statsKey);
+    stats.total_hits++;
+
+    if (record.choices.analytics) stats.accepted_analytics++;
+    if (record.choices.marketing) stats.accepted_marketing++;
+
+    // Contadores por acción
+    const actionField = `action_${record.action}`;
+    if (stats[actionField] !== undefined) {
+      stats[actionField]++;
+    }
+
+    // Contadores por idioma
+    if (record.metadata.language) {
+      const langField = `lang_${record.metadata.language}`;
+      stats[langField] = (stats[langField] || 0) + 1;
+    }
+
+    // Contadores por país
+    if (record.metadata.country) {
+      const countryField = `country_${record.metadata.country}`;
+      stats[countryField] = (stats[countryField] || 0) + 1;
+    }
+  });
+
+  console.log(`   Documentos de stats a crear: ${dailyStats.size}`);
+
+  // Subir stats en lotes
+  const statsArray = Array.from(dailyStats.entries());
+  let statsUploaded = 0;
+
+  for (let i = 0; i < statsArray.length; i += BATCH_SIZE) {
+    const batch = db.batch();
+    const chunk = statsArray.slice(i, i + BATCH_SIZE);
+
+    chunk.forEach(([docId, statsData]) => {
+      const docRef = db.collection('stats').doc(docId);
+      batch.set(docRef, statsData, { merge: true });
+    });
+
+    await batch.commit();
+    statsUploaded += chunk.length;
+
+    const progress = ((statsUploaded / statsArray.length) * 100).toFixed(1);
+    process.stdout.write(`\r   Progreso stats: ${statsUploaded}/${statsArray.length} (${progress}%)`);
+  }
+
+  console.log('\n\n✅ ¡Stats pre-agregados creados exitosamente!');
+  console.log(`   Total: ${statsArray.length} documentos en la colección 'stats'`);
+  console.log('\n🎉 ¡Proceso completado!');
 }
 
 main().catch(err => {

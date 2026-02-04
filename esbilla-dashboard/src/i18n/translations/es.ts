@@ -91,6 +91,13 @@ export const es: Translations = {
       site_admin: 'Admin Sitio',
       site_viewer: 'Viewer Sitio',
     },
+    createUser: 'Crear Usuario',
+    createUserDesc: 'Invita a un nuevo usuario y asigna permisos',
+    basicInfo: 'Información Básica',
+    displayName: 'Nombre',
+    globalRole: 'Rol Global',
+    orgAccess: 'Acceso a Organizaciones',
+    siteAccess: 'Acceso Directo a Sitios',
   },
 
   // Organizations page
