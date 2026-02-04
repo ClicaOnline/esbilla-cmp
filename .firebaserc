@@ -1,22 +1,18 @@
 {
   "projects": {
-    "default": "esbilla-production",
-    "production": "esbilla-production",
-    "development": "esbilla-development"
+    "default": "esbilla-cmp",
+    "production": "esbilla-cmp",
+    "development": "esbilla-cmp"
   },
   "targets": {
-    "esbilla-production": {
+    "esbilla-cmp": {
       "hosting": {
         "prod": [
-          "esbilla-production"
+          "esbilla-cmp"
         ],
         "dashboard-prod": [
           "esbilla-app"
-        ]
-      }
-    },
-    "esbilla-development": {
-      "hosting": {
+        ],
         "dev": [
           "esbilla-development"
         ],
