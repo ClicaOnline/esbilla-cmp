@@ -25,13 +25,48 @@ function generateTrackingId(): string {
   });
 }
 
+interface BillingAddress {
+  street: string;
+  city: string;
+  postalCode: string;
+  province: string;
+  country: string;
+}
+
 interface OrganizationFormData {
   name: string;
   legalName: string;
   taxId: string;
   billingEmail: string;
+  billingAddress: BillingAddress;
   plan: 'free' | 'pro' | 'enterprise';
 }
+
+const EMPTY_ADDRESS: BillingAddress = {
+  street: '',
+  city: '',
+  postalCode: '',
+  province: '',
+  country: 'ES'
+};
+
+const COUNTRIES = [
+  { code: 'ES', name: 'España' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'FR', name: 'Francia' },
+  { code: 'DE', name: 'Alemania' },
+  { code: 'IT', name: 'Italia' },
+  { code: 'GB', name: 'Reino Unido' },
+  { code: 'NL', name: 'Países Bajos' },
+  { code: 'BE', name: 'Bélgica' },
+  { code: 'AT', name: 'Austria' },
+  { code: 'CH', name: 'Suiza' },
+  { code: 'US', name: 'Estados Unidos' },
+  { code: 'MX', name: 'México' },
+  { code: 'AR', name: 'Argentina' },
+  { code: 'CO', name: 'Colombia' },
+  { code: 'CL', name: 'Chile' },
+];
 
 const PLAN_LIMITS = {
   free: { maxSites: 3, maxConsentsPerMonth: 10000 },
@@ -48,11 +83,14 @@ export function OrganizationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [formData, setFormData] = useState<OrganizationFormData>({
     name: '',
     legalName: '',
     taxId: '',
     billingEmail: '',
+    billingAddress: { ...EMPTY_ADDRESS },
     plan: 'free'
   });
 
@@ -121,11 +159,13 @@ export function OrganizationsPage() {
 
   function openCreateModal() {
     setEditingOrg(null);
+    setSaveError(null);
     setFormData({
       name: '',
       legalName: '',
       taxId: '',
       billingEmail: '',
+      billingAddress: { ...EMPTY_ADDRESS },
       plan: 'free'
     });
     setShowModal(true);
@@ -133,11 +173,19 @@ export function OrganizationsPage() {
 
   function openEditModal(org: Organization) {
     setEditingOrg(org);
+    setSaveError(null);
     setFormData({
       name: org.name,
       legalName: org.legalName || '',
       taxId: org.taxId || '',
       billingEmail: org.billingEmail,
+      billingAddress: org.billingAddress ? {
+        street: org.billingAddress.street || '',
+        city: org.billingAddress.city || '',
+        postalCode: org.billingAddress.postalCode || '',
+        province: org.billingAddress.province || '',
+        country: org.billingAddress.country || 'ES'
+      } : { ...EMPTY_ADDRESS },
       plan: org.plan
     });
     setShowModal(true);
@@ -145,10 +193,23 @@ export function OrganizationsPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!db || !user) return;
+    if (!db || !user || saving) return;
+
+    setSaving(true);
+    setSaveError(null);
 
     try {
       const planLimits = PLAN_LIMITS[formData.plan];
+
+      // Preparar dirección de facturación (solo si tiene datos)
+      const hasAddress = formData.billingAddress.street || formData.billingAddress.city;
+      const billingAddress = hasAddress ? {
+        street: formData.billingAddress.street,
+        city: formData.billingAddress.city,
+        postalCode: formData.billingAddress.postalCode,
+        province: formData.billingAddress.province,
+        country: formData.billingAddress.country
+      } : null;
 
       if (editingOrg) {
         // Update existing organization
@@ -157,6 +218,7 @@ export function OrganizationsPage() {
           legalName: formData.legalName || null,
           taxId: formData.taxId || null,
           billingEmail: formData.billingEmail,
+          billingAddress,
           plan: formData.plan,
           maxSites: planLimits.maxSites,
           maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
@@ -167,7 +229,12 @@ export function OrganizationsPage() {
           org.id === editingOrg.id
             ? {
                 ...org,
-                ...formData,
+                name: formData.name,
+                legalName: formData.legalName || undefined,
+                taxId: formData.taxId || undefined,
+                billingEmail: formData.billingEmail,
+                billingAddress: billingAddress || undefined,
+                plan: formData.plan,
                 maxSites: planLimits.maxSites,
                 maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
                 updatedAt: new Date()
@@ -179,27 +246,39 @@ export function OrganizationsPage() {
         const orgId = generateOrgId();
         const trackingId = generateTrackingId();
 
-        const newOrg: Organization & { trackingId: string } = {
+        const newOrgData = {
           id: orgId,
           name: formData.name,
-          legalName: formData.legalName || undefined,
-          taxId: formData.taxId || undefined,
+          legalName: formData.legalName || null,
+          taxId: formData.taxId || null,
           plan: formData.plan,
           maxSites: planLimits.maxSites,
           maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
           billingEmail: formData.billingEmail,
+          billingAddress,
           trackingId,
           createdAt: new Date(),
           createdBy: user.uid
         };
 
-        await setDoc(doc(db, 'organizations', orgId), newOrg);
+        await setDoc(doc(db, 'organizations', orgId), newOrgData);
+
+        const newOrg: Organization & { trackingId: string } = {
+          ...newOrgData,
+          legalName: formData.legalName || undefined,
+          taxId: formData.taxId || undefined,
+          billingAddress: billingAddress || undefined,
+        };
+
         setOrganizations(prev => [...prev, newOrg]);
       }
 
       setShowModal(false);
     } catch (err) {
       console.error('Error saving organization:', err);
+      setSaveError(err instanceof Error ? err.message : 'Error al guardar la organización');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -396,9 +475,9 @@ export function OrganizationsPage() {
 
         {/* Create/Edit Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 shrink-0">
                 <h2 className="text-lg font-semibold text-stone-800">
                   {editingOrg
                     ? (t.organizations?.editOrg || 'Editar Organización')
@@ -406,88 +485,209 @@ export function OrganizationsPage() {
                   }
                 </h2>
                 <button
-                  onClick={() => setShowModal(false)}
-                  className="p-2 text-stone-400 hover:bg-stone-100 rounded-lg transition-colors"
+                  onClick={() => !saving && setShowModal(false)}
+                  className="p-2 text-stone-400 hover:bg-stone-100 rounded-lg transition-colors disabled:opacity-50"
+                  disabled={saving}
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
-                    {t.organizations?.name || 'Nombre'} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    placeholder={t.organizations?.namePlaceholder || 'Mi empresa'}
-                    required
-                  />
+              <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto">
+                {/* Error message */}
+                {saveError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                    {saveError}
+                  </div>
+                )}
+
+                {/* === DATOS GENERALES === */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
+                    Datos Generales
+                  </h3>
+
+                  {/* Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      {t.organizations?.name || 'Nombre comercial'} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      placeholder={t.organizations?.namePlaceholder || 'Mi empresa'}
+                      required
+                      disabled={saving}
+                    />
+                  </div>
+
+                  {/* Legal Name + Tax ID */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        {t.organizations?.legalName || 'Razón Social'}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.legalName}
+                        onChange={(e) => setFormData({ ...formData, legalName: e.target.value })}
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Empresa S.L."
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        {t.organizations?.taxId || 'NIF/CIF'}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.taxId}
+                        onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="B12345678"
+                        disabled={saving}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Legal Name */}
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
-                    {t.organizations?.legalName || 'Razón Social'}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.legalName}
-                    onChange={(e) => setFormData({ ...formData, legalName: e.target.value })}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    placeholder="Empresa S.L."
-                  />
+                {/* === DATOS DE FACTURACIÓN === */}
+                <div className="space-y-4 pt-4 border-t border-stone-100">
+                  <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
+                    Datos de Facturación
+                  </h3>
+
+                  {/* Billing Email */}
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      {t.organizations?.billingEmail || 'Email de facturación'} *
+                    </label>
+                    <input
+                      type="email"
+                      value={formData.billingEmail}
+                      onChange={(e) => setFormData({ ...formData, billingEmail: e.target.value })}
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      placeholder="facturacion@empresa.com"
+                      required
+                      disabled={saving}
+                    />
+                  </div>
+
+                  {/* Street Address */}
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.billingAddress.street}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        billingAddress: { ...formData.billingAddress, street: e.target.value }
+                      })}
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                      placeholder="Calle Mayor, 123, 2º B"
+                      disabled={saving}
+                    />
+                  </div>
+
+                  {/* City + Postal Code */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        Ciudad
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.billingAddress.city}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          billingAddress: { ...formData.billingAddress, city: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Madrid"
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        Código Postal
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.billingAddress.postalCode}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          billingAddress: { ...formData.billingAddress, postalCode: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="28001"
+                        disabled={saving}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Province + Country */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        Provincia
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.billingAddress.province}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          billingAddress: { ...formData.billingAddress, province: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        placeholder="Madrid"
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-stone-700 mb-1">
+                        País
+                      </label>
+                      <select
+                        value={formData.billingAddress.country}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          billingAddress: { ...formData.billingAddress, country: e.target.value }
+                        })}
+                        className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white"
+                        disabled={saving}
+                      >
+                        {COUNTRIES.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Tax ID */}
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
-                    {t.organizations?.taxId || 'NIF/CIF'}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.taxId}
-                    onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    placeholder="B12345678"
-                  />
-                </div>
-
-                {/* Billing Email */}
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
-                    {t.organizations?.billingEmail || 'Email de facturación'} *
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.billingEmail}
-                    onChange={(e) => setFormData({ ...formData, billingEmail: e.target.value })}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    placeholder="billing@empresa.com"
-                    required
-                  />
-                </div>
-
-                {/* Plan */}
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                {/* === PLAN === */}
+                <div className="space-y-4 pt-4 border-t border-stone-100">
+                  <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
                     {t.organizations?.plan || 'Plan'}
-                  </label>
+                  </h3>
                   <div className="grid grid-cols-3 gap-3">
                     {(['free', 'pro', 'enterprise'] as const).map((plan) => (
                       <button
                         key={plan}
                         type="button"
-                        onClick={() => setFormData({ ...formData, plan })}
+                        onClick={() => !saving && setFormData({ ...formData, plan })}
+                        disabled={saving}
                         className={`p-3 rounded-lg border-2 transition-colors ${
                           formData.plan === plan
                             ? 'border-amber-500 bg-amber-50'
                             : 'border-stone-200 hover:border-stone-300'
-                        }`}
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <p className={`font-medium ${
                           formData.plan === plan ? 'text-amber-700' : 'text-stone-700'
@@ -506,19 +706,28 @@ export function OrganizationsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-4 border-t border-stone-100">
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="flex-1 px-4 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
+                    disabled={saving}
+                    className="flex-1 px-4 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t.common.cancel}
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                    disabled={saving}
+                    className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    {t.common.save}
+                    {saving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Guardando...</span>
+                      </>
+                    ) : (
+                      t.common.save
+                    )}
                   </button>
                 </div>
               </form>
