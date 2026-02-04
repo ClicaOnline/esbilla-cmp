@@ -12,6 +12,12 @@
         ],
         "dev": [
           "esbilla-development"
+        ],
+        "dashboard-prod": [
+          "esbilla-app"
+        ],
+        "dashboard-dev": [
+          "esbilla-app-dev"
         ]
       }
     }
