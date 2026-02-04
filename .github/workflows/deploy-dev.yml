@@ -26,6 +26,7 @@ jobs:
           rm -f package-lock.json
           rm -rf node_modules
           npm install
+          npm install --save-optional @rollup/rollup-linux-x64-gnu
 
       - name: Build Landing
         run: npm run build --workspace=esbilla-public
