@@ -194,7 +194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ============================================
   // HELPERS DE PERMISOS
   // ============================================
-  const isSuperAdmin = userData?.role === 'superadmin';
+  // Compatibilidad: verificar tanto 'role' (legacy) como 'globalRole' (nuevo sistema)
+  // 'admin' del sistema antiguo se trata como 'superadmin' (era el único nivel admin)
+  const isSuperAdmin = userData?.role === 'superadmin' || userData?.role === 'admin';
   const isAdmin = userData?.role === 'admin' || userData?.role === 'superadmin';
   const isAuthorized = ['superadmin', 'admin', 'viewer'].includes(userData?.role || '');
 

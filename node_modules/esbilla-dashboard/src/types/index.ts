@@ -23,7 +23,7 @@ export interface Organization {
   legalName?: string;                 // Razón social
   taxId?: string;                     // NIF/CIF (opcional)
 
-  // Tracking ID único para identificación (ESB-ORG-XXXXXXXX)
+  // Tracking ID único para identificación (formato UUID)
   trackingId?: string;
 
   // Plan y límites
