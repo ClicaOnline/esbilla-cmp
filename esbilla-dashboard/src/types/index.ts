@@ -37,6 +37,7 @@ export interface Organization {
     street: string;
     city: string;
     postalCode: string;
+    province: string;
     country: string;
   };
 

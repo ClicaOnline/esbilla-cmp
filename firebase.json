@@ -1,7 +1,14 @@
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
+  "firestore": [
+    {
+      "database": "(default)",
+      "rules": "firestore.rules"
+    },
+    {
+      "database": "esbilla-cmp",
+      "rules": "firestore.rules"
+    }
+  ],
   "hosting": {
     "public": "esbilla-public/dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],

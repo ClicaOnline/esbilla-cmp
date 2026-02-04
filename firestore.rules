@@ -23,7 +23,8 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && getUserRole() in ['superadmin', 'superuser'];
+      // Incluye 'admin' para compatibilidad con usuarios legacy
+      return isAuthenticated() && getUserRole() in ['admin', 'superadmin', 'superuser'];
     }
 
     function isAuthorized() {
