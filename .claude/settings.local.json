@@ -26,7 +26,12 @@
       "Bash(set \"DAYS=3\")",
       "Bash(set \"RECORDS_PER_DAY=10\")",
       "Bash(node scripts/generate-synthetic-data.js:*)",
-      "Bash(DRY_RUN=true DAYS=3 RECORDS_PER_DAY=10 node scripts/generate-synthetic-data.js:*)"
+      "Bash(DRY_RUN=true DAYS=3 RECORDS_PER_DAY=10 node scripts/generate-synthetic-data.js:*)",
+      "Bash(firebase hosting:sites:list:*)",
+      "Bash(firebase hosting:sites:create:*)",
+      "Bash(firebase target:apply:*)",
+      "Bash(docker:*)",
+      "Bash(gcloud:*)"
     ]
   }
 }
