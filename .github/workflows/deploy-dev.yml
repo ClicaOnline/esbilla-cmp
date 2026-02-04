@@ -27,6 +27,7 @@ jobs:
           rm -rf node_modules
           npm install
           npm install --save-optional @rollup/rollup-linux-x64-gnu
+          npm install sharp --workspace=esbilla-public
 
       - name: Build Landing
         run: npm run build --workspace=esbilla-public
