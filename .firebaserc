@@ -10,14 +10,8 @@
         "prod": [
           "esbilla-cmp"
         ],
-        "dashboard-prod": [
-          "esbilla-app"
-        ],
         "dev": [
           "esbilla-development"
-        ],
-        "dashboard-dev": [
-          "esbilla-app-dev"
         ]
       }
     }
