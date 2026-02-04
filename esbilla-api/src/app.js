@@ -852,6 +852,91 @@ app.post('/api/consent/sync', async (req, res) => {
   }
 });
 
+// ============================================
+// RUTA: RECALCULAR ESTADÍSTICAS DE UN SITIO
+// ============================================
+// Recalcula los totales de consentimientos para un sitio específico
+// consultando directamente la colección de consents.
+// Útil cuando hay desincronización entre stats.totalConsents y los datos reales.
+// ============================================
+app.post('/api/sites/:siteId/recalculate-stats', async (req, res) => {
+  const { siteId } = req.params;
+
+  // Validación básica
+  if (!siteId) {
+    return res.status(400).json({
+      error: 'siteId requerido',
+      code: 'MISSING_SITE_ID'
+    });
+  }
+
+  if (!db) {
+    return res.status(503).json({
+      error: 'Servicio no disponible',
+      code: 'DB_NOT_AVAILABLE'
+    });
+  }
+
+  try {
+    console.log(`🔄 Recalculando stats para sitio: ${siteId}`);
+
+    // Contar todos los consents de este sitio
+    const consentsSnapshot = await db.collection('consents')
+      .where('siteId', '==', siteId)
+      .count()
+      .get();
+
+    const totalConsents = consentsSnapshot.data().count;
+
+    // Obtener el último consentimiento
+    const lastConsentSnapshot = await db.collection('consents')
+      .where('siteId', '==', siteId)
+      .orderBy('createdAt', 'desc')
+      .limit(1)
+      .get();
+
+    const lastConsentAt = lastConsentSnapshot.empty
+      ? null
+      : lastConsentSnapshot.docs[0].data().createdAt;
+
+    // Actualizar el sitio con los valores reales
+    const siteRef = db.collection('sites').doc(siteId);
+    await siteRef.update({
+      'stats.totalConsents': totalConsents,
+      'stats.lastConsentAt': lastConsentAt,
+      'stats.lastRecalculatedAt': admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log(`✅ Stats recalculados para ${siteId}: ${totalConsents} consents`);
+
+    res.json({
+      success: true,
+      siteId,
+      totalConsents,
+      lastConsentAt: lastConsentAt ? lastConsentAt.toDate() : null,
+      message: `Estadísticas recalculadas: ${totalConsents} consentimientos`
+    });
+
+  } catch (err) {
+    console.error('Error recalculando stats:', err);
+
+    // Si es error de índice, dar instrucciones
+    if (err.code === 9) {
+      return res.status(500).json({
+        error: 'Se requiere crear un índice en Firestore',
+        code: 'INDEX_REQUIRED',
+        details: 'El índice para siteId + createdAt ya debería existir. Verifica firestore.indexes.json'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Error recalculando estadísticas',
+      code: 'RECALCULATION_ERROR',
+      details: err.message
+    });
+  }
+});
+
 // Health check pa Cloud Run
 app.get('/api/health', (req, res) => {
   res.json({

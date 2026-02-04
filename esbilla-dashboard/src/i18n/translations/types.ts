@@ -179,6 +179,9 @@ export interface Translations {
     never: string;
     viewStats: string;
     configure: string;
+    recalculateStats: string;
+    recalculate: string;
+    recalculating: string;
   };
 
   urlStats: {

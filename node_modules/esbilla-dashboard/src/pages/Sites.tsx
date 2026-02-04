@@ -35,6 +35,7 @@ export function SitesPage() {
   const [saving, setSaving] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [expandedSite, setExpandedSite] = useState<string | null>(null);
+  const [recalculating, setRecalculating] = useState<string | null>(null);
 
   useEffect(() => {
     loadSites();
@@ -180,6 +181,47 @@ export function SitesPage() {
     }
   }
 
+  async function recalculateStats(site: Site) {
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://api.esbilla.com';
+
+    setRecalculating(site.id);
+
+    try {
+      const response = await fetch(`${apiUrl}/api/sites/${site.id}/recalculate-stats`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al recalcular');
+      }
+
+      const data = await response.json();
+
+      // Actualizar el sitio en el estado local
+      setSites(sites.map(s =>
+        s.id === site.id
+          ? {
+              ...s,
+              stats: {
+                totalConsents: data.totalConsents,
+                lastConsentAt: data.lastConsentAt ? new Date(data.lastConsentAt) : undefined
+              }
+            }
+          : s
+      ));
+
+      alert(`✅ ${data.message || `Recalculado: ${data.totalConsents} consentimientos`}`);
+
+    } catch (err) {
+      console.error('Error recalculando stats:', err);
+      alert(`❌ Error al recalcular estadísticas: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+    } finally {
+      setRecalculating(null);
+    }
+  }
+
   function copyToClipboard(text: string, siteId: string) {
     navigator.clipboard.writeText(text);
     setCopiedKey(siteId);
@@ -298,6 +340,19 @@ export function SitesPage() {
                         : t.sites.never
                       }
                     </span>
+                  </div>
+                  <div className="ml-auto">
+                    <button
+                      onClick={() => recalculateStats(site)}
+                      disabled={recalculating === site.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-stone-600 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={t.sites.recalculateStats || 'Recalcular estadísticas'}
+                    >
+                      <RefreshCw size={14} className={recalculating === site.id ? 'animate-spin' : ''} />
+                      <span className="hidden sm:inline">
+                        {recalculating === site.id ? (t.sites.recalculating || 'Calculando...') : (t.sites.recalculate || 'Recalcular')}
+                      </span>
+                    </button>
                   </div>
                 </div>
 

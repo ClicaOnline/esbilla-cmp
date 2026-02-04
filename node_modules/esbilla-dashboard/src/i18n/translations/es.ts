@@ -190,6 +190,9 @@ export const es: Translations = {
     never: 'Nunca',
     viewStats: 'Ver estadísticas',
     configure: 'Configurar',
+    recalculateStats: 'Recalcular estadísticas',
+    recalculate: 'Recalcular',
+    recalculating: 'Calculando...',
   },
 
   // URL Stats page
