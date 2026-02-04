@@ -11,6 +11,7 @@ import { useSearch } from '../hooks/useSearch';
 import { Pagination } from '../components/shared/Pagination';
 import { SearchInput } from '../components/shared/SearchInput';
 import { PageSizeSelector } from '../components/shared/PageSizeSelector';
+import { UserSearchSelector } from '../components/shared/UserSearchSelector';
 import {
   Plus,
   Globe2,
@@ -817,22 +818,12 @@ export function SitesPage() {
                     Añadir usuario al sitio
                   </h3>
                   <div className="space-y-3">
-                    <select
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          handleAddUserToSite(e.target.value);
-                          e.target.value = '';
-                        }
-                      }}
-                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    >
-                      <option value="">Seleccionar usuario...</option>
-                      {usersWithoutAccess.map(u => (
-                        <option key={u.id} value={u.id}>
-                          {u.displayName || u.email} ({u.email})
-                        </option>
-                      ))}
-                    </select>
+                    <UserSearchSelector
+                      users={users}
+                      onSelect={(user) => handleAddUserToSite(user.id)}
+                      excludeUserIds={usersWithAccess.map(u => u.id)}
+                      placeholder="Buscar usuario por email o nombre..."
+                    />
 
                     <div className="flex items-start gap-2">
                       <select
@@ -844,6 +835,10 @@ export function SitesPage() {
                         <option value="site_admin">Admin (gestión completa del sitio)</option>
                       </select>
                     </div>
+
+                    <p className="text-xs text-stone-500 mt-2">
+                      💡 <strong>Tip:</strong> Escribe el email o nombre del usuario para buscarlo. El usuario será añadido con el rol seleccionado.
+                    </p>
 
                     <p className="text-xs text-stone-500">
                       <strong>Nota:</strong> Los usuarios con acceso a la organización "{organizations.find(o => o.id === site.organizationId)?.name || 'la organización asociada'}"

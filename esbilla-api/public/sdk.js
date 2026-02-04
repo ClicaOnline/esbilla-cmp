@@ -1,11 +1,12 @@
 /**
- * ESBILLA CMP - SDK v1.4 (Modular & Configurable)
+ * ESBILLA CMP - SDK v1.5 (Script Blocking + GDPR Compliance)
  * Arquitectura modular: estilos, plantillas y configuración externos
  * Incluye captura de atribución de marketing (UTM, click IDs)
  * v1.4: Eliminado data-key (seguridad basada en validación de dominio + rate limiting)
+ * v1.5: Script Blocking automático - bloquea scripts de terceros hasta consentimiento
  */
 (function() {
-  const SDK_VERSION = '1.4.0';
+  const SDK_VERSION = '1.5.0';
   const script = document.currentScript;
   const cmpId = script.getAttribute('data-id') || 'default';
   const gtmId = script.getAttribute('data-gtm');
@@ -311,6 +312,145 @@
   });
 
   // ============================================
+  // 1.5 SCRIPT BLOCKING - GDPR Compliance
+  // ============================================
+  /**
+   * Sistema de bloqueo de scripts de terceros antes del consentimiento
+   * Los scripts deben usar: <script type="text/plain" data-consent-category="analytics|marketing">
+   *
+   * Ejemplo:
+   * <script type="text/plain" data-consent-category="analytics">
+   *   // Google Analytics code
+   * </script>
+   */
+  const blockedScripts = new Set();
+  const mutationObserver = typeof MutationObserver !== 'undefined' ? new MutationObserver(handleDOMChanges) : null;
+
+  /**
+   * Inicia el bloqueo de scripts y observa nuevos scripts añadidos dinámicamente
+   */
+  function initScriptBlocking() {
+    // Bloquear scripts existentes
+    blockExistingScripts();
+
+    // Observar scripts añadidos dinámicamente
+    if (mutationObserver) {
+      mutationObserver.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+    }
+
+    console.log('[Esbilla] Script blocking activo - scripts bloqueados hasta consentimiento');
+  }
+
+  /**
+   * Bloquea todos los scripts existentes que requieren consentimiento
+   */
+  function blockExistingScripts() {
+    const scripts = document.querySelectorAll('script[data-consent-category]');
+    scripts.forEach(script => {
+      const category = script.getAttribute('data-consent-category');
+      const type = script.getAttribute('type');
+
+      // Solo bloquear si no está ya bloqueado (type="text/plain")
+      if (type !== 'text/plain') {
+        console.warn(`[Esbilla] Script (${category}) requiere type="text/plain" para bloqueo correcto:`, script);
+      }
+
+      blockedScripts.add(script);
+    });
+
+    console.log(`[Esbilla] ${blockedScripts.size} scripts bloqueados`);
+  }
+
+  /**
+   * Maneja cambios en el DOM para bloquear scripts añadidos dinámicamente
+   */
+  function handleDOMChanges(mutations) {
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(node => {
+        if (node.tagName === 'SCRIPT' && node.hasAttribute('data-consent-category')) {
+          const type = node.getAttribute('type');
+          const category = node.getAttribute('data-consent-category');
+
+          // Si el script no está bloqueado (type no es text/plain), bloquearlo
+          if (type !== 'text/plain') {
+            node.setAttribute('type', 'text/plain');
+            console.log(`[Esbilla] Script bloqueado automáticamente (${category}):`, node);
+          }
+
+          blockedScripts.add(node);
+        }
+      });
+    });
+  }
+
+  /**
+   * Desbloquea y ejecuta scripts basado en las categorías consentidas
+   * @param {Object} choices - { analytics: boolean, marketing: boolean }
+   */
+  function unblockScripts(choices) {
+    if (blockedScripts.size === 0) {
+      console.log('[Esbilla] No hay scripts bloqueados para desbloquear');
+      return;
+    }
+
+    let unblockedCount = 0;
+    const categoriesToUnblock = [];
+
+    if (choices.analytics) categoriesToUnblock.push('analytics');
+    if (choices.marketing) categoriesToUnblock.push('marketing');
+    if (choices.analytics || choices.marketing) categoriesToUnblock.push('functional'); // Functional siempre con cualquier consentimiento
+
+    console.log('[Esbilla] Desbloqueando categorías:', categoriesToUnblock);
+
+    blockedScripts.forEach(script => {
+      const category = script.getAttribute('data-consent-category');
+
+      if (categoriesToUnblock.includes(category)) {
+        // Desbloquear script
+        const newScript = document.createElement('script');
+
+        // Copiar atributos
+        Array.from(script.attributes).forEach(attr => {
+          if (attr.name !== 'type' && attr.name !== 'data-consent-category') {
+            newScript.setAttribute(attr.name, attr.value);
+          }
+        });
+
+        // Copiar contenido o src
+        if (script.src) {
+          newScript.src = script.src;
+        } else {
+          newScript.textContent = script.textContent;
+        }
+
+        // Marcar como desbloqueado
+        newScript.setAttribute('data-consent-unblocked', 'true');
+
+        // Reemplazar script
+        script.parentNode?.replaceChild(newScript, script);
+        blockedScripts.delete(script);
+        unblockedCount++;
+
+        console.log(`[Esbilla] Script desbloqueado (${category}):`, newScript.src || 'inline');
+      }
+    });
+
+    console.log(`[Esbilla] ${unblockedCount} scripts desbloqueados de ${unblockedCount + blockedScripts.size}`);
+  }
+
+  /**
+   * Limpia el observer cuando ya no es necesario
+   */
+  function stopScriptBlocking() {
+    if (mutationObserver) {
+      mutationObserver.disconnect();
+    }
+  }
+
+  // ============================================
   // 2. CARGAR GTM
   // ============================================
   if (gtmId) {
@@ -326,7 +466,11 @@
   // ============================================
   async function init() {
     try {
-      // A0. CAPTURA PREVENTIVA: Capturar parámetros de marketing ANTES de cualquier otra cosa
+      // A0. BLOQUEO DE SCRIPTS: Iniciar antes de cargar cualquier configuración
+      // Esto asegura que ningún script de terceros se ejecute sin consentimiento
+      initScriptBlocking();
+
+      // A0.5. CAPTURA PREVENTIVA: Capturar parámetros de marketing ANTES de cualquier otra cosa
       // Esto asegura que no se pierdan los UTMs aunque el usuario tarde en dar consentimiento
       captureTrafficParams();
 
@@ -381,7 +525,7 @@
 
       if (savedConsent) {
         const oldConsent = JSON.parse(savedConsent);
-        updateConsentMode(oldConsent);
+        updateConsentMode(oldConsent); // Esto también desbloquea scripts vía unblockScripts()
 
         // ATRIBUCIÓN: Si ya tiene consentimiento de marketing, procesar nuevos UTMs
         if (oldConsent.marketing) {
@@ -897,6 +1041,9 @@
       'ad_user_data': choices.marketing ? 'granted' : 'denied',
       'ad_personalization': choices.marketing ? 'granted' : 'denied'
     });
+
+    // Desbloquear scripts de terceros basado en las categorías consentidas
+    unblockScripts(choices);
   }
 
   // ============================================

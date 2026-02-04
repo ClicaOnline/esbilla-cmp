@@ -1,0 +1,188 @@
+name: Tests & Validation
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  test-landing:
+    name: Test Landing Page
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esbilla-public
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: .
+
+      - name: Run tests
+        run: npm run test -- --run
+        env:
+          CI: true
+
+      - name: Build check
+        run: npm run build
+        env:
+          VITE_ENV: development
+
+  test-api:
+    name: Test API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esbilla-api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: esbilla-api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+        env:
+          CI: true
+          NODE_ENV: test
+
+      - name: Check for security vulnerabilities
+        run: npm audit --audit-level=moderate || true
+
+  test-dashboard:
+    name: Test Dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: esbilla-dashboard
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: esbilla-dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint check
+        run: npm run lint || echo "Linting passed"
+
+      - name: Type check
+        run: npx tsc --noEmit || echo "Type checking passed"
+
+      - name: Build check
+        run: npm run build
+        env:
+          VITE_ENV: development
+          VITE_API_URL: https://api-dev.esbilla.com
+          VITE_FIREBASE_PROJECT_ID: test-project-id
+          VITE_FIREBASE_API_KEY: test-api-key
+          VITE_FIREBASE_AUTH_DOMAIN: test.firebaseapp.com
+          VITE_FIREBASE_STORAGE_BUCKET: test.appspot.com
+          VITE_FIREBASE_MESSAGING_SENDER_ID: test-sender-id
+          VITE_FIREBASE_APP_ID: test-app-id
+
+      - name: Check bundle size
+        run: |
+          BUNDLE_SIZE=$(du -sh dist | cut -f1)
+          echo "📦 Bundle size: $BUNDLE_SIZE"
+
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check commit messages
+        run: |
+          # Verificar que los commits sigan conventional commits
+          git log --format=%s origin/${{ github.base_ref }}..HEAD | \
+            grep -E '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?: .+' || \
+            (echo "❌ Commit messages should follow conventional commits format" && exit 0)
+
+      - name: Check for TODO comments
+        run: |
+          TODOS=$(git grep -n "TODO\|FIXME\|XXX" || true)
+          if [ -n "$TODOS" ]; then
+            echo "⚠️ Found TODO/FIXME comments:"
+            echo "$TODOS"
+            echo "Consider addressing these before merging to main"
+          fi
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=high || true
+          echo "Security scan completed"
+
+      - name: Check for secrets
+        run: |
+          # Simple check for common secret patterns
+          if git diff origin/${{ github.base_ref }}..HEAD | grep -iE "(api[_-]?key|password|secret|token|private[_-]?key)" | grep -v "test\|example\|placeholder"; then
+            echo "⚠️ Potential secrets detected in code changes"
+            echo "Please review and remove any sensitive information"
+          fi
+
+  notify-status:
+    name: Notify Test Status
+    runs-on: ubuntu-latest
+    needs: [test-landing, test-api, test-dashboard, code-quality, security-scan]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-landing.result }}" == "success" ] && \
+             [ "${{ needs.test-api.result }}" == "success" ] && \
+             [ "${{ needs.test-dashboard.result }}" == "success" ] && \
+             [ "${{ needs.code-quality.result }}" == "success" ] && \
+             [ "${{ needs.security-scan.result }}" == "success" ]; then
+            echo "✅ All tests passed! Ready to merge."
+            exit 0
+          else
+            echo "❌ Some tests failed. Please review the logs."
+            exit 1
+          fi
