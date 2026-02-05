@@ -148,6 +148,22 @@ export interface SiteSettings {
 }
 
 /**
+ * Configuración de scripts de terceros (SDK v1.6)
+ * Para modo "simplified" - el SDK carga automáticamente estos scripts
+ */
+export interface ScriptConfig {
+  analytics?: {
+    googleAnalytics?: string;      // Measurement ID (ej: "G-XXXXXXXXXX")
+    hotjar?: string;                // Site ID (ej: "12345")
+  };
+  marketing?: {
+    facebookPixel?: string;         // Pixel ID (ej: "123456789012345")
+    linkedinInsight?: string;       // Partner ID (ej: "123456")
+    tiktokPixel?: string;           // Pixel ID (ej: "ABCDEFGHIJK")
+  };
+}
+
+/**
  * Sitio/Dominio
  */
 export interface Site {
@@ -158,6 +174,9 @@ export interface Site {
 
   // Configuración
   settings?: SiteSettings;
+
+  // Configuración de scripts (SDK v1.6 - modo simplified)
+  scriptConfig?: ScriptConfig;
 
   // Autenticación del SDK
   apiKey: string;

@@ -30,6 +30,12 @@ import {
 interface SiteFormData {
   name: string;
   domains: string;
+  // SDK v1.6: Dynamic Script Loading (Modo Simplified)
+  googleAnalytics?: string;
+  hotjar?: string;
+  facebookPixel?: string;
+  linkedinInsight?: string;
+  tiktokPixel?: string;
 }
 
 export function SitesPage() {
@@ -39,7 +45,15 @@ export function SitesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
-  const [formData, setFormData] = useState<SiteFormData>({ name: '', domains: '' });
+  const [formData, setFormData] = useState<SiteFormData>({
+    name: '',
+    domains: '',
+    googleAnalytics: '',
+    hotjar: '',
+    facebookPixel: '',
+    linkedinInsight: '',
+    tiktokPixel: ''
+  });
   const [saving, setSaving] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [expandedSite, setExpandedSite] = useState<string | null>(null);
@@ -150,7 +164,12 @@ export function SitesPage() {
     setEditingSite(site);
     setFormData({
       name: site.name,
-      domains: site.domains.join(', ')
+      domains: site.domains.join(', '),
+      googleAnalytics: site.scriptConfig?.analytics?.googleAnalytics || '',
+      hotjar: site.scriptConfig?.analytics?.hotjar || '',
+      facebookPixel: site.scriptConfig?.marketing?.facebookPixel || '',
+      linkedinInsight: site.scriptConfig?.marketing?.linkedinInsight || '',
+      tiktokPixel: site.scriptConfig?.marketing?.tiktokPixel || ''
     });
     setShowModal(true);
   }
@@ -167,13 +186,34 @@ export function SitesPage() {
         .map(d => d.trim().toLowerCase())
         .filter(d => d.length > 0);
 
+      // Build scriptConfig from form data
+      const scriptConfig: any = {};
+      if (formData.googleAnalytics || formData.hotjar) {
+        scriptConfig.analytics = {};
+        if (formData.googleAnalytics) scriptConfig.analytics.googleAnalytics = formData.googleAnalytics;
+        if (formData.hotjar) scriptConfig.analytics.hotjar = formData.hotjar;
+      }
+      if (formData.facebookPixel || formData.linkedinInsight || formData.tiktokPixel) {
+        scriptConfig.marketing = {};
+        if (formData.facebookPixel) scriptConfig.marketing.facebookPixel = formData.facebookPixel;
+        if (formData.linkedinInsight) scriptConfig.marketing.linkedinInsight = formData.linkedinInsight;
+        if (formData.tiktokPixel) scriptConfig.marketing.tiktokPixel = formData.tiktokPixel;
+      }
+
       if (editingSite) {
         // Update existing site
-        await updateDoc(doc(db, 'sites', editingSite.id), {
+        const updateData: any = {
           name: formData.name,
           domains,
           updatedAt: new Date()
-        });
+        };
+
+        // Only include scriptConfig if it has values
+        if (Object.keys(scriptConfig).length > 0) {
+          updateData.scriptConfig = scriptConfig;
+        }
+
+        await updateDoc(doc(db, 'sites', editingSite.id), updateData);
 
         setSites(sites.map(s =>
           s.id === editingSite.id
@@ -192,6 +232,11 @@ export function SitesPage() {
           createdAt: new Date(),
           createdBy: user.uid,
         };
+
+        // Add scriptConfig if it has values
+        if (Object.keys(scriptConfig).length > 0) {
+          newSite.scriptConfig = scriptConfig;
+        }
 
         await setDoc(doc(db, 'sites', siteId), {
           ...newSite,
@@ -687,6 +732,98 @@ export function SitesPage() {
                     className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   />
                   <p className="mt-1 text-xs text-stone-500">{t.sites.domainsHelp}</p>
+                </div>
+
+                {/* SDK v1.6: Dynamic Script Loading Configuration */}
+                <div className="border-t border-stone-200 pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Code size={16} className="text-amber-500" />
+                    <h3 className="text-sm font-semibold text-stone-700">
+                      Configuración de Scripts (Modo Simplified)
+                    </h3>
+                  </div>
+                  <p className="text-xs text-stone-500 mb-4">
+                    El SDK v1.6 puede cargar automáticamente estos scripts según el consentimiento del usuario.
+                    Deja vacío para usar modo manual (scripts en HTML con type="text/plain").
+                  </p>
+
+                  {/* Analytics Scripts */}
+                  <div className="mb-3">
+                    <p className="text-xs font-medium text-stone-600 mb-2 uppercase tracking-wide">
+                      Analytics (Consentimiento Requerido)
+                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          Google Analytics 4 (Measurement ID)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.googleAnalytics || ''}
+                          onChange={(e) => setFormData({ ...formData, googleAnalytics: e.target.value })}
+                          placeholder="G-XXXXXXXXXX"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          Hotjar (Site ID)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.hotjar || ''}
+                          onChange={(e) => setFormData({ ...formData, hotjar: e.target.value })}
+                          placeholder="12345"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Marketing Scripts */}
+                  <div>
+                    <p className="text-xs font-medium text-stone-600 mb-2 uppercase tracking-wide">
+                      Marketing (Consentimiento Requerido)
+                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          Facebook Pixel (Pixel ID)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.facebookPixel || ''}
+                          onChange={(e) => setFormData({ ...formData, facebookPixel: e.target.value })}
+                          placeholder="123456789012345"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          LinkedIn Insight (Partner ID)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.linkedinInsight || ''}
+                          onChange={(e) => setFormData({ ...formData, linkedinInsight: e.target.value })}
+                          placeholder="123456"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          TikTok Pixel (Pixel ID)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.tiktokPixel || ''}
+                          onChange={(e) => setFormData({ ...formData, tiktokPixel: e.target.value })}
+                          placeholder="ABCDEFGHIJK"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
