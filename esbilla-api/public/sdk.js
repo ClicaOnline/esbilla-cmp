@@ -841,6 +841,33 @@
     if (bannerSettings.legal) {
       config.legal = bannerSettings.legal;
     }
+
+    // Aplicar CSS personalizado
+    if (bannerSettings.customCSS) {
+      injectCustomCSS(bannerSettings.customCSS);
+    }
+  }
+
+  /**
+   * Inyecta CSS personalizado en el documento
+   * @param {string} css - Código CSS personalizado
+   */
+  function injectCustomCSS(css) {
+    if (!css || typeof css !== 'string') return;
+
+    // Eliminar cualquier <style> personalizado anterior
+    const existingStyle = document.getElementById('esbilla-custom-css');
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+
+    // Crear nuevo elemento <style>
+    const styleElement = document.createElement('style');
+    styleElement.id = 'esbilla-custom-css';
+    styleElement.textContent = css;
+    document.head.appendChild(styleElement);
+
+    console.log('[Esbilla] CSS personalizado cargado');
   }
 
   // ============================================
