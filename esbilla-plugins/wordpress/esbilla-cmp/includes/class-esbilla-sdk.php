@@ -49,6 +49,13 @@ class Esbilla_SDK {
             'data-api' => $api_url,
         );
 
+        // Inyectar CSS personalizado si existe
+        if (!empty($this->options['custom_css'])) {
+            echo '<style id="esbilla-custom-css">' . "\n";
+            echo wp_strip_all_tags($this->options['custom_css']) . "\n";
+            echo '</style>' . "\n";
+        }
+
         // Modo de implementación
         switch ($mode) {
             case 'gtm':
