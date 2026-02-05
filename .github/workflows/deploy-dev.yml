@@ -93,8 +93,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install root dependencies
-        run: npm install
+      - name: Clean and install root dependencies
+        run: |
+          rm -f package-lock.json
+          rm -rf node_modules
+          npm install
 
       - name: Install dashboard dependencies
         run: |
