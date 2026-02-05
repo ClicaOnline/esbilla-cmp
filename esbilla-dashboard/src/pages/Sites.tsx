@@ -217,7 +217,13 @@ export function SitesPage() {
 
         setSites(sites.map(s =>
           s.id === editingSite.id
-            ? { ...s, name: formData.name, domains, updatedAt: new Date() }
+            ? {
+                ...s,
+                name: formData.name,
+                domains,
+                scriptConfig: Object.keys(scriptConfig).length > 0 ? scriptConfig : undefined,
+                updatedAt: new Date()
+              }
             : s
         ));
       } else {
