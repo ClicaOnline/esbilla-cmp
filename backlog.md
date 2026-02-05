@@ -1,7 +1,7 @@
 
 ### 📋 Informe de Auditoría Esbilla-CMP
 
-**Última actualización**: 2026-02-04
+**Última actualización**: 2026-02-05
 
 **Estado del Checklist**
 
@@ -11,7 +11,7 @@
 | SDK Front | ✅ [OK] | **COMPLETADO**: Vanilla JS ~20KB, Google Consent Mode V2, script blocking con MutationObserver (v1.5), type="text/plain" interceptor, categorías analytics/marketing/functional
 | UI/UX | ✅ [OK] | Banner con Aceptar/Rechazar/Configurar, persistencia LocalStorage, selector de idioma, múltiples plantillas
 | Backend API | ✅ [OK] | POST /api/consent/log con Firestore, Cloud Run para alta concurrencia, TTL 3 años GDPR, endpoint recalculate stats
-| Dashboard | ✅ [OK] | **MEJORADO**: CRUD organizaciones/sitios/usuarios, búsqueda avanzada, paginación, gestión completa de permisos multi-tenant (org_owner/admin/viewer, site_admin/viewer), modal de usuarios con roles, estadísticas. Falta: editor visual de banner
+| Dashboard | ✅ [OK] | **MEJORADO**: CRUD organizaciones/sitios/usuarios, búsqueda avanzada, paginación, gestión completa de permisos multi-tenant (org_owner/admin/viewer, site_admin/viewer), modal de usuarios con roles, estadísticas, personalización CSS del banner. Falta: editor visual de banner (color picker, preview en tiempo real)
 | Infra | ⚠️ [PARCIAL] | Dockerfile ✓, docker-compose.yml ✓. Falta: manifiestos K8s/Helm
 | Cloud | ✅ [OK] | **COMPLETADO**: Entornos dev/prod separados, CI/CD automático (GitHub Actions), Firebase Hosting multi-target, Cloud Run multi-environment
 | Licencia | ❌ [PENDIENTE] | Sin LICENSE ni CONTRIBUTING.md en raíz
@@ -51,18 +51,25 @@
   - Google Analytics 4, Hotjar, Facebook Pixel, LinkedIn, TikTok
   - Proxy de scripts con consentimiento previo
   - Integración completa con Dashboard
-- ⚠️ **Landing: Nuevas Secciones** - EN PROGRESO
+- ✅ **Landing: Nuevas Secciones** - COMPLETADO (2026-02-05)
   - ✅ Traducciones en Español completas (~120 nuevas claves)
-  - ⏳ Sección "Cómo Empezar" (Get Started) - estructurado, pendiente página
-  - ⏳ Sección "Modo GTM: Argumentación Legal" - contenido listo, pendiente diseño
-  - ⏳ Sección "SaaS Expandido" - planes y pricing definidos
+  - ✅ Sección "Cómo Empezar" ([lang]/como-empezar.astro) - Página completa con 3 pasos y explicación de modos
+  - ✅ Sección "Modo GTM: Argumentación Legal" ([lang]/gtm-legal.astro) - Página completa con jurisprudencia y comparativas
+  - ✅ Sección "SaaS Expandido" ([lang]/saas.astro) - Página completa con 3 planes, beneficios y CTA
+- ✅ **Personalización CSS del Banner** - COMPLETADO (2026-02-05)
+  - ✅ SDK: Función injectCustomCSS() para aplicar estilos personalizados
+  - ✅ Dashboard: Campo customCSS en Settings con editor de texto y referencia de IDs/clases
+  - ✅ WordPress Plugin: Sección "Personalización" con textarea y enlace a documentación
+  - ✅ Templates: IDs añadidos a todos los elementos del banner (modal.html, bottom-bar.html, maiz.html)
+  - ✅ Documentación: docs/PERSONALIZACION-BANNER.md (498 líneas) con 5 ejemplos completos y guía de mejores prácticas
 
 **🔥 Tareas Inmediatas (Semana actual)**
-- ❌ **Landing: Crear páginas nuevas en Astro** - Implementar secciones Get Started y GTM Legal
-- ❌ **Landing: Traducciones a 9 idiomas** - Traducir ~120 claves nuevas (ast, gl, eu, ca, en, fr, pt, it, de)
+- ✅ **Landing: Crear páginas nuevas en Astro** - COMPLETADO: como-empezar.astro, gtm-legal.astro, saas.astro
+- ⏳ **Landing: Traducciones a 9 idiomas** - PENDIENTE: Traducir ~120 claves nuevas (ast, gl, eu, ca, en, fr, pt, it, de)
   - Ver TRANSLATIONS-PENDING.md para lista completa
   - Prioridad: ast (Asturianu) > en (English) > gl/eu/ca
-- ❌ **Plugin WordPress: Traducciones** - Crear archivos .po/.mo para 10 idiomas
+  - Nota: Solo español (es) completado en este sprint
+- ⏳ **Plugin WordPress: Traducciones** - EN PROGRESO: Archivos base .po creados (ast, en_US), faltan traducciones restantes
 - ❌ **Plugin WordPress: Assets gráficos** - Iconos y banners para WordPress.org
 
 **📊 Prioridad Media (Semana 3-4)**
@@ -81,7 +88,7 @@
 
 ### Auditoría Técnica: Esbilla-CMP Multi-tenant SaaS
 
-**Última actualización**: 2026-02-04
+**Última actualización**: 2026-02-05
 
 | Criterio | Estado | Observaciones |
 | :--- | :--- | :--- |

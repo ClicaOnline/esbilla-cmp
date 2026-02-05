@@ -1,0 +1,230 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations } from '../../i18n/utils';
+import { languages } from '../../i18n/ui';
+
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params;
+const t = useTranslations(lang as any);
+---
+
+<BaseLayout title={t('nav.getstarted')} lang={lang}>
+  <!-- Hero Section -->
+  <section class="relative min-h-[50vh] flex items-center overflow-hidden bg-gradient-to-br from-amber-50 via-white to-stone-50">
+    <div class="relative z-10 max-w-5xl mx-auto px-8 w-full py-16">
+      <div class="text-center space-y-6">
+        <h1 class="text-5xl md:text-7xl font-artesana text-stone-900">
+          {t('getstarted.hero.title')} <span class="text-maiz italic">{t('getstarted.hero.highlight')}</span>
+        </h1>
+        <p class="text-xl text-stone-600 leading-relaxed max-w-3xl mx-auto">
+          {t('getstarted.hero.desc')}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 Steps Section -->
+  <section class="max-w-6xl mx-auto px-8 py-20">
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Step 1 -->
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-stone-200 hover:shadow-lg transition-shadow">
+        <div class="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center mb-6">
+          <span class="text-3xl">1️⃣</span>
+        </div>
+        <h3 class="text-2xl font-bold text-stone-900 mb-4">{t('getstarted.step1.title')}</h3>
+        <p class="text-stone-600 mb-6">{t('getstarted.step1.desc')}</p>
+        <a
+          href="https://app.esbilla.com"
+          target="_blank"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-colors"
+        >
+          {t('getstarted.step1.action')}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-stone-200 hover:shadow-lg transition-shadow">
+        <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+          <span class="text-3xl">2️⃣</span>
+        </div>
+        <h3 class="text-2xl font-bold text-stone-900 mb-4">{t('getstarted.step2.title')}</h3>
+        <p class="text-stone-600 mb-6">{t('getstarted.step2.desc')}</p>
+        <a
+          href={`/${lang}/modos`}
+          class="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+        >
+          Ver Modos
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="bg-white rounded-3xl p-8 shadow-sm border border-stone-200 hover:shadow-lg transition-shadow">
+        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
+          <span class="text-3xl">3️⃣</span>
+        </div>
+        <h3 class="text-2xl font-bold text-stone-900 mb-4">{t('getstarted.step3.title')}</h3>
+        <p class="text-stone-600 mb-6">{t('getstarted.step3.desc')}</p>
+        <a
+          href="https://github.com/ClicaOnline/esbilla-cmp"
+          target="_blank"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
+        >
+          {t('getstarted.step3.action')}
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detailed Modes Section -->
+  <section class="max-w-6xl mx-auto px-8 py-20 bg-stone-50 -mx-4 my-12 rounded-3xl">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-artesana text-stone-900 mb-4">
+        {t('modes.title')}
+      </h2>
+      <p class="text-xl text-stone-600">{t('modes.subtitle')}</p>
+    </div>
+
+    <div class="space-y-12">
+      <!-- Manual Mode -->
+      <div class="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-stone-200">
+        <div class="flex items-start gap-6">
+          <div class="text-5xl">⚙️</div>
+          <div class="flex-1">
+            <h3 class="text-3xl font-bold text-stone-900 mb-2">{t('modes.manual.title')}</h3>
+            <p class="text-lg text-amber-600 mb-4">{t('modes.manual.subtitle')}</p>
+            <p class="text-stone-600 mb-6" set:html={t('modes.manual.desc')}></p>
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.manual.pro1')}</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.manual.pro2')}</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.manual.pro3')}</span>
+              </div>
+            </div>
+            <p class="text-sm text-stone-500 italic">{t('modes.manual.ideal')}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Simplified Mode -->
+      <div class="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-stone-200">
+        <div class="flex items-start gap-6">
+          <div class="text-5xl">🚀</div>
+          <div class="flex-1">
+            <h3 class="text-3xl font-bold text-stone-900 mb-2">{t('modes.simplified.title')}</h3>
+            <p class="text-lg text-blue-600 mb-4">{t('modes.simplified.subtitle')}</p>
+            <p class="text-stone-600 mb-6">{t('modes.simplified.desc')}</p>
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.simplified.pro1')}</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.simplified.pro2')}</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.simplified.pro3')}</span>
+              </div>
+            </div>
+            <p class="text-sm text-blue-600 mb-4">{t('modes.simplified.platforms')}</p>
+            <p class="text-sm text-stone-500 italic">{t('modes.simplified.ideal')}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- GTM Mode -->
+      <div class="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-stone-200">
+        <div class="flex items-start gap-6">
+          <div class="text-5xl">📊</div>
+          <div class="flex-1">
+            <h3 class="text-3xl font-bold text-stone-900 mb-2">{t('modes.gtm.title')}</h3>
+            <p class="text-lg text-purple-600 mb-4">{t('modes.gtm.subtitle')}</p>
+            <p class="text-stone-600 mb-6">{t('modes.gtm.desc')}</p>
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.gtm.pro1')}</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.gtm.pro2')}</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <span class="text-sm text-stone-600">{t('modes.gtm.pro3')}</span>
+              </div>
+            </div>
+            <p class="text-sm text-stone-500 italic mb-6">{t('modes.gtm.ideal')}</p>
+            <a
+              href={`/${lang}/gtm-legal`}
+              class="inline-flex items-center gap-2 px-6 py-3 bg-purple-500 text-white rounded-xl font-semibold hover:bg-purple-600 transition-colors"
+            >
+              Ver Argumentación Legal del Modo GTM
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="max-w-4xl mx-auto px-8 py-20 text-center">
+    <h2 class="text-4xl font-artesana text-stone-900 mb-6">
+      ¿Listo para Empezar?
+    </h2>
+    <p class="text-xl text-stone-600 mb-8">
+      Crea tu cuenta y configura Esbilla en menos de 5 minutos
+    </p>
+    <a
+      href="https://app.esbilla.com"
+      target="_blank"
+      class="inline-flex items-center gap-2 px-8 py-4 bg-amber-500 text-white rounded-2xl font-bold text-lg hover:bg-amber-600 transition-colors shadow-lg hover:shadow-xl"
+    >
+      Ir al Dashboard
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+      </svg>
+    </a>
+  </section>
+</BaseLayout>
