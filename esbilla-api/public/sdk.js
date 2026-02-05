@@ -1,12 +1,13 @@
 /**
- * ESBILLA CMP - SDK v1.5 (Script Blocking + GDPR Compliance)
+ * ESBILLA CMP - SDK v1.6 (Dynamic Script Loading + 3 Implementation Modes)
  * Arquitectura modular: estilos, plantillas y configuración externos
  * Incluye captura de atribución de marketing (UTM, click IDs)
  * v1.4: Eliminado data-key (seguridad basada en validación de dominio + rate limiting)
  * v1.5: Script Blocking automático - bloquea scripts de terceros hasta consentimiento
+ * v1.6: Carga dinámica de scripts desde Dashboard - 3 modos (manual/simplified/gtm)
  */
 (function() {
-  const SDK_VERSION = '1.5.0';
+  const SDK_VERSION = '1.6.0';
   const script = document.currentScript;
   const cmpId = script.getAttribute('data-id') || 'default';
   const gtmId = script.getAttribute('data-gtm');
@@ -451,6 +452,226 @@
   }
 
   // ============================================
+  // 1.6 DYNAMIC SCRIPT LOADING - Modo Simplified
+  // ============================================
+  /**
+   * SDK v1.6: Carga dinámica de scripts desde configuración del Dashboard
+   * Actúa como un GTM simplificado para cumplimiento GDPR automático
+   */
+
+  let implementationMode = 'manual'; // 'manual' | 'simplified' | 'gtm'
+  let scriptConfig = null;
+
+  /**
+   * Detecta el modo de implementación basado en:
+   * - Presencia de data-gtm-mode en script tag
+   * - Configuración scriptConfig desde Dashboard
+   * - Scripts con data-consent-category en HTML
+   */
+  function detectImplementationMode() {
+    const gtmMode = script.getAttribute('data-gtm-mode');
+
+    if (gtmMode === 'true') {
+      implementationMode = 'gtm';
+      console.log('[Esbilla v1.6] Modo: GTM Integration');
+      return;
+    }
+
+    // Si hay scriptConfig desde el Dashboard, usar modo simplified
+    if (config.scriptConfig && Object.keys(config.scriptConfig).length > 0) {
+      implementationMode = 'simplified';
+      scriptConfig = config.scriptConfig;
+      console.log('[Esbilla v1.6] Modo: Simplified (carga dinámica desde Dashboard)');
+      return;
+    }
+
+    // Modo manual por defecto
+    implementationMode = 'manual';
+    console.log('[Esbilla v1.6] Modo: Manual (scripts con data-consent-category)');
+  }
+
+  /**
+   * Plantillas de scripts para plataformas comunes
+   * Cada función retorna el código JavaScript a inyectar
+   */
+  const scriptTemplates = {
+    // Google Analytics 4
+    googleAnalytics: (measurementId) => `
+      <!-- Google Analytics 4 -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=${measurementId}"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${measurementId}', {
+          'anonymize_ip': true,
+          'cookie_flags': 'SameSite=None;Secure'
+        });
+      </script>
+    `,
+
+    // Facebook Pixel
+    facebookPixel: (pixelId) => `
+      <!-- Facebook Pixel -->
+      <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '${pixelId}');
+        fbq('track', 'PageView');
+      </script>
+      <noscript><img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1"
+      /></noscript>
+    `,
+
+    // LinkedIn Insight Tag
+    linkedinInsight: (partnerId) => `
+      <!-- LinkedIn Insight Tag -->
+      <script type="text/javascript">
+        _linkedin_partner_id = "${partnerId}";
+        window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+        window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+      </script>
+      <script type="text/javascript">
+        (function(l) {
+          if (!l){window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+          window.lintrk.q=[]}
+          var s = document.getElementsByTagName("script")[0];
+          var b = document.createElement("script");
+          b.type = "text/javascript";b.async = true;
+          b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+          s.parentNode.insertBefore(b, s);})(window.lintrk);
+      </script>
+      <noscript>
+        <img height="1" width="1" style="display:none;" alt="" src="https://px.ads.linkedin.com/collect/?pid=${partnerId}&fmt=gif" />
+      </noscript>
+    `,
+
+    // TikTok Pixel
+    tiktokPixel: (pixelId) => `
+      <!-- TikTok Pixel -->
+      <script>
+        !function (w, d, t) {
+          w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=i+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+          ttq.load('${pixelId}');
+          ttq.page();
+        }(window, document, 'ttq');
+      </script>
+    `,
+
+    // Hotjar
+    hotjar: (siteId) => `
+      <!-- Hotjar Tracking Code -->
+      <script>
+        (function(h,o,t,j,a,r){
+          h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+          h._hjSettings={hjid:${siteId},hjsv:6};
+          a=o.getElementsByTagName('head')[0];
+          r=o.createElement('script');r.async=1;
+          r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+          a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+      </script>
+    `
+  };
+
+  /**
+   * Inyecta un script en el DOM
+   * @param {string} scriptHTML - HTML del script a inyectar
+   * @param {string} category - Categoría del script (analytics/marketing)
+   */
+  function injectScript(scriptHTML, category) {
+    const container = document.createElement('div');
+    container.innerHTML = scriptHTML.trim();
+    container.setAttribute('data-esbilla-injected', category);
+
+    // Inyectar todos los elementos (scripts, noscript, etc.)
+    while (container.firstChild) {
+      const element = container.firstChild;
+
+      if (element.tagName === 'SCRIPT') {
+        // Crear nuevo script para asegurar ejecución
+        const newScript = document.createElement('script');
+
+        // Copiar atributos
+        Array.from(element.attributes).forEach(attr => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+
+        // Copiar contenido o src
+        if (element.src) {
+          newScript.src = element.src;
+        } else {
+          newScript.textContent = element.textContent;
+        }
+
+        newScript.setAttribute('data-esbilla-dynamic', category);
+        document.head.appendChild(newScript);
+      } else {
+        // Inyectar noscript u otros elementos
+        document.head.appendChild(element);
+      }
+
+      container.removeChild(element);
+    }
+  }
+
+  /**
+   * Carga scripts dinámicamente basados en configuración y consentimiento
+   * @param {Object} choices - { analytics: boolean, marketing: boolean }
+   */
+  function loadDynamicScripts(choices) {
+    if (implementationMode !== 'simplified' || !scriptConfig) {
+      return;
+    }
+
+    console.log('[Esbilla v1.6] Cargando scripts dinámicos...', choices);
+
+    // Analytics scripts
+    if (choices.analytics && scriptConfig.analytics) {
+      const analytics = scriptConfig.analytics;
+
+      if (analytics.googleAnalytics && scriptTemplates.googleAnalytics) {
+        injectScript(scriptTemplates.googleAnalytics(analytics.googleAnalytics), 'analytics');
+        console.log('[Esbilla v1.6] ✓ Google Analytics 4 cargado');
+      }
+
+      if (analytics.hotjar && scriptTemplates.hotjar) {
+        injectScript(scriptTemplates.hotjar(analytics.hotjar), 'analytics');
+        console.log('[Esbilla v1.6] ✓ Hotjar cargado');
+      }
+    }
+
+    // Marketing scripts
+    if (choices.marketing && scriptConfig.marketing) {
+      const marketing = scriptConfig.marketing;
+
+      if (marketing.facebookPixel && scriptTemplates.facebookPixel) {
+        injectScript(scriptTemplates.facebookPixel(marketing.facebookPixel), 'marketing');
+        console.log('[Esbilla v1.6] ✓ Facebook Pixel cargado');
+      }
+
+      if (marketing.linkedinInsight && scriptTemplates.linkedinInsight) {
+        injectScript(scriptTemplates.linkedinInsight(marketing.linkedinInsight), 'marketing');
+        console.log('[Esbilla v1.6] ✓ LinkedIn Insight cargado');
+      }
+
+      if (marketing.tiktokPixel && scriptTemplates.tiktokPixel) {
+        injectScript(scriptTemplates.tiktokPixel(marketing.tiktokPixel), 'marketing');
+        console.log('[Esbilla v1.6] ✓ TikTok Pixel cargado');
+      }
+    }
+
+    console.log('[Esbilla v1.6] Carga dinámica completada');
+  }
+
+  // ============================================
   // 2. CARGAR GTM
   // ============================================
   if (gtmId) {
@@ -481,6 +702,9 @@
       // B. Cargar configuración del sitio
       const configRes = await fetch(`${apiBase}/api/config/${cmpId}`);
       config = await configRes.json();
+
+      // B1. Detectar modo de implementación (v1.6)
+      detectImplementationMode();
 
       // B2. Aplicar configuración de banner del dashboard
       applyBannerSettings();
@@ -1044,6 +1268,9 @@
 
     // Desbloquear scripts de terceros basado en las categorías consentidas
     unblockScripts(choices);
+
+    // v1.6: Cargar scripts dinámicos si está en modo simplified
+    loadDynamicScripts(choices);
   }
 
   // ============================================
