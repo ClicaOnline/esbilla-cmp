@@ -237,7 +237,7 @@ class Esbilla_Admin {
                name="esbilla_settings[site_id]"
                value="<?php echo esc_attr($value); ?>"
                class="regular-text"
-               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+               placeholder="site_ivnahsc12nyg"
                required>
         <p class="description">
             <?php esc_html_e('ID de tu sitio en el dashboard de Esbilla (app.esbilla.com)', 'esbilla-cmp'); ?>
