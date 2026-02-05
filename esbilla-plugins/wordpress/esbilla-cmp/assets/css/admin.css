@@ -1,0 +1,265 @@
+/**
+ * Estilos para la página de administración de Esbilla CMP
+ *
+ * @package EsbillaCMP
+ */
+
+/* Header */
+.esbilla-settings-wrap h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.esbilla-version {
+    font-size: 14px;
+    font-weight: normal;
+    color: #666;
+    background: #f0f0f1;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.esbilla-header {
+    margin-bottom: 24px;
+}
+
+.esbilla-tagline {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+}
+
+/* Layout */
+.esbilla-content {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+@media (max-width: 1200px) {
+    .esbilla-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Main form area */
+.esbilla-main {
+    background: #fff;
+    padding: 24px;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.esbilla-main h2 {
+    margin-top: 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f59e0b;
+    color: #1d2d35;
+}
+
+/* Sidebar panels */
+.esbilla-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.esbilla-panel {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.esbilla-panel h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #1d2d35;
+    letter-spacing: 0.5px;
+}
+
+/* Resources list */
+.esbilla-resources {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.esbilla-resources li {
+    margin-bottom: 8px;
+}
+
+.esbilla-resources a {
+    display: block;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #1d2d35;
+    transition: all 0.2s;
+}
+
+.esbilla-resources a:hover {
+    background: #f59e0b;
+    color: #fff;
+}
+
+/* Current mode panel */
+.esbilla-mode-panel {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-color: #f59e0b;
+}
+
+.esbilla-current-mode {
+    text-align: center;
+    padding: 16px;
+}
+
+.mode-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.mode-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #78350f;
+    margin-bottom: 4px;
+}
+
+.mode-desc {
+    font-size: 13px;
+    color: #92400e;
+}
+
+.esbilla-mode-help {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+}
+
+.esbilla-mode-help h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #78350f;
+}
+
+.esbilla-mode-help ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.esbilla-mode-help li {
+    font-size: 12px;
+    color: #92400e;
+    margin-bottom: 6px;
+}
+
+.esbilla-mode-help p {
+    font-size: 13px;
+    color: #92400e;
+    margin: 0;
+}
+
+/* Modes comparison table */
+.esbilla-modes-table {
+    width: 100%;
+    font-size: 12px;
+}
+
+.esbilla-modes-table td {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.esbilla-modes-table td:first-child {
+    padding-right: 12px;
+    white-space: nowrap;
+}
+
+.esbilla-modes-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* License panel */
+.esbilla-license-panel {
+    background: #f9fafb;
+}
+
+.esbilla-license {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.esbilla-copyright {
+    font-size: 11px;
+    color: #9ca3af;
+    margin: 0;
+}
+
+.esbilla-copyright a {
+    color: #f59e0b;
+    text-decoration: none;
+}
+
+.esbilla-copyright a:hover {
+    text-decoration: underline;
+}
+
+/* Form fields */
+.esbilla-settings-wrap input[type="text"],
+.esbilla-settings-wrap input[type="url"] {
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    font-size: 13px;
+}
+
+.esbilla-settings-wrap fieldset label {
+    cursor: pointer;
+}
+
+.esbilla-settings-wrap fieldset label:hover strong {
+    color: #f59e0b;
+}
+
+/* Settings sections */
+.form-table th {
+    font-weight: 600;
+    color: #1d2d35;
+}
+
+.form-table td {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
+/* Submit button */
+.esbilla-settings-wrap .submit {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.esbilla-settings-wrap .button-primary {
+    background: #f59e0b;
+    border-color: #d97706;
+    text-shadow: none;
+    box-shadow: none;
+}
+
+.esbilla-settings-wrap .button-primary:hover {
+    background: #d97706;
+    border-color: #b45309;
+}
+
+.esbilla-settings-wrap .button-primary:active {
+    background: #b45309;
+    border-color: #92400e;
+}
