@@ -244,9 +244,9 @@ const t = useTranslations(lang as any);
 </section>
 
   <section id="proyeutu" class="py-20 bg-stone-900 text-stone-100 rounded-[3rem] mx-4">
-    <div class="max-w-5xl mx-auto px-6">
+    <div class="max-w-6xl mx-auto px-6">
       <h2 class="text-4xl mb-16 text-center">{t('features.title')}</h2>
-      <div class="grid md:grid-cols-3 gap-12">
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
         <div class="space-y-4">
           <Panoya class="text-amber-400" size="32" />
           <h3 class="text-xl font-bold">{t('feature.gov.title')}</h3>
@@ -261,6 +261,16 @@ const t = useTranslations(lang as any);
           <Panoya class="text-amber-400" size="32" />
           <h3 class="text-xl font-bold">{t('feature.privacy.title')}</h3>
           <p class="text-stone-400">{t('feature.privacy.desc')}</p>
+        </div>
+        <div class="space-y-4">
+          <div class="w-8 h-8 bg-amber-400 rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-900">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold">{t('feature.gtm.title')}</h3>
+          <p class="text-stone-400">{t('feature.gtm.desc')}</p>
         </div>
       </div>
     </div>

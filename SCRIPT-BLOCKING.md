@@ -2,6 +2,29 @@
 
 Esbilla CMP v1.5+ incluye un sistema automático de bloqueo de scripts de terceros para cumplimiento GDPR/ePrivacy.
 
+## 🎯 Tres Sabores de Implementación
+
+Esbilla soporta **3 modos de implementación** según tus necesidades técnicas:
+
+| Modo | Complejidad | Control | PageSpeed | Ideal Para |
+|------|-------------|---------|-----------|------------|
+| **🔧 Manual** | Alta | Total | ⭐⭐⭐⭐⭐ | Desarrolladores que quieren control absoluto |
+| **⚡ Simplificado** | Baja | Medio | ⭐⭐⭐⭐ | Usuarios sin conocimientos técnicos |
+| **🏷️ GTM** | Media | Alto | ⭐⭐⭐⭐ | Quien ya usa Google Tag Manager |
+
+### SDK Único Adaptativo
+
+✅ **Un solo SDK para los 3 modos** - Detección automática según configuración
+- **Tamaño**: 20-22KB (gzip)
+- **Impacto PageSpeed**: Mínimo (carga asíncrona)
+- **Browser Cache**: Máximo aprovechamiento (mismo archivo para todos)
+
+El SDK detecta automáticamente qué modo usar:
+1. Si existe `window.dataLayer` + GTM → **Modo GTM**
+2. Si config tiene campo `scripts` → **Modo Simplificado**
+3. Si hay `<script type="text/plain">` → **Modo Manual**
+4. Puede combinar modos (ej: Manual + Simplificado)
+
 ## 📋 ¿Por Qué es Necesario?
 
 Según GDPR y ePrivacy Directive, **los scripts de terceros NO pueden ejecutarse antes del consentimiento del usuario**. Esto incluye:
@@ -208,6 +231,226 @@ window.addEventListener('esbilla:consent:changed', (event) => {
   // { analytics: true, marketing: false, functional: true }
 });
 ```
+
+---
+
+## 🏷️ Modo 3: Integración con Google Tag Manager (GTM)
+
+**NUEVO EN v1.6+**: Si ya usas GTM, Esbilla se integra perfectamente sin duplicar lógica.
+
+### ¿Por Qué Usar el Modo GTM?
+
+✅ **Ya tienes GTM configurado**: Aprovechar infraestructura existente
+✅ **Máximo control**: Gestionar tags complejos desde GTM
+✅ **Cumplimiento GDPR**: Esbilla bloquea GTM hasta consentimiento
+✅ **Sin duplicación**: Un solo Tag Manager (GTM + Esbilla trabajan juntos)
+✅ **Migración gradual**: Mantener setup actual mientras migras
+
+### Arquitectura
+
+```
+┌─────────────────┐
+│ Esbilla SDK     │ ← Gestiona consentimiento
+│ (20KB)          │ ← Bloquea GTM hasta consentimiento
+└────────┬────────┘ ← Actualiza dataLayer con consent
+         │
+         ▼
+┌─────────────────┐
+│ Google Tag      │ ← Lee consent state de dataLayer
+│ Manager (28KB)  │ ← Dispara tags según consent
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Tags & Pixels   │ ← GA4, Facebook, LinkedIn, etc.
+│ (Varios KB)     │ ← Controlados por GTM
+└─────────────────┘
+```
+
+### Implementación Paso a Paso
+
+#### 1. Instalar Esbilla SDK (ANTES de GTM)
+
+```html
+<!-- IMPORTANTE: Debe ir ANTES de GTM -->
+<script src="https://api.esbilla.com/sdk.js"
+        data-id="tu-site-id"
+        data-gtm-mode="true"></script>
+
+<!-- GTM se carga después -->
+<script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-XXXXXXX');
+</script>
+```
+
+#### 2. Configurar Variables en GTM
+
+Crea estas **Variables de Capa de Datos** en GTM:
+
+```javascript
+// Variable: Consent - Analytics
+Tipo: Variable de capa de datos
+Nombre de la variable de capa de datos: consent.analytics
+Valor predeterminado: denied
+
+// Variable: Consent - Marketing
+Tipo: Variable de capa de datos
+Nombre de la variable de capa de datos: consent.marketing
+Valor predeterminado: denied
+
+// Variable: Consent - Functional
+Tipo: Variable de capa de datos
+Nombre de la variable de capa de datos: consent.functional
+Valor predeterminado: denied
+```
+
+#### 3. Configurar Activadores (Triggers)
+
+```javascript
+// Activador: Consent Analytics Granted
+Tipo: Evento personalizado
+Nombre del evento: esbilla_consent_analytics
+
+// Activador: Consent Marketing Granted
+Tipo: Evento personalizado
+Nombre del evento: esbilla_consent_marketing
+```
+
+#### 4. Configurar Tags
+
+**Ejemplo: Google Analytics 4**
+```
+Tipo: Google Analytics: Configuración de GA4
+ID de medición: G-XXXXXXXXXX
+Activación: Consent Analytics Granted
+
+Configuración avanzada:
+✅ Esperar a que se carguen las etiquetas: esbilla_consent_analytics
+```
+
+**Ejemplo: Facebook Pixel**
+```
+Tipo: HTML personalizado
+HTML:
+  <script>
+    !function(f,b,e,v,n,t,s){...}(window,document,'script',...);
+    fbq('init', 'YOUR_PIXEL_ID');
+    fbq('track', 'PageView');
+  </script>
+Activación: Consent Marketing Granted
+```
+
+### Cómo Funciona Internamente
+
+1. **Usuario visita la página**:
+   - Esbilla SDK carga primero
+   - Banner de consentimiento aparece
+   - GTM espera bloqueado
+
+2. **Usuario acepta Analytics**:
+   ```javascript
+   // Esbilla actualiza dataLayer automáticamente
+   window.dataLayer.push({
+     'event': 'esbilla_consent_analytics',
+     'consent': {
+       'analytics': 'granted',
+       'marketing': 'denied',
+       'functional': 'granted'
+     }
+   });
+   ```
+
+3. **GTM activa tags correspondientes**:
+   - Tags con trigger `esbilla_consent_analytics` se ejecutan
+   - Tags sin consentimiento permanecen bloqueados
+
+### Ventajas del Modo GTM
+
+| Aspecto | Ventaja |
+|---------|---------|
+| **Infraestructura** | Reutiliza GTM existente |
+| **Complejidad** | Gestiona reglas complejas en GTM UI |
+| **Equipo Marketing** | Pueden gestionar tags sin programadores |
+| **Debugging** | Preview/Debug mode de GTM |
+| **Historial** | Version control de GTM |
+| **Migración** | Cero cambios en tags actuales |
+
+### Comparativa de Performance
+
+```
+Modo Manual (solo Esbilla):
+├── SDK: 20KB (gzip)
+├── Scripts inline: Variable
+└── Total: ~20KB + scripts
+
+Modo Simplificado (Esbilla gestiona todo):
+├── SDK: 22KB (gzip)
+├── Config API call: 2KB
+├── Scripts cargados dinámicamente
+└── Total: ~24KB + scripts
+
+Modo GTM (Esbilla + GTM):
+├── Esbilla SDK: 20KB (gzip)
+├── GTM Container: 28KB (gzip)
+├── Scripts gestionados por GTM
+└── Total: ~48KB + scripts
+
+Recomendación PageSpeed:
+- Nuevo proyecto: Modo Simplificado ⭐
+- Proyecto existente con GTM: Modo GTM ⭐
+- Control total: Modo Manual ⭐
+```
+
+### Integración con Google Consent Mode V2
+
+El Modo GTM es totalmente compatible con Google Consent Mode V2:
+
+```javascript
+// Esbilla actualiza automáticamente estos valores
+gtag('consent', 'update', {
+  'analytics_storage': 'granted',
+  'ad_storage': 'denied',
+  'ad_user_data': 'denied',
+  'ad_personalization': 'denied',
+  'functionality_storage': 'granted',
+  'personalization_storage': 'granted',
+  'security_storage': 'granted'
+});
+```
+
+### Debugging Modo GTM
+
+1. **GTM Preview Mode**:
+   - Abre GTM → Vista previa
+   - Verifica que los eventos `esbilla_consent_*` se disparan
+
+2. **Console del Navegador**:
+   ```javascript
+   // Ver estado de consentimiento
+   console.log(window.dataLayer);
+
+   // Buscar eventos esbilla
+   window.dataLayer.filter(e => e.event?.startsWith('esbilla_'));
+   ```
+
+3. **Network Tab**:
+   - Sin consentimiento: Solo Esbilla + GTM container
+   - Con consentimiento: Analytics/Marketing requests aparecen
+
+### Migración desde GTM Puro
+
+Si ya tienes GTM sin CMP:
+
+1. **Añade Esbilla SDK** antes de GTM
+2. **Actualiza activadores** para usar eventos `esbilla_consent_*`
+3. **Publica versión nueva** en GTM
+4. **Prueba** en modo preview
+
+**No requiere cambios en los tags individuales** ✅
 
 ---
 
