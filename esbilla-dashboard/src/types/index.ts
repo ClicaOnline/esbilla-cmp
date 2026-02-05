@@ -127,6 +127,8 @@ export interface BannerSettings {
   };
   // Categorías de cookies configurables
   categories: CookieCategory[];
+  // CSS personalizado para el banner
+  customCSS?: string;
 }
 
 /**
@@ -358,6 +360,7 @@ export const DEFAULT_BANNER_SETTINGS: BannerSettings = {
     content: '',
   },
   categories: DEFAULT_COOKIE_CATEGORIES,
+  customCSS: '',
 };
 
 /**
