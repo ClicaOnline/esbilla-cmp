@@ -8,16 +8,17 @@
     'use strict';
 
     $(document).ready(function() {
-        // Validación de Site ID (UUID formato)
+        // Validación de Site ID (formato Esbilla: site_xxx o UUID)
         const $siteId = $('input[name="esbilla_settings[site_id]"]');
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        // Acepta formato Esbilla (site_xxx) o UUID tradicional
+        const siteIdRegex = /^(site_[a-z0-9]+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 
         $siteId.on('blur', function() {
             const value = $(this).val().trim();
-            if (value && !uuidRegex.test(value)) {
+            if (value && !siteIdRegex.test(value)) {
                 $(this).css('border-color', '#dc2626');
                 if (!$(this).next('.error-message').length) {
-                    $(this).after('<p class="error-message" style="color: #dc2626; font-size: 12px; margin-top: 4px;">El Site ID debe tener formato UUID válido</p>');
+                    $(this).after('<p class="error-message" style="color: #dc2626; font-size: 12px; margin-top: 4px;">El Site ID debe tener formato válido (site_xxx)</p>');
                 }
             } else {
                 $(this).css('border-color', '');
