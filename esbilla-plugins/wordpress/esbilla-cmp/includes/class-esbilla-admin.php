@@ -163,6 +163,23 @@ class Esbilla_Admin {
             $this->options_page_slug,
             'esbilla_scripts_section'
         );
+
+        // Sección: Personalización
+        add_settings_section(
+            'esbilla_customization_section',
+            __('Personalización', 'esbilla-cmp'),
+            array($this, 'customization_section_callback'),
+            $this->options_page_slug
+        );
+
+        // Campo: CSS Personalizado
+        add_settings_field(
+            'custom_css',
+            __('CSS Personalizado', 'esbilla-cmp'),
+            array($this, 'custom_css_callback'),
+            $this->options_page_slug,
+            'esbilla_customization_section'
+        );
     }
 
     /**
@@ -187,6 +204,11 @@ class Esbilla_Admin {
         $sanitized['facebook_pixel_id'] = sanitize_text_field($input['facebook_pixel_id'] ?? '');
         $sanitized['linkedin_insight_id'] = sanitize_text_field($input['linkedin_insight_id'] ?? '');
         $sanitized['tiktok_pixel_id'] = sanitize_text_field($input['tiktok_pixel_id'] ?? '');
+
+        // Sanitizar CSS personalizado (permitir CSS válido)
+        $sanitized['custom_css'] = isset($input['custom_css'])
+            ? wp_strip_all_tags($input['custom_css'])
+            : '';
 
         return $sanitized;
     }
@@ -227,6 +249,10 @@ class Esbilla_Admin {
         if ($mode !== 'simplified') {
             echo '<p style="opacity: 0.6;">' . esc_html__('Esta sección solo está disponible en modo Simplificado.', 'esbilla-cmp') . '</p>';
         }
+    }
+
+    public function customization_section_callback() {
+        echo '<p>' . esc_html__('Personaliza el aspecto del banner con CSS.', 'esbilla-cmp') . '</p>';
     }
 
     /**
@@ -434,6 +460,39 @@ class Esbilla_Admin {
         <p class="description">
             <?php esc_html_e('Pixel ID de TikTok', 'esbilla-cmp'); ?>
         </p>
+        <?php
+    }
+
+    public function custom_css_callback() {
+        $options = get_option('esbilla_settings', array());
+        $value = $options['custom_css'] ?? '';
+        ?>
+        <textarea
+               name="esbilla_settings[custom_css]"
+               rows="12"
+               class="large-text code"
+               placeholder="/* Ejemplo de personalización */&#10;#esbilla-banner {&#10;  border-radius: 16px;&#10;  box-shadow: 0 8px 32px rgba(0,0,0,0.12);&#10;}&#10;&#10;#esbilla-banner-title {&#10;  font-size: 1.5rem;&#10;  color: #1e40af;&#10;}&#10;&#10;.esbilla-btn.btn-primary {&#10;  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);&#10;}"><?php echo esc_textarea($value); ?></textarea>
+        <p class="description">
+            <?php esc_html_e('Código CSS para personalizar el banner de cookies.', 'esbilla-cmp'); ?>
+        </p>
+        <div style="margin-top: 12px; padding: 12px; background: #e0f2fe; border-left: 4px solid #0284c7;">
+            <p style="margin: 0 0 8px 0; font-weight: 600; color: #0c4a6e;">
+                <?php esc_html_e('IDs y clases disponibles:', 'esbilla-cmp'); ?>
+            </p>
+            <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #0c4a6e;">
+                <li><code>#esbilla-banner</code> - <?php esc_html_e('Contenedor principal', 'esbilla-cmp'); ?></li>
+                <li><code>#esbilla-banner-inner</code> - <?php esc_html_e('Contenedor interno', 'esbilla-cmp'); ?></li>
+                <li><code>#esbilla-banner-icon</code> - <?php esc_html_e('Icono del banner', 'esbilla-cmp'); ?></li>
+                <li><code>#esbilla-banner-title</code> - <?php esc_html_e('Título', 'esbilla-cmp'); ?></li>
+                <li><code>#esbilla-banner-description</code> - <?php esc_html_e('Descripción', 'esbilla-cmp'); ?></li>
+                <li><code>#esbilla-btn-accept</code>, <code>#esbilla-btn-reject</code>, <code>#esbilla-btn-settings</code> - <?php esc_html_e('Botones', 'esbilla-cmp'); ?></li>
+            </ul>
+            <p style="margin: 8px 0 0 0;">
+                <a href="https://esbilla.com/docs/personalizacion-banner" target="_blank" style="color: #0284c7; text-decoration: underline;">
+                    <?php esc_html_e('Ver guía completa de personalización →', 'esbilla-cmp'); ?>
+                </a>
+            </p>
+        </div>
         <?php
     }
 
