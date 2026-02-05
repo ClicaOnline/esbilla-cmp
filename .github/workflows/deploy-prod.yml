@@ -101,7 +101,9 @@ jobs:
         run: npm install
 
       - name: Install dashboard dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install --save-optional @rollup/rollup-linux-x64-gnu
         working-directory: esbilla-dashboard
 
       - name: Fix binaries permissions
