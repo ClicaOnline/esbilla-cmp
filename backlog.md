@@ -37,7 +37,8 @@
 1. ❌ **Crear LICENSE** - Definir modelo de licencia (MIT/Apache/comercial) en raíz del proyecto
 2. ✅ **Crear CONTRIBUTING.md** - COMPLETADO: Guía de contribución para la comunidad open-source
 3. ✅ **SDK: Implementar script blocking** - COMPLETADO: MutationObserver implementado en SDK v1.5 con documentación completa
-4. ⚠️ **Dashboard: Editor visual de banner** - UI para personalizar colores, posición, textos, logo del banner
+4. 🔥 **SDK v1.6: Carga Dinámica de Scripts (modo GTM)** - Sistema de carga automática de scripts desde configuración del Dashboard, sin modificar HTML. Actúa como Tag Manager simplificado para cumplimiento GDPR automático
+5. ⚠️ **Dashboard: Editor visual de banner** - UI para personalizar colores, posición, textos, logo del banner
 
 **📊 Prioridad Media (Semana 3-4)**
 5. ❌ **Tests automatizados completos** - Unit tests para componentes críticos, E2E tests para flujos principales
