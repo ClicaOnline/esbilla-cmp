@@ -14,6 +14,8 @@ export const en = {
   'feature.community.desc': 'Open source built by the community. If one wins, we all win.',
   'feature.privacy.title': 'Structural Protection',
   'feature.privacy.desc': 'Designed for GDPR but thinking about ethics, not just the law.',
+  'feature.gtm.title': 'Simplified GTM Mode',
+  'feature.gtm.desc': 'Automatic script loading from the Dashboard. No HTML changes, no complications. The SDK handles all GDPR compliance for you.',
   'home.title': 'Ethical Consent for the Modern Web',
   'home.desc': 'Esbilla CMP is an open-source platform designed to manage user consent with transparency and privacy at its core.',
   'saas.title': 'Managed Solutions',

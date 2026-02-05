@@ -31,7 +31,9 @@
       "Bash(firebase hosting:sites:create:*)",
       "Bash(firebase target:apply:*)",
       "Bash(docker:*)",
-      "Bash(gcloud:*)"
+      "Bash(gcloud:*)",
+      "Bash(firebase hosting:channel:list:*)",
+      "Bash(curl:*)"
     ]
   }
 }

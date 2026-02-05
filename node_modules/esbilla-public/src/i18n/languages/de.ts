@@ -14,6 +14,8 @@ export const de = {
   'feature.community.desc': 'In der Gemeinschaft entwickelte freie Software. Wenn einer gewinnt, gewinnen alle.',
   'feature.privacy.title': 'Struktureller Schutz',
   'feature.privacy.desc': 'Entwickelt für die DSGVO, aber mit Fokus auf Ethik, nicht nur auf das Gesetz.',
+  'feature.gtm.title': 'Vereinfachter GTM-Modus',
+  'feature.gtm.desc': 'Automatisches Laden von Skripten aus dem Dashboard. Keine HTML-Änderungen, keine Komplikationen. Das SDK übernimmt die gesamte DSGVO-Konformität für Sie.',
   'home.title': 'Ethische Einwilligung für das moderne Web',
   'home.desc': 'Esbilla CMP ist eine Open-Source-Plattform zur transparenten und datenschutzkonformen Verwaltung von Einwilligungen.',
   'saas.title': 'Managed Solutions',

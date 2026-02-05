@@ -15,6 +15,8 @@ export const ast = {
     'feature.community.desc': 'Software llibre construyíu en comunidá. Si unu gana, ganamos toos.',
     'feature.privacy.title': 'Proteición Estructural',
     'feature.privacy.desc': 'Diseñáu pa cumplir col RGPD pero pensando na ética, non solo na llei.',
+    'feature.gtm.title': 'Mou GTM Simplificáu',
+    'feature.gtm.desc': 'Carga automática de scripts dende\'l Dashboard. Ensin tocar l\'HTML, ensin complicaciones. L\'SDK xestiona tol cumplimientu RGPD por ti.',
     'home.title': 'Consentimientu Éticu pa la Web Moderna',
     'home.desc': 'Esbilla CMP ye una plataforma de códigu abiertu diseñada pa xestionar el consentimientu con tresparencia y privacidá.',
     'saas.title': 'Soluciones Xestionaes',

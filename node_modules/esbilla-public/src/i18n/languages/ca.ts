@@ -14,6 +14,8 @@ export const ca = {
   'feature.community.desc': 'Programari lliure construït en comunitat. Si un guanya, guanyem tots.',
   'feature.privacy.title': 'Protecció Estructural',
   'feature.privacy.desc': 'Dissenyat per complir amb el RGPD però pensant en l\'ètica, no només en la llei.',
+  'feature.gtm.title': 'Mode GTM Simplificat',
+  'feature.gtm.desc': 'Càrrega automàtica de scripts des del Dashboard. Sense modificar HTML, sense complicacions. L\'SDK gestiona tot el compliment RGPD per tu.',
   'home.title': 'Consentiment Ètic per a la Web Moderna',
   'home.desc': 'Esbilla CMP és una plataforma de codi obert dissenyada per gestionar el consentiment amb transparència i privadesa.',
   'saas.title': 'Solucions Gestionades',

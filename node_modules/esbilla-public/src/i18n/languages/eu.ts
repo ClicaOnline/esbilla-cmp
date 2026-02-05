@@ -14,6 +14,8 @@ export const eu = {
   'feature.community.desc': 'Komunitatean eraikitako software librea. Batek irabazten badu, denok irabazten dugu.',
   'feature.privacy.title': 'Egiturazko Babesa',
   'feature.privacy.desc': 'DBEO (GDPR) betetzeko diseinatua, baina etikan pentsatuz, ez legean soilik.',
+  'feature.gtm.title': 'GTM Modu Sinplifikatua',
+  'feature.gtm.desc': 'Script-en karga automatikoa Dashboard-etik. HTML aldaketarik gabe, konplikaziorik gabe. SDKk DBEO betetze guztia kudeatzen du zuretzat.',
   'home.title': 'Web Modernorako Adostasun Etikoa',
   'home.desc': 'Esbilla CMP adostasuna gardentasunez eta pribatutasunez kudeatzeko diseinatutako kode irekiko plataforma da.',
   'saas.title': 'Kudeatutako Soluzioak',
