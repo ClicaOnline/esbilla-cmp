@@ -98,6 +98,8 @@ jobs:
 
       - name: Install dashboard dependencies
         run: |
+          rm -f package-lock.json
+          rm -rf node_modules
           npm install
           npm install --save-optional @rollup/rollup-linux-x64-gnu
         working-directory: esbilla-dashboard
