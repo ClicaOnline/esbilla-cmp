@@ -38,6 +38,7 @@ Añade funcionalidades o corrige bugs en nuestro repositorio de GitHub.
 
 **Qué puedes hacer:**
 - Implementar features del [backlog](./backlog.md)
+- **🔥 Prioridad Alta**: Implementar sistema de carga dinámica de scripts (modo GTM simplificado)
 - Corregir bugs reportados en Issues
 - Mejorar el rendimiento del código existente
 - Añadir tests automatizados

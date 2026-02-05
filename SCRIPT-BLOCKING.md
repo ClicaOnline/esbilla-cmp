@@ -86,6 +86,131 @@ A esto:
 
 ---
 
+## 🚀 Carga Dinámica de Scripts (Modo GTM Simplificado)
+
+**NUEVO EN v1.6+**: El SDK puede cargar automáticamente tus scripts de análisis y marketing sin necesidad de modificar tu HTML.
+
+### ¿Por Qué Usar Carga Dinámica?
+
+✅ **Más simple**: No modificas tu HTML para cada script
+✅ **Centralizado**: Toda la configuración en un solo lugar
+✅ **Cumplimiento automático**: El SDK gestiona el consentimiento
+✅ **Sin GTM**: Actúa como un Tag Manager simplificado
+✅ **Performance**: Scripts se cargan solo cuando son necesarios
+
+### Configuración en el Dashboard
+
+Ve a tu sitio en el Dashboard de Esbilla y configura los scripts en la sección **"Script Loading"**:
+
+```javascript
+{
+  "analytics": [
+    {
+      "id": "ga4",
+      "name": "Google Analytics 4",
+      "type": "script",
+      "src": "https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX",
+      "inline": "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');"
+    },
+    {
+      "id": "hotjar",
+      "name": "Hotjar",
+      "type": "script",
+      "inline": "(function(h,o,t,j,a,r){h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};h._hjSettings={hjid:YOUR_HJID,hjsv:6};a=o.getElementsByTagName('head')[0];r=o.createElement('script');r.async=1;r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;a.appendChild(r);})(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');"
+    }
+  ],
+  "marketing": [
+    {
+      "id": "facebook-pixel",
+      "name": "Facebook Pixel",
+      "type": "script",
+      "inline": "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','YOUR_PIXEL_ID');fbq('track','PageView');"
+    },
+    {
+      "id": "google-ads",
+      "name": "Google Ads",
+      "type": "script",
+      "src": "https://www.googletagmanager.com/gtag/js?id=AW-CONVERSION_ID",
+      "inline": "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','AW-CONVERSION_ID');"
+    }
+  ],
+  "functional": [
+    {
+      "id": "intercom",
+      "name": "Intercom Chat",
+      "type": "script",
+      "inline": "window.intercomSettings={api_base:'https://api-iam.intercom.io',app_id:'YOUR_APP_ID'};(function(){var w=window;var ic=w.Intercom;if(typeof ic==='function'){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/YOUR_APP_ID';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();"
+    }
+  ]
+}
+```
+
+### Ventajas sobre el Método Manual
+
+| Aspecto | Método Manual | Carga Dinámica (Recomendado) |
+|---------|---------------|------------------------------|
+| **Modificación HTML** | ✅ Requiere cambiar cada script | ❌ No requiere cambios |
+| **Gestión centralizada** | ❌ Scripts dispersos en HTML | ✅ Todo en Dashboard |
+| **Cumplimiento GDPR** | ⚠️ Manual (propenso a errores) | ✅ Automático |
+| **Facilidad de uso** | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Performance** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Testing A/B** | ❌ Difícil | ✅ Cambios desde Dashboard |
+
+### Cómo Funciona
+
+1. **Usuario visita la página** → Banner de consentimiento aparece
+2. **Usuario acepta "Analytics"** → SDK carga automáticamente todos los scripts de la categoría `analytics`
+3. **Usuario acepta "Marketing"** → SDK carga automáticamente todos los scripts de la categoría `marketing`
+4. **Sin consentimiento** → Ningún script se carga (cumplimiento GDPR garantizado)
+
+### Instalación Simple
+
+```html
+<!-- Solo necesitas esto en tu HTML -->
+<script src="https://api.esbilla.com/sdk.js" data-id="tu-site-id"></script>
+
+<!-- ¡Eso es todo! Los scripts se cargan automáticamente según el consentimiento -->
+```
+
+### API de Configuración
+
+El SDK expone la configuración de scripts a través del endpoint de API:
+
+```bash
+GET https://api.esbilla.com/api/config/:siteId
+```
+
+Respuesta:
+```json
+{
+  "siteId": "xxx",
+  "scripts": {
+    "analytics": [...],
+    "marketing": [...],
+    "functional": [...]
+  },
+  "bannerSettings": {...}
+}
+```
+
+### Eventos de Carga
+
+El SDK emite eventos cuando carga scripts:
+
+```javascript
+window.addEventListener('esbilla:script:loaded', (event) => {
+  console.log('Script cargado:', event.detail);
+  // { id: 'ga4', category: 'analytics', name: 'Google Analytics 4' }
+});
+
+window.addEventListener('esbilla:consent:changed', (event) => {
+  console.log('Consentimiento cambió:', event.detail);
+  // { analytics: true, marketing: false, functional: true }
+});
+```
+
+---
+
 ## 💡 Ejemplos Completos
 
 ### Google Analytics 4
