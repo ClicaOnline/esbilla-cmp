@@ -40,6 +40,31 @@
 4. 🔥 **SDK v1.6: Carga Dinámica de Scripts (modo GTM)** - Sistema de carga automática de scripts desde configuración del Dashboard, sin modificar HTML. Actúa como Tag Manager simplificado para cumplimiento GDPR automático
 5. ⚠️ **Dashboard: Editor visual de banner** - UI para personalizar colores, posición, textos, logo del banner
 
+**🎉 Completado (2026-02-05)**
+- ✅ **Plugin de WordPress v1.0.0** - Plugin completo con 3 modos (Manual, Simplificado, GTM)
+  - Interfaz de administración completa
+  - Validación de campos en tiempo real
+  - Soporte para 10 idiomas (preparado, pendiente traducción)
+  - Assets (CSS/JS) personalizados
+  - Documentación completa (README, CHANGELOG)
+- ✅ **SDK v1.6: Modo Simplificado y GTM** - Carga dinámica de scripts post-consentimiento
+  - Google Analytics 4, Hotjar, Facebook Pixel, LinkedIn, TikTok
+  - Proxy de scripts con consentimiento previo
+  - Integración completa con Dashboard
+- ⚠️ **Landing: Nuevas Secciones** - EN PROGRESO
+  - ✅ Traducciones en Español completas (~120 nuevas claves)
+  - ⏳ Sección "Cómo Empezar" (Get Started) - estructurado, pendiente página
+  - ⏳ Sección "Modo GTM: Argumentación Legal" - contenido listo, pendiente diseño
+  - ⏳ Sección "SaaS Expandido" - planes y pricing definidos
+
+**🔥 Tareas Inmediatas (Semana actual)**
+- ❌ **Landing: Crear páginas nuevas en Astro** - Implementar secciones Get Started y GTM Legal
+- ❌ **Landing: Traducciones a 9 idiomas** - Traducir ~120 claves nuevas (ast, gl, eu, ca, en, fr, pt, it, de)
+  - Ver TRANSLATIONS-PENDING.md para lista completa
+  - Prioridad: ast (Asturianu) > en (English) > gl/eu/ca
+- ❌ **Plugin WordPress: Traducciones** - Crear archivos .po/.mo para 10 idiomas
+- ❌ **Plugin WordPress: Assets gráficos** - Iconos y banners para WordPress.org
+
 **📊 Prioridad Media (Semana 3-4)**
 5. ❌ **Tests automatizados completos** - Unit tests para componentes críticos, E2E tests para flujos principales
 6. ❌ **Dashboard: Analytics avanzados** - Gráficos de evolución temporal, comparativas entre sitios, exportación CSV/PDF

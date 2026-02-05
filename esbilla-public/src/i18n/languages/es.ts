@@ -103,7 +103,176 @@ export const es = {
     'comm.ways.features.title': 'Propón Ideas',
     'comm.ways.features.desc': 'Dinos qué características necesitas para tu hórreo digital.',
     'comm.ways.legal.title': 'Asesoría Legal',
-    'comm.ways.legal.desc': 'Ayúdanos a que los textos de privacidad sean claros y limpios para todos.'
-  
-  
+    'comm.ways.legal.desc': 'Ayúdanos a que los textos de privacidad sean claros y limpios para todos.',
+
+    // Cómo Empezar
+    'nav.getstarted': 'Cómo Empezar',
+    'getstarted.hero.title': 'Empieza con',
+    'getstarted.hero.highlight': 'Esbilla.',
+    'getstarted.hero.desc': 'Tres pasos para cumplir con el RGPD de forma ética y transparente.',
+
+    'getstarted.step1.title': '1. Regístrate en el Dashboard',
+    'getstarted.step1.desc': 'Crea tu cuenta gratuita en app.esbilla.com y añade tu primer sitio web. Obtén tu Site ID único.',
+    'getstarted.step1.action': 'Ir al Dashboard',
+
+    'getstarted.step2.title': '2. Escoge tu Modo de Implementación',
+    'getstarted.step2.desc': 'Selecciona el modo que mejor se adapte a tu sitio: Manual para control total, Simplificado para rapidez, o GTM para integración avanzada.',
+
+    'getstarted.step3.title': '3. Instala el SDK',
+    'getstarted.step3.desc': 'Añade el script de Esbilla a tu web. Puedes hacerlo manualmente, vía WordPress plugin, o integrándolo en tu framework favorito.',
+    'getstarted.step3.action': 'Ver Documentación',
+
+    // Modos Detallados
+    'modes.title': 'Tres Modos, Una Misión: Transparencia',
+    'modes.subtitle': 'Escoge el modo que se adapte a tu nivel técnico y necesidades.',
+
+    'modes.manual.title': '⚙️ Modo Manual',
+    'modes.manual.subtitle': 'Control Total para Desarrolladores',
+    'modes.manual.desc': 'Tú tienes el control absoluto. Modifica tus scripts existentes cambiando type="text/javascript" a type="text/plain" y añade data-category="analytics" o data-category="marketing". Esbilla solo activará estos scripts cuando el usuario dé consentimiento.',
+    'modes.manual.pro1': 'Control granular sobre cada script',
+    'modes.manual.pro2': 'Compatible con cualquier plataforma',
+    'modes.manual.pro3': 'No dependes de configuraciones predefinidas',
+    'modes.manual.ideal': 'Ideal para: Desarrolladores con scripts personalizados o configuraciones complejas',
+
+    'modes.simplified.title': '🚀 Modo Simplificado',
+    'modes.simplified.subtitle': 'Configuración Rápida sin Tocar Código',
+    'modes.simplified.desc': 'Introduce los IDs de las plataformas que usas (Google Analytics, Facebook Pixel, etc.) en el Dashboard. Esbilla carga los scripts automáticamente solo cuando el usuario acepta la categoría correspondiente.',
+    'modes.simplified.pro1': 'Configuración en minutos sin código',
+    'modes.simplified.pro2': 'Scripts optimizados y actualizados',
+    'modes.simplified.pro3': 'Carga condicional automática',
+    'modes.simplified.platforms': 'Plataformas soportadas: Google Analytics 4, Hotjar, Facebook Pixel, LinkedIn Insight, TikTok Pixel',
+    'modes.simplified.ideal': 'Ideal para: Sitios WordPress, pequeñas empresas, usuarios sin conocimientos técnicos',
+
+    'modes.gtm.title': '📊 Modo GTM',
+    'modes.gtm.subtitle': 'Integración Avanzada con Google Tag Manager',
+    'modes.gtm.desc': 'Usa Google Tag Manager como capa intermedia. Esbilla proporciona variables de consentimiento que controlan cuándo se disparan tus tags. Combina la flexibilidad de GTM con el cumplimiento legal de Esbilla.',
+    'modes.gtm.pro1': 'Integración con infraestructura GTM existente',
+    'modes.gtm.pro2': 'Control centralizado de todos los tags',
+    'modes.gtm.pro3': 'Testing A/B y configuración avanzada',
+    'modes.gtm.ideal': 'Ideal para: Empresas con equipos de marketing, sitios con configuración compleja de tracking',
+
+    // GTM Legal - Argumentación Extensa
+    'gtm.legal.title': 'Modo GTM y Simplificado: Por Qué Dejar que Esbilla Cargue los Scripts',
+    'gtm.legal.subtitle': 'Argumentación legal y técnica sobre la gestión ética del consentimiento',
+
+    'gtm.legal.intro': 'El RGPD no solo exige obtener consentimiento; exige que el consentimiento sea <strong>libre, específico, informado e inequívoco</strong>. La forma en que cargas scripts de terceros puede ser la diferencia entre cumplir la ley y exponerte a sanciones.',
+
+    'gtm.legal.problem.title': 'El Problema de Cargar Scripts Antes del Consentimiento',
+    'gtm.legal.problem.desc': 'La mayoría de implementaciones tradicionales (incluso con GTM) cargan scripts de terceros <strong>antes</strong> de obtener consentimiento. Aunque bloquean la ejecución, el navegador ya descargó código externo y estableció conexiones con servidores de terceros.',
+    'gtm.legal.problem.issue1.title': '❌ Conexión Prematura',
+    'gtm.legal.problem.issue1.desc': 'Cargar un script de analytics.google.com o connect.facebook.net <strong>establece una conexión HTTP</strong> con esos servidores, enviando headers (IP, User-Agent, Referer) antes de que el usuario acepte.',
+    'gtm.legal.problem.issue2.title': '❌ Fingerprinting Pasivo',
+    'gtm.legal.problem.issue2.desc': 'El simple acto de conectar permite a las plataformas crear un "fingerprint" del navegador basado en headers HTTP y timing de conexiones, incluso sin ejecutar JavaScript.',
+    'gtm.legal.problem.issue3.title': '❌ Responsabilidad Legal Compartida',
+    'gtm.legal.problem.issue3.desc': 'Si cargas scripts directamente desde servidores de terceros, estás permitiendo procesamiento de datos antes del consentimiento. Aunque bloquees la ejecución, la <strong>conexión ya se estableció</strong>.',
+
+    'gtm.legal.solution.title': 'La Solución de Esbilla: Proxy de Scripts con Consentimiento Previo',
+    'gtm.legal.solution.desc': 'En los modos Simplificado y GTM, Esbilla actúa como intermediario que solo carga scripts <strong>después</strong> de obtener consentimiento explícito.',
+
+    'gtm.legal.solution.step1.title': '1️⃣ Configuración sin Conexiones Externas',
+    'gtm.legal.solution.step1.desc': 'Introduces los IDs de las plataformas en el Dashboard de Esbilla. <strong>No se establece ninguna conexión</strong> con Google, Facebook o TikTok hasta que el usuario acepte.',
+
+    'gtm.legal.solution.step2.title': '2️⃣ Banner de Consentimiento Primero',
+    'gtm.legal.solution.step2.desc': 'El SDK de Esbilla (cargado desde <strong>tu propio dominio o tu API</strong>) muestra el banner. El navegador <strong>no</strong> conecta con analytics.google.com ni connect.facebook.net todavía.',
+
+    'gtm.legal.solution.step3.title': '3️⃣ Carga Condicional Post-Consentimiento',
+    'gtm.legal.solution.step3.desc': 'Solo cuando el usuario acepta "Analytics" o "Marketing", Esbilla inyecta dinámicamente los scripts correspondientes. <strong>La primera conexión con terceros ocurre DESPUÉS del consentimiento.</strong>',
+
+    'gtm.legal.solution.step4.title': '4️⃣ Revocación Inmediata',
+    'gtm.legal.solution.step4.desc': 'Si el usuario retira consentimiento, Esbilla bloquea la carga de nuevos scripts y limpia cookies existentes. Sin conexiones residuales no autorizadas.',
+
+    'gtm.legal.advantages.title': 'Ventajas Legales del Modo Simplificado/GTM',
+    'gtm.legal.advantages.subtitle': 'Por qué esta arquitectura refuerza tu posición ante auditorías RGPD',
+
+    'gtm.legal.advantage1.title': '✅ Consentimiento Genuinamente Previo',
+    'gtm.legal.advantage1.desc': '<strong>Artículo 6.1.a RGPD</strong>: El consentimiento debe darse <em>antes</em> del procesamiento. Con Esbilla, no hay procesamiento (ni conexión) hasta que el usuario acepta.',
+
+    'gtm.legal.advantage2.title': '✅ Minimización de Datos desde el Diseño',
+    'gtm.legal.advantage2.desc': '<strong>Artículo 25 RGPD (Privacy by Design)</strong>: Solo se comparten datos con terceros cuando es estrictamente necesario y consentido. Esbilla materializa este principio.',
+
+    'gtm.legal.advantage3.title': '✅ Transparencia Técnica Auditable',
+    'gtm.legal.advantage3.desc': 'En una auditoría RGPD, puedes demostrar con <strong>logs de red</strong> que no hubo conexiones con analytics.google.com antes del consentimiento. Esto es prueba técnica fehaciente.',
+
+    'gtm.legal.advantage4.title': '✅ Responsabilidad del Tratamiento Clara',
+    'gtm.legal.advantage4.desc': '<strong>Artículo 26 RGPD (Corresponsables)</strong>: Al controlar cuándo se establece la conexión, defines claramente tu rol como responsable del tratamiento inicial.',
+
+    'gtm.legal.advantage5.title': '✅ Derecho de Oposición Efectivo',
+    'gtm.legal.advantage5.desc': '<strong>Artículo 21 RGPD</strong>: El usuario puede oponerse al procesamiento. Con Esbilla, la oposición es técnicamente efectiva porque bloqueas la carga del script, no solo su ejecución.',
+
+    'gtm.legal.comparison.title': 'Comparación Legal: Implementación Tradicional vs. Esbilla',
+    'gtm.legal.comparison.traditional.title': 'Implementación Tradicional (GTM o Manual)',
+    'gtm.legal.comparison.traditional.point1': 'Scripts de terceros cargados en el HTML inicial',
+    'gtm.legal.comparison.traditional.point2': 'Conexión HTTP con analytics.google.com al cargar la página',
+    'gtm.legal.comparison.traditional.point3': 'Headers (IP, User-Agent) enviados ANTES del consentimiento',
+    'gtm.legal.comparison.traditional.point4': 'Riesgo: "Consentimiento retrospectivo" - procesamiento antes de aceptar',
+    'gtm.legal.comparison.traditional.point5': 'Difícil auditar que NO hubo procesamiento previo',
+
+    'gtm.legal.comparison.esbilla.title': 'Implementación con Esbilla (Modo Simplificado/GTM)',
+    'gtm.legal.comparison.esbilla.point1': 'Solo SDK de Esbilla cargado inicialmente (tu dominio/API)',
+    'gtm.legal.comparison.esbilla.point2': 'CERO conexiones con terceros hasta consentimiento',
+    'gtm.legal.comparison.esbilla.point3': 'Banner mostrado, usuario acepta, ENTONCES se carga el script',
+    'gtm.legal.comparison.esbilla.point4': 'Consentimiento genuinamente previo al procesamiento',
+    'gtm.legal.comparison.esbilla.point5': 'Logs de red demuestran ausencia de conexiones pre-consentimiento',
+
+    'gtm.legal.jurisprudence.title': 'Jurisprudencia y Orientaciones de las APDs',
+    'gtm.legal.jurisprudence.desc': 'Las Autoridades de Protección de Datos de la UE han sido claras sobre este tema:',
+    'gtm.legal.jurisprudence.cnil': '<strong>CNIL (Francia)</strong>: "El consentimiento debe obtenerse antes de cualquier operación de lectura/escritura de información en el terminal del usuario, incluyendo la mera conexión a servidores de terceros."',
+    'gtm.legal.jurisprudence.aepd': '<strong>AEPD (España)</strong>: "No es suficiente bloquear la ejecución de scripts; debe evitarse el establecimiento de la conexión HTTP con terceros antes del consentimiento."',
+    'gtm.legal.jurisprudence.garante': '<strong>Garante (Italia)</strong>: "El diseño técnico debe garantizar que los datos solo se compartan con terceros después de un consentimiento libre y específico."',
+
+    'gtm.legal.conclusion.title': 'Conclusión: Esbilla Como Escudo Legal',
+    'gtm.legal.conclusion.desc': 'Los modos Simplificado y GTM de Esbilla no son solo convenientes técnicamente; son una <strong>arquitectura de cumplimiento legal</strong>. Al actuar como proxy que solo conecta con terceros post-consentimiento, Esbilla te da:',
+    'gtm.legal.conclusion.point1': 'Consentimiento previo técnicamente demostrable',
+    'gtm.legal.conclusion.point2': 'Minimización de datos desde el diseño (Privacy by Design)',
+    'gtm.legal.conclusion.point3': 'Trazabilidad auditable para inspecciones RGPD',
+    'gtm.legal.conclusion.point4': 'Reducción del riesgo de sanciones por procesamiento prematuro',
+
+    'gtm.legal.cta': 'En un entorno donde las multas RGPD pueden alcanzar el 4% de la facturación global, la arquitectura de Esbilla no es un lujo: es prudencia legal materializada en código.',
+
+    // SaaS Expandido
+    'saas.hero.new.title': 'Gobernanza Gestionada para Empresas',
+    'saas.hero.new.subtitle': 'Todo el poder de Esbilla sin la complejidad técnica',
+    'saas.hero.new.desc': 'Nuestra plataforma SaaS ofrece la misma transparencia y cumplimiento legal de la versión auto-albergada, pero con la comodidad de un servicio cloud gestionado.',
+
+    'saas.plans.title': 'Planes Adaptados a tu Tamaño',
+    'saas.plans.free.title': 'Comunidad',
+    'saas.plans.free.price': 'Gratis',
+    'saas.plans.free.desc': 'Perfecto para proyectos personales y open source',
+    'saas.plans.free.feature1': 'Hasta 10,000 page views/mes',
+    'saas.plans.free.feature2': '1 sitio web',
+    'saas.plans.free.feature3': 'Dashboard básico',
+    'saas.plans.free.feature4': 'Soporte de comunidad',
+
+    'saas.plans.pro.title': 'Profesional',
+    'saas.plans.pro.price': '€29/mes',
+    'saas.plans.pro.desc': 'Para pequeñas empresas y startups',
+    'saas.plans.pro.feature1': 'Hasta 100,000 page views/mes',
+    'saas.plans.pro.feature2': '5 sitios web',
+    'saas.plans.pro.feature3': 'Dashboard avanzado + API',
+    'saas.plans.pro.feature4': 'Soporte prioritario',
+    'saas.plans.pro.feature5': 'Exportación de datos',
+
+    'saas.plans.enterprise.title': 'Empresa',
+    'saas.plans.enterprise.price': 'Personalizado',
+    'saas.plans.enterprise.desc': 'Para organizaciones con necesidades específicas',
+    'saas.plans.enterprise.feature1': 'Page views ilimitados',
+    'saas.plans.enterprise.feature2': 'Sitios ilimitados',
+    'saas.plans.enterprise.feature3': 'Dashboard white-label',
+    'saas.plans.enterprise.feature4': 'SLA garantizado',
+    'saas.plans.enterprise.feature5': 'Consultoría legal RGPD',
+    'saas.plans.enterprise.feature6': 'Despliegue on-premise opcional',
+
+    'saas.why.title': '¿Por Qué Escoger Esbilla SaaS?',
+    'saas.why.transparency.title': 'Transparencia sin Sacrificios',
+    'saas.why.transparency.desc': 'Código abierto auditable + infraestructura gestionada = confianza total',
+    'saas.why.compliance.title': 'Cumplimiento Garantizado',
+    'saas.why.compliance.desc': 'Actualizaciones automáticas según evolución de normativa RGPD/ePrivacy',
+    'saas.why.support.title': 'Soporte Especializado',
+    'saas.why.support.desc': 'Equipo experto en privacidad y consentimiento digital',
+
+    'saas.cta.title': '¿Listo para Empezar?',
+    'saas.cta.desc': 'Únete a la lista de espera para ser de los primeros en acceder a Esbilla SaaS',
+    'saas.cta.button': 'Unirse a la Lista de Espera',
+    'saas.cta.note': 'Lanzamiento previsto: Q2 2026'
+
   } as const;
