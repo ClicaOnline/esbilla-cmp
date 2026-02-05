@@ -97,11 +97,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm install
 
+      - name: Install dashboard dependencies
+        run: npm install
+        working-directory: esbilla-dashboard
+
       - name: Build Dashboard
-        run: npm run build --workspace=esbilla-dashboard
+        run: npm run build
+        working-directory: esbilla-dashboard
         env:
           VITE_ENV: production
           VITE_API_URL: https://api.esbilla.com
