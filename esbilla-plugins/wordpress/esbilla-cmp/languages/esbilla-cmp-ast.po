@@ -1,0 +1,169 @@
+# Translation file for Esbilla CMP - Asturian
+msgid ""
+msgstr ""
+"Project-Id-Version: Esbilla CMP 1.0.0\n"
+"Report-Msgid-Bugs-To: esbilla@clicaonline.com\n"
+"POT-Creation-Date: 2026-02-05 12:00+0000\n"
+"PO-Revision-Date: 2026-02-05 12:00+0000\n"
+"Last-Translator: Esbilla Team\n"
+"Language-Team: Asturian\n"
+"Language: ast\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Gestión de consentimiento RGPD/ePrivacy de código abierto"
+msgstr "Xestión de consentimientu RGPD/ePrivacy de códigu abiertu"
+
+msgid "Configuración Básica"
+msgstr "Configuración Básica"
+
+msgid "Configura los datos básicos de tu sitio en Esbilla."
+msgstr "Configura los datos básicos del to sitiu n'Esbilla."
+
+msgid "Habilitar Esbilla CMP"
+msgstr "Habilitar Esbilla CMP"
+
+msgid "Activar Esbilla CMP en este sitio"
+msgstr "Activar Esbilla CMP nesti sitiu"
+
+msgid "Site ID"
+msgstr "Site ID"
+
+msgid "ID de tu sitio en el dashboard de Esbilla (app.esbilla.com)"
+msgstr "ID del to sitiu nel dashboard d'Esbilla (app.esbilla.com)"
+
+msgid "API URL"
+msgstr "URL de la API"
+
+msgid "URL de la API de Esbilla (por defecto: https://api.esbilla.com)"
+msgstr "URL de la API d'Esbilla (por defeutu: https://api.esbilla.com)"
+
+msgid "Idioma del Plugin"
+msgstr "Llingua del Plugin"
+
+msgid "Idioma de la interfaz del plugin (requiere recargar la página)"
+msgstr "Llingua de la interfaz del plugin (requier recargar la páxina)"
+
+msgid "Modo de Implementación"
+msgstr "Mou d'Implementación"
+
+msgid "Escoge el modo de implementación que mejor se adapte a tu sitio."
+msgstr "Escueye'l mou d'implementación que meyor s'adapte al to sitiu."
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Tú modificas los scripts a type=\"text/plain\" data-category=\"...\""
+msgstr "Tu modificas los scripts a type=\"text/plain\" data-category=\"...\""
+
+msgid "Simplificado"
+msgstr "Simplificáu"
+
+msgid "Configuras IDs aquí, el SDK carga los scripts automáticamente"
+msgstr "Configures IDs equí, el SDK carga los scripts automáticamente"
+
+msgid "Google Tag Manager"
+msgstr "Google Tag Manager"
+
+msgid "Integración vía GTM para control total de tags"
+msgstr "Integración vía GTM pa control total de tags"
+
+msgid "Configuración de Google Tag Manager"
+msgstr "Configuración de Google Tag Manager"
+
+msgid "Esta sección está disponible en modo Simplificado y GTM."
+msgstr "Esta seición ta disponible en mou Simplificáu y GTM."
+
+msgid "Configura tu Google Tag Manager para integración avanzada."
+msgstr "Configura'l to Google Tag Manager pa integración avanzada."
+
+msgid "GTM Container ID"
+msgstr "GTM Container ID"
+
+msgid "ID de tu contenedor de Google Tag Manager (opcional)"
+msgstr "ID del to contenedor de Google Tag Manager (opcional)"
+
+msgid "IDs de Scripts de Terceros"
+msgstr "IDs de Scripts de Terceros"
+
+msgid "Esta sección solo está disponible en modo Simplificado."
+msgstr "Esta seición namái ta disponible en mou Simplificáu."
+
+msgid "Google Analytics 4"
+msgstr "Google Analytics 4"
+
+msgid "Measurement ID de Google Analytics 4"
+msgstr "Measurement ID de Google Analytics 4"
+
+msgid "Hotjar"
+msgstr "Hotjar"
+
+msgid "Site ID de Hotjar"
+msgstr "Site ID de Hotjar"
+
+msgid "Facebook Pixel"
+msgstr "Facebook Pixel"
+
+msgid "Pixel ID de Facebook"
+msgstr "Pixel ID de Facebook"
+
+msgid "LinkedIn Insight Tag"
+msgstr "LinkedIn Insight Tag"
+
+msgid "Partner ID de LinkedIn Insight Tag"
+msgstr "Partner ID de LinkedIn Insight Tag"
+
+msgid "TikTok Pixel"
+msgstr "TikTok Pixel"
+
+msgid "Pixel ID de TikTok"
+msgstr "Pixel ID de TikTok"
+
+msgid "Guardar cambios"
+msgstr "Guardar cambeos"
+
+msgid "Recursos"
+msgstr "Recursos"
+
+msgid "Dashboard Esbilla"
+msgstr "Dashboard Esbilla"
+
+msgid "Sitio web"
+msgstr "Sitiu web"
+
+msgid "GitHub (Código fuente)"
+msgstr "GitHub (Códigu fonte)"
+
+msgid "Documentación"
+msgstr "Documentación"
+
+msgid "Modo Actual"
+msgstr "Mou Actual"
+
+msgid "Comparación de Modos"
+msgstr "Comparanza de Mous"
+
+msgid "Máximo control, requiere modificar código"
+msgstr "Máximu control, requier modificar códigu"
+
+msgid "Configuración rápida, ideal para sitios comunes"
+msgstr "Configuración rápida, ideal pa sitios comunes"
+
+msgid "Integración avanzada, para gestión compleja de tags"
+msgstr "Integración avanzada, pa xestión complexa de tags"
+
+msgid "Software Libre"
+msgstr "Software Llibre"
+
+msgid "Esbilla CMP es software libre bajo licencia GPL v3."
+msgstr "Esbilla CMP ye software llibre baxo llicencia GPL v3."
+
+msgid "Hecho con ❤️ en Asturias."
+msgstr "Fechu con ❤️ n'Asturies."
+
+msgid "¡Esbilla CMP está activo!"
+msgstr "¡Esbilla CMP ta activu!"
+
+msgid "Ajustes"
+msgstr "Axustes"

@@ -71,6 +71,15 @@ class Esbilla_Admin {
             'esbilla_basic_section'
         );
 
+        // Campo: Idioma
+        add_settings_field(
+            'language',
+            __('Idioma del Plugin', 'esbilla-cmp'),
+            array($this, 'language_callback'),
+            $this->options_page_slug,
+            'esbilla_basic_section'
+        );
+
         // Sección: Modo de implementación
         add_settings_section(
             'esbilla_mode_section',
@@ -165,6 +174,9 @@ class Esbilla_Admin {
         $sanitized['enabled'] = !empty($input['enabled']) ? 1 : 0;
         $sanitized['site_id'] = sanitize_text_field($input['site_id'] ?? '');
         $sanitized['api_url'] = esc_url_raw($input['api_url'] ?? ESBILLA_DEFAULT_API_URL);
+        $sanitized['language'] = in_array($input['language'] ?? 'es_ES', array('es_ES', 'ast', 'en_US'))
+            ? $input['language']
+            : 'es_ES';
         $sanitized['implementation_mode'] = in_array($input['implementation_mode'] ?? 'manual', array('manual', 'simplified', 'gtm'))
             ? $input['implementation_mode']
             : 'manual';
@@ -201,8 +213,10 @@ class Esbilla_Admin {
         $options = get_option('esbilla_settings', array());
         $mode = $options['implementation_mode'] ?? 'manual';
 
-        if ($mode !== 'gtm') {
-            echo '<p style="opacity: 0.6;">' . esc_html__('Esta sección solo está disponible en modo GTM.', 'esbilla-cmp') . '</p>';
+        if ($mode !== 'gtm' && $mode !== 'simplified') {
+            echo '<p style="opacity: 0.6;">' . esc_html__('Esta sección está disponible en modo Simplificado y GTM.', 'esbilla-cmp') . '</p>';
+        } else {
+            echo '<p>' . esc_html__('Configura tu Google Tag Manager para integración avanzada.', 'esbilla-cmp') . '</p>';
         }
     }
 
@@ -259,6 +273,21 @@ class Esbilla_Admin {
         <?php
     }
 
+    public function language_callback() {
+        $options = get_option('esbilla_settings', array());
+        $value = $options['language'] ?? 'es_ES';
+        ?>
+        <select name="esbilla_settings[language]" class="regular-text">
+            <option value="es_ES" <?php selected($value, 'es_ES'); ?>>🇪🇸 Español</option>
+            <option value="ast" <?php selected($value, 'ast'); ?>>🏴 Asturianu</option>
+            <option value="en_US" <?php selected($value, 'en_US'); ?>>🇬🇧 English</option>
+        </select>
+        <p class="description">
+            <?php esc_html_e('Idioma de la interfaz del plugin (requiere recargar la página)', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
     public function implementation_mode_callback() {
         $options = get_option('esbilla_settings', array());
         $mode = $options['implementation_mode'] ?? 'manual';
@@ -304,7 +333,7 @@ class Esbilla_Admin {
         $options = get_option('esbilla_settings', array());
         $mode = $options['implementation_mode'] ?? 'manual';
         $value = $options['gtm_id'] ?? '';
-        $disabled = $mode !== 'gtm' ? 'disabled' : '';
+        $disabled = ($mode !== 'gtm' && $mode !== 'simplified') ? 'disabled' : '';
         ?>
         <input type="text"
                name="esbilla_settings[gtm_id]"
@@ -313,7 +342,7 @@ class Esbilla_Admin {
                placeholder="GTM-XXXXXXX"
                <?php echo $disabled; ?>>
         <p class="description">
-            <?php esc_html_e('ID de tu contenedor de Google Tag Manager', 'esbilla-cmp'); ?>
+            <?php esc_html_e('ID de tu contenedor de Google Tag Manager (opcional)', 'esbilla-cmp'); ?>
         </p>
         <?php
     }

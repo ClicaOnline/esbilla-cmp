@@ -22,7 +22,7 @@ $mode = $options['implementation_mode'] ?? 'manual';
 
     <div class="esbilla-header">
         <p class="esbilla-tagline">
-            <?php esc_html_e('Xestión de consentimientu RGPD/ePrivacy de códigu abiertu', 'esbilla-cmp'); ?>
+            <?php esc_html_e('Gestión de consentimiento RGPD/ePrivacy de código abierto', 'esbilla-cmp'); ?>
         </p>
     </div>
 
@@ -163,11 +163,11 @@ jQuery(document).ready(function($) {
     function toggleSections() {
         const mode = $('input[name="esbilla_settings[implementation_mode]"]:checked').val();
 
-        // GTM section
+        // GTM section (disponible en Simplificado y GTM)
         const $gtmSection = $('#esbilla_gtm_section').closest('tr').prev('tr');
         const $gtmFields = $gtmSection.nextAll('tr').slice(0, 1);
 
-        if (mode === 'gtm') {
+        if (mode === 'gtm' || mode === 'simplified') {
             $gtmSection.show();
             $gtmFields.show();
             $gtmFields.find('input').prop('disabled', false);
