@@ -60,6 +60,15 @@ export function UsersPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Invite user modal state
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteOrganization, setInviteOrganization] = useState('');
+  const [inviteRole, setInviteRole] = useState<OrganizationRole>('org_viewer');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteSuccess, setInviteSuccess] = useState(false);
+
   // Search and pagination state
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(25);
@@ -280,6 +289,64 @@ export function UsersPage() {
     }
   }
 
+  async function sendInvitation() {
+    if (!currentUser || !db) return;
+    if (!inviteEmail || !inviteEmail.includes('@')) {
+      setInviteError('Email inválido');
+      return;
+    }
+    if (!inviteOrganization) {
+      setInviteError('Selecciona una organización');
+      return;
+    }
+
+    setInviteLoading(true);
+    setInviteError(null);
+    setInviteSuccess(false);
+
+    try {
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch('/api/invitations/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: inviteEmail,
+          organizationId: inviteOrganization,
+          type: 'organization',
+          role: inviteRole,
+          locale: language,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Error al enviar la invitación');
+      }
+
+      setInviteSuccess(true);
+      setTimeout(() => {
+        setShowInviteModal(false);
+        setInviteEmail('');
+        setInviteOrganization('');
+        setInviteRole('org_viewer');
+        setInviteSuccess(false);
+      }, 2000);
+
+    } catch (err: unknown) {
+      console.error('[Users] Error sending invitation:', err);
+      if (err instanceof Error) {
+        setInviteError(err.message);
+      } else {
+        setInviteError('Error desconocido');
+      }
+    } finally {
+      setInviteLoading(false);
+    }
+  }
+
   function toggleNewUserOrgAccess(orgId: string, role: OrganizationRole | null) {
     setNewUserOrgAccess(prev => {
       const updated = { ...prev };
@@ -444,13 +511,22 @@ export function UsersPage() {
             <p className="text-stone-500">{t.users.subtitle}</p>
           </div>
           {isSuperAdmin && (
-            <button
-              onClick={openCreateModal}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
-            >
-              <UserPlus size={18} />
-              <span>{t.users.createUser || 'Crear Usuario'}</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                <Mail size={18} />
+                <span>Invitar Usuario</span>
+              </button>
+              <button
+                onClick={openCreateModal}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+              >
+                <UserPlus size={18} />
+                <span>{t.users.createUser || 'Crear Usuario'}</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -1100,6 +1176,127 @@ export function UsersPage() {
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Invite User Modal */}
+        {showInviteModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
+                <h2 className="text-xl font-semibold text-stone-800 flex items-center gap-2">
+                  <Mail size={20} className="text-blue-600" />
+                  Invitar Usuario
+                </h2>
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="text-stone-400 hover:text-stone-600 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="px-6 py-4 space-y-4">
+                {/* Success message */}
+                {inviteSuccess && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
+                    <Check size={18} />
+                    <span className="text-sm font-medium">¡Invitación enviada correctamente!</span>
+                  </div>
+                )}
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">
+                    Email del usuario
+                  </label>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    disabled={inviteLoading || inviteSuccess}
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors disabled:bg-stone-50 disabled:cursor-not-allowed"
+                    placeholder="usuario@ejemplo.com"
+                  />
+                </div>
+
+                {/* Organization */}
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">
+                    Organización
+                  </label>
+                  <select
+                    value={inviteOrganization}
+                    onChange={(e) => setInviteOrganization(e.target.value)}
+                    disabled={inviteLoading || inviteSuccess}
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors disabled:bg-stone-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Selecciona una organización</option>
+                    {organizations.map((org) => (
+                      <option key={org.id} value={org.id}>
+                        {org.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Role */}
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-2">
+                    Rol
+                  </label>
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as OrganizationRole)}
+                    disabled={inviteLoading || inviteSuccess}
+                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-lg focus:border-blue-400 focus:outline-none transition-colors disabled:bg-stone-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="org_owner">{t.users.roles.org_owner}</option>
+                    <option value="org_admin">{t.users.roles.org_admin}</option>
+                    <option value="org_viewer">{t.users.roles.org_viewer}</option>
+                  </select>
+                </div>
+
+                {/* Info */}
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    Se enviará un email de invitación al usuario. Podrá crear su cuenta o iniciar sesión con Google.
+                  </p>
+                </div>
+
+                {/* Error message */}
+                {inviteError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    {inviteError}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 py-4 border-t border-stone-200 flex gap-3">
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="flex-1 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
+                >
+                  {inviteSuccess ? 'Cerrar' : t.common.cancel}
+                </button>
+                {!inviteSuccess && (
+                  <button
+                    onClick={sendInvitation}
+                    disabled={inviteLoading || !inviteEmail || !inviteOrganization}
+                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {inviteLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    ) : (
+                      <>
+                        <Mail size={18} />
+                        <span>Enviar Invitación</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

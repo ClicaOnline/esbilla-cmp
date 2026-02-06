@@ -40,6 +40,163 @@ export const es: Translations = {
     pendingMessage: 'Tu cuenta está pendiente de aprobación por un administrador. Recibirás acceso una vez que sea aprobada.',
     checkAgain: 'Comprobar de nuevo',
     useOtherAccount: 'Usar otra cuenta',
+    // New email/password fields
+    email: 'Email',
+    password: 'Contraseña',
+    forgotPassword: '¿Olvidaste tu contraseña?',
+    signIn: 'Iniciar sesión',
+    signInWith: 'Iniciar sesión con',
+    noAccount: '¿No tienes cuenta?',
+    startHere: 'Empieza aquí',
+    orContinueWith: 'o continúa con',
+  },
+
+  // Authentication
+  auth: {
+    // Register
+    register: {
+      title: 'Crear cuenta',
+      fullName: 'Nombre completo',
+      email: 'Email',
+      password: 'Contraseña',
+      confirmPassword: 'Confirmar contraseña',
+      passwordStrength: 'Fortaleza de contraseña',
+      weak: 'Débil',
+      medium: 'Media',
+      strong: 'Fuerte',
+      acceptTerms: 'Acepto los términos y condiciones',
+      termsLink: 'Términos de servicio',
+      privacyLink: 'Política de privacidad',
+      createAccount: 'Crear cuenta',
+      orSignUpWith: 'o regístrate con',
+      haveAccount: '¿Ya tienes cuenta?',
+      signIn: 'Inicia sesión',
+      planSelected: 'Plan seleccionado',
+      changePlan: 'Cambiar plan',
+    },
+
+    // Verify Email
+    verifyEmail: {
+      title: 'Verifica tu email',
+      sentTo: 'Hemos enviado un email de verificación a',
+      checkInbox: 'Revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.',
+      clickLink: 'Una vez verificado, podrás acceder al panel de control.',
+      didntReceive: '¿No recibiste el email?',
+      resend: 'Reenviar email',
+      resendCooldown: 'Podrás reenviar en {seconds} segundos',
+      backToLogin: 'Volver al login',
+      verifying: 'Verificando...',
+      verified: '¡Email verificado! Redirigiendo...',
+    },
+
+    // Forgot Password
+    forgotPassword: {
+      title: 'Recuperar contraseña',
+      enterEmail: 'Introduce tu email y te enviaremos un enlace para restablecer tu contraseña.',
+      sendLink: 'Enviar enlace',
+      backToLogin: 'Volver al login',
+      checkEmail: 'Revisa tu email',
+      emailSent: 'Te hemos enviado un email con instrucciones para restablecer tu contraseña.',
+      genericMessage: 'Si el email existe en nuestro sistema, recibirás un enlace de recuperación.',
+    },
+
+    // Reset Password
+    resetPassword: {
+      title: 'Restablecer contraseña',
+      newPassword: 'Nueva contraseña',
+      confirmPassword: 'Confirmar contraseña',
+      resetButton: 'Restablecer contraseña',
+      success: '¡Contraseña actualizada! Ya puedes iniciar sesión.',
+      backToLogin: 'Ir al login',
+      invalidLink: 'El enlace es inválido o ha sido usado.',
+      expiredLink: 'El enlace ha expirado. Solicita uno nuevo.',
+    },
+
+    // Pending Approval
+    pending: {
+      title: 'Pendiente de aprobación',
+      message: 'Tu cuenta está pendiente de aprobación por un administrador. Te notificaremos cuando sea aprobada.',
+      checkAgain: 'Comprobar de nuevo',
+      useOther: 'Usar otra cuenta',
+    },
+
+    // Onboarding
+    onboarding: {
+      welcome: '¡Bienvenido a Esbilla CMP!',
+      stepOf: 'Paso {current} de {total}',
+      step1: {
+        title: 'Configura tu organización',
+        subtitle: 'Información sobre tu empresa o proyecto',
+        orgName: 'Nombre de la organización',
+        orgNamePlaceholder: 'Mi Empresa S.L.',
+        website: 'Sitio web principal',
+        websitePlaceholder: 'https://www.ejemplo.com',
+        taxId: 'NIF/CIF',
+        taxIdPlaceholder: 'B12345678',
+        taxIdOptional: '(opcional)',
+        next: 'Siguiente',
+      },
+      step2: {
+        title: 'Crea tu primer sitio',
+        subtitle: 'Añade el dominio donde usarás Esbilla CMP',
+        domain: 'Dominio',
+        domainPlaceholder: 'www.ejemplo.com',
+        siteName: 'Nombre del sitio',
+        siteNamePlaceholder: 'Mi sitio web',
+        back: 'Atrás',
+        next: 'Siguiente',
+      },
+      step3: {
+        title: '¡Todo listo!',
+        subtitle: 'Copia este código e insértalo en el <head> de tu web',
+        copyCode: 'Copiar código',
+        copied: '¡Copiado!',
+        goToDashboard: 'Ir al Dashboard',
+        needHelp: '¿Necesitas ayuda?',
+        installGuide: 'Ver guía de instalación',
+      },
+      planSelected: 'Plan: {plan}',
+      creating: 'Creando tu cuenta...',
+      error: 'Hubo un error al crear tu cuenta. Inténtalo de nuevo.',
+    },
+
+    // Invitations
+    invitation: {
+      title: 'Invitación a Esbilla CMP',
+      invitedBy: '{name} te ha invitado',
+      invitedTo: 'a unirte a {organization}',
+      asRole: 'como {role}',
+      acceptWith: 'Aceptar con',
+      acceptAndSignIn: 'Aceptar e iniciar sesión',
+      noAccount: '¿No tienes cuenta?',
+      createAndAccept: 'Crear cuenta y aceptar',
+      expired: 'Invitación expirada',
+      expiredMessage: 'Esta invitación ha expirado. Contacta con quien te invitó para recibir una nueva.',
+      notFound: 'Invitación no encontrada',
+      notFoundMessage: 'No pudimos encontrar esta invitación. Verifica el enlace.',
+      orContinueWith: 'o con email',
+      accepting: 'Aceptando invitación...',
+    },
+
+    // Validation errors
+    errors: {
+      required: 'Este campo es obligatorio',
+      invalidEmail: 'El email no es válido',
+      passwordTooShort: 'La contraseña debe tener al menos 8 caracteres',
+      passwordRequirements: 'La contraseña debe contener al menos una mayúscula y un número',
+      passwordsMismatch: 'Las contraseñas no coinciden',
+      termsRequired: 'Debes aceptar los términos y condiciones',
+      emailAlreadyExists: 'Este email ya está registrado',
+      invalidCredentials: 'Email o contraseña incorrectos',
+      userNotFound: 'No existe ningún usuario con este email',
+      wrongPassword: 'La contraseña es incorrecta',
+      tooManyAttempts: 'Demasiados intentos. Inténtalo más tarde.',
+      networkError: 'Error de conexión. Verifica tu internet.',
+      unknownError: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
+      emailNotVerified: 'Debes verificar tu email antes de continuar',
+      nameTooShort: 'El nombre debe tener al menos 2 caracteres',
+      invalidDomain: 'El dominio no es válido',
+    },
   },
 
   // Dashboard page

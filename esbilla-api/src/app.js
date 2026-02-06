@@ -937,6 +937,13 @@ app.post('/api/sites/:siteId/recalculate-stats', async (req, res) => {
   }
 });
 
+// ============================================
+// RUTA: INVITACIONES (SPRINT 4)
+// ============================================
+// Gestión de invitaciones por email para onboarding colaborativo
+const invitationsRouter = require('./routes/invitations.js');
+app.use('/api/invitations', invitationsRouter);
+
 // Health check pa Cloud Run
 app.get('/api/health', (req, res) => {
   res.json({

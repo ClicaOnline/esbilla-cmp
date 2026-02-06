@@ -40,6 +40,163 @@ export const ast: Translations = {
     pendingMessage: 'La to cuenta ta pendiente d\'aprobación por un alministrador. Vas recibir accesu una vegada que seya aprobada.',
     checkAgain: 'Comprobar de nuevo',
     useOtherAccount: 'Usar otra cuenta',
+    // New email/password fields
+    email: 'Email',
+    password: 'Contraseña',
+    forgotPassword: '¿Escaecístite la contraseña?',
+    signIn: 'Aniciar sesión',
+    signInWith: 'Aniciar sesión con',
+    noAccount: '¿Nun tienes cuenta?',
+    startHere: 'Entama equí',
+    orContinueWith: 'o sigui con',
+  },
+
+  // Authentication
+  auth: {
+    // Register
+    register: {
+      title: 'Crear cuenta',
+      fullName: 'Nome completu',
+      email: 'Email',
+      password: 'Contraseña',
+      confirmPassword: 'Confirmar contraseña',
+      passwordStrength: 'Fortaleza de contraseña',
+      weak: 'Débil',
+      medium: 'Media',
+      strong: 'Fuerte',
+      acceptTerms: 'Aceuto los términos y condiciones',
+      termsLink: 'Términos del serviciu',
+      privacyLink: 'Política de privacidá',
+      createAccount: 'Crear cuenta',
+      orSignUpWith: 'o rexístrate con',
+      haveAccount: '¿Yá tienes cuenta?',
+      signIn: 'Anicia sesión',
+      planSelected: 'Plan esbilláu',
+      changePlan: 'Cambiar plan',
+    },
+
+    // Verify Email
+    verifyEmail: {
+      title: 'Verifica\'l to email',
+      sentTo: 'Unviámoste un email de verificación a',
+      checkInbox: 'Mira la to bandexa d\'entrada y calca nel enllaz pa verificar la to cuenta.',
+      clickLink: 'Una vegada verificáu, vas poder acceder al panel de control.',
+      didntReceive: '¿Nun recibisti l\'email?',
+      resend: 'Reunviar email',
+      resendCooldown: 'Vas poder reunviar en {seconds} segundos',
+      backToLogin: 'Volver al login',
+      verifying: 'Verificando...',
+      verified: '¡Email verificáu! Redirixendo...',
+    },
+
+    // Forgot Password
+    forgotPassword: {
+      title: 'Recuperar contraseña',
+      enterEmail: 'Introduz el to email y unviarémoste un enllaz pa restablecer la contraseña.',
+      sendLink: 'Unviar enllaz',
+      backToLogin: 'Volver al login',
+      checkEmail: 'Mira\'l to email',
+      emailSent: 'Unviámoste un email con instrucciones pa restablecer la contraseña.',
+      genericMessage: 'Si l\'email esiste nel nuesu sistema, vas recibir un enllaz de recuperación.',
+    },
+
+    // Reset Password
+    resetPassword: {
+      title: 'Restablecer contraseña',
+      newPassword: 'Contraseña nueva',
+      confirmPassword: 'Confirmar contraseña',
+      resetButton: 'Restablecer contraseña',
+      success: '¡Contraseña anovada! Yá pues aniciar sesión.',
+      backToLogin: 'Dir al login',
+      invalidLink: 'L\'enllaz ye inválidu o yá se usó.',
+      expiredLink: 'L\'enllaz caducó. Solicita unu nuevu.',
+    },
+
+    // Pending Approval
+    pending: {
+      title: 'Pendiente d\'aprobación',
+      message: 'La to cuenta ta pendiente d\'aprobación por un alministrador. Notificarémoste cuando seya aprobada.',
+      checkAgain: 'Comprobar de nuevo',
+      useOther: 'Usar otra cuenta',
+    },
+
+    // Onboarding
+    onboarding: {
+      welcome: '¡Bienllegáu a Esbilla CMP!',
+      stepOf: 'Pasu {current} de {total}',
+      step1: {
+        title: 'Configura la organización',
+        subtitle: 'Información sobre la to empresa o proyeutu',
+        orgName: 'Nome de la organización',
+        orgNamePlaceholder: 'La Mio Empresa S.L.',
+        website: 'Sitiu web principal',
+        websitePlaceholder: 'https://www.exemplu.com',
+        taxId: 'NIF/CIF',
+        taxIdPlaceholder: 'B12345678',
+        taxIdOptional: '(opcional)',
+        next: 'Siguiente',
+      },
+      step2: {
+        title: 'Crea\'l to primer sitiu',
+        subtitle: 'Amiesta\'l dominiu au vas usar Esbilla CMP',
+        domain: 'Dominiu',
+        domainPlaceholder: 'www.exemplu.com',
+        siteName: 'Nome del sitiu',
+        siteNamePlaceholder: 'El mio sitiu web',
+        back: 'Atrás',
+        next: 'Siguiente',
+      },
+      step3: {
+        title: '¡Too llistu!',
+        subtitle: 'Copia esti códigu y insértalu nel <head> de la to web',
+        copyCode: 'Copiar códigu',
+        copied: '¡Copiau!',
+        goToDashboard: 'Dir al Dashboard',
+        needHelp: '¿Necesites ayuda?',
+        installGuide: 'Ver guía d\'instalación',
+      },
+      planSelected: 'Plan: {plan}',
+      creating: 'Creando la to cuenta...',
+      error: 'Hebo un error al crear la cuenta. Inténtalo otra vuelta.',
+    },
+
+    // Invitations
+    invitation: {
+      title: 'Invitación a Esbilla CMP',
+      invitedBy: '{name} invitóte',
+      invitedTo: 'a xunite a {organization}',
+      asRole: 'como {role}',
+      acceptWith: 'Aceptar con',
+      acceptAndSignIn: 'Aceptar y aniciar sesión',
+      noAccount: '¿Nun tienes cuenta?',
+      createAndAccept: 'Crear cuenta y aceptar',
+      expired: 'Invitación caducada',
+      expiredMessage: 'Esta invitación caducó. Contacta con quien te invitó pa recibir una nueva.',
+      notFound: 'Invitación non atopada',
+      notFoundMessage: 'Nun pudimos atopar esta invitación. Verifica l\'enllaz.',
+      orContinueWith: 'o con email',
+      accepting: 'Aceptando invitación...',
+    },
+
+    // Validation errors
+    errors: {
+      required: 'Esti campu ye obligatoriu',
+      invalidEmail: 'L\'email nun ye válidu',
+      passwordTooShort: 'La contraseña debe tener polo menos 8 caráuteres',
+      passwordRequirements: 'La contraseña debe contener polo menos una mayúscula y un númberu',
+      passwordsMismatch: 'Les contraseñes nun coinciden',
+      termsRequired: 'Debes aceptar los términos y condiciones',
+      emailAlreadyExists: 'Esti email yá ta rexistráu',
+      invalidCredentials: 'Email o contraseña incorreutos',
+      userNotFound: 'Nun esiste nengún usuariu con esti email',
+      wrongPassword: 'La contraseña ye incorreuta',
+      tooManyAttempts: 'Demasiaos intentos. Inténtalo más sero.',
+      networkError: 'Error de conexón. Verifica la to internet.',
+      unknownError: 'Asocedió un error inesperáu. Inténtalo de nuevo.',
+      emailNotVerified: 'Debes verificar el email enantes de siguir',
+      nameTooShort: 'El nome debe tener polo menos 2 caráuteres',
+      invalidDomain: 'El dominiu nun ye válidu',
+    },
   },
 
   // Dashboard page
