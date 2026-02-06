@@ -15,7 +15,7 @@
   const script = document.currentScript;
   const cmpId = script.getAttribute('data-id') || 'default';
   const gtmId = script.getAttribute('data-gtm');
-  const apiBase = script.getAttribute('data-api') || script.src.replace('/sdk.js', '');
+  const apiBase = script.getAttribute('data-api') || script.src.replace('/pegoyu.js', '');
 
   // Estado global
   let config = {};
