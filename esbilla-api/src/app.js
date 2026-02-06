@@ -748,7 +748,7 @@ app.get('/api/consent/history/:footprintId', async (req, res) => {
       gdprInfo: {
         retentionPeriod: '3 años (1095 días)',
         dataController: 'Esbilla CMP',
-        contactEmail: 'privacy@esbilla.com',
+        contactEmail: 'esbilla+privacy@clicaonline.com',
         rights: 'Puede ejercer sus derechos GDPR contactando al responsable del tratamiento.'
       },
       records

@@ -153,7 +153,7 @@ export function OnboardingSetupPage() {
     }
 
     // Validate domain (basic validation)
-    const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i;
+    const domainRegex = /^[a-z0-9]+([-.]{1}[a-z0-9]+)*\.[a-z]{2,}$/i;
     if (!domainRegex.test(domain.replace(/^https?:\/\//i, '').replace(/\/.*$/, ''))) {
       setError(t.auth.errors.invalidDomain);
       return;

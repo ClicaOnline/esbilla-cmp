@@ -30,12 +30,14 @@ export function usePagination<T>({
 
   // Reset a página 1 cuando cambia data o pageSize
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
   }, [data.length]);
 
   // Ajustar página actual si excede totalPages
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentPage(totalPages);
     }
   }, [currentPage, totalPages]);

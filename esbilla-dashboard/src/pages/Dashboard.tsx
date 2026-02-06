@@ -182,8 +182,8 @@ async function loadPreAggregatedStats(
 
     // Agregar todos los documentos
     let total = 0;
-    let acceptedAnalytics = 0;
-    let acceptedMarketing = 0;
+    // let acceptedAnalytics = 0;  // TODO: usar para estadísticas detalladas
+    // let acceptedMarketing = 0;  // TODO: usar para estadísticas detalladas
     let acceptAll = 0;
     let rejectAll = 0;
     let customize = 0;
@@ -210,8 +210,8 @@ async function loadPreAggregatedStats(
       const date = data.date;
 
       total += hits;
-      acceptedAnalytics += data.accepted_analytics || 0;
-      acceptedMarketing += data.accepted_marketing || 0;
+      // acceptedAnalytics += data.accepted_analytics || 0;  // TODO: usar para estadísticas detalladas
+      // acceptedMarketing += data.accepted_marketing || 0;  // TODO: usar para estadísticas detalladas
       acceptAll += data.action_accept_all || 0;
       rejectAll += data.action_reject_all || 0;
       customize += data.action_customize || 0;

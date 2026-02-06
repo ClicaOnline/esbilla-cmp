@@ -751,19 +751,15 @@ interface BannerPreviewProps {
   config: BannerConfig;
 }
 
-function BannerPreview({ config }: BannerPreviewProps) {
-  const fontClass = {
-    system: 'font-sans',
-    inter: 'font-[Inter]',
-    roboto: 'font-[Roboto]',
-    opensans: 'font-[Open_Sans]',
-    lato: 'font-[Lato]',
-    montserrat: 'font-[Montserrat]',
-  }[config.font];
+// Componente extraído para evitar recreación en cada render
+interface PreviewContentProps {
+  config: BannerConfig;
+  fontClass: string;
+  isEqual: boolean;
+}
 
-  const isEqual = config.buttonStyle === 'equal';
-
-  const PreviewContent = () => (
+function PreviewContent({ config, fontClass, isEqual }: PreviewContentProps) {
+  return (
     <div
       className={`p-4 rounded-lg shadow-lg ${fontClass}`}
       style={{ backgroundColor: config.colors.background, color: config.colors.text }}
@@ -814,12 +810,25 @@ function BannerPreview({ config }: BannerPreviewProps) {
       </div>
     </div>
   );
+}
+
+function BannerPreview({ config }: BannerPreviewProps) {
+  const fontClass = {
+    system: 'font-sans',
+    inter: 'font-[Inter]',
+    roboto: 'font-[Roboto]',
+    opensans: 'font-[Open_Sans]',
+    lato: 'font-[Lato]',
+    montserrat: 'font-[Montserrat]',
+  }[config.font];
+
+  const isEqual = config.buttonStyle === 'equal';
 
   if (config.layout === 'modal') {
     return (
       <div className="relative h-64 bg-stone-800/20 rounded-lg flex items-center justify-center">
         <div className="max-w-sm">
-          <PreviewContent />
+          <PreviewContent config={config} fontClass={fontClass} isEqual={isEqual} />
         </div>
       </div>
     );
@@ -828,7 +837,7 @@ function BannerPreview({ config }: BannerPreviewProps) {
   if (config.layout === 'bar') {
     return (
       <div className="relative h-64 bg-stone-100 rounded-lg flex flex-col justify-end">
-        <PreviewContent />
+        <PreviewContent config={config} fontClass={fontClass} isEqual={isEqual} />
       </div>
     );
   }
@@ -836,7 +845,7 @@ function BannerPreview({ config }: BannerPreviewProps) {
   return (
     <div className="relative h-64 bg-stone-100 rounded-lg flex items-end justify-end p-4">
       <div className="max-w-xs">
-        <PreviewContent />
+        <PreviewContent config={config} fontClass={fontClass} isEqual={isEqual} />
       </div>
     </div>
   );

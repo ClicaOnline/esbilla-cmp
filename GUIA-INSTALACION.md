@@ -235,7 +235,7 @@ No, el Pegoyu v2.0 es extremadamente ligero:
 
 ¿Necesitas ayuda?
 
-- 📧 **Email:** soporte@esbilla.com
+- 📧 **Email:** esbilla+soporte@clicaonline.com
 - 💬 **GitHub:** [github.com/ClicaOnline/esbilla-cmp/issues](https://github.com/ClicaOnline/esbilla-cmp/issues)
 - 📖 **Documentación:** [esbilla.com/docs](https://esbilla.com/docs)
 

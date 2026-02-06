@@ -10,6 +10,7 @@ export type Language = typeof SUPPORTED_LANGUAGES[number];
 export const DEFAULT_LANGUAGE: Language = 'ast';
 
 // Language labels for the selector
+// eslint-disable-next-line react-refresh/only-export-components
 export const LANGUAGE_LABELS: Record<Language, string> = {
   ast: '🌽 Asturianu',
   es: '🇪🇸 Español',
@@ -84,6 +85,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 }
 
 // Hook to use translations
+// eslint-disable-next-line react-refresh/only-export-components
 export function useI18n() {
   const context = useContext(I18nContext);
   if (!context) {
@@ -93,6 +95,7 @@ export function useI18n() {
 }
 
 // Shorthand hook for just translations
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTranslations() {
   const { t } = useI18n();
   return t;

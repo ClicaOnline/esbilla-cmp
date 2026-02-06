@@ -29,7 +29,7 @@ interface ConsentRecord {
     pegoyuVersion?: string;
     consentVersion?: string;
   };
-  attribution?: Record<string, any>;
+  attribution?: Record<string, string | number | boolean | null>;
   timestamp: string;
   userAgent: string;
   lang: string;
@@ -423,7 +423,7 @@ export function FootprintPage() {
                               </div>
                               {record.attribution._captured_at && (
                                 <div className="text-[10px] text-amber-600 mt-2 pt-2 border-t border-amber-200">
-                                  Capturado: {new Date(record.attribution._captured_at).toLocaleString(language)}
+                                  Capturado: {new Date(record.attribution._captured_at as string | number).toLocaleString(language)}
                                 </div>
                               )}
                             </div>
