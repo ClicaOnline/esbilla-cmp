@@ -2,7 +2,8 @@ import { useAuth } from '../context/AuthContext';
 import { Navigate, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useI18n, SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../i18n';
 import { Globe, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react';
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import { isSaasMode } from '../utils/featureFlags';
 
 export function LoginPage() {

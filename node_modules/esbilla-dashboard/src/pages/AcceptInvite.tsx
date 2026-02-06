@@ -297,7 +297,7 @@ export function AcceptInvitePage() {
           <form onSubmit={handleLoginWithEmail} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-2">
-                {t.auth.login.email}
+                {t.login.email}
               </label>
               <input
                 id="email"
@@ -312,7 +312,7 @@ export function AcceptInvitePage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-stone-700 mb-2">
-                {t.auth.login.password}
+                {t.login.password}
               </label>
               <input
                 id="password"
