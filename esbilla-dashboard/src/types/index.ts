@@ -161,6 +161,7 @@ export interface ScriptConfig {
     crazyEgg?: string;              // Account Number (8 dígitos hex)
     vwo?: string;                   // Account ID (6 dígitos)
     optimizely?: string;            // Project ID (10 dígitos)
+    clarity?: string;               // Project ID (Microsoft Clarity)
   };
   marketing?: {
     facebookPixel?: string;         // Pixel ID (ej: "123456789012345")

@@ -642,6 +642,18 @@
       <script src="https://cdn.optimizely.com/js/${projectId}.js"></script>
     `,
 
+    // Microsoft Clarity (Heatmaps & Session Recordings)
+    clarity: (projectId) => `
+      <!-- Microsoft Clarity -->
+      <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "${projectId}");
+      </script>
+    `,
+
     // Google Ads Conversion Tracking
     googleAds: (conversionId) => `
       <!-- Google Ads Conversion Tracking -->
@@ -855,6 +867,12 @@
       if (analytics.optimizely && scriptTemplates.optimizely) {
         injectScript(scriptTemplates.optimizely(analytics.optimizely), 'analytics');
         console.log('[Esbilla v1.7] ✓ Optimizely cargado');
+      }
+
+      // Microsoft Clarity
+      if (analytics.clarity && scriptTemplates.clarity) {
+        injectScript(scriptTemplates.clarity(analytics.clarity), 'analytics');
+        console.log('[Esbilla v1.7] ✓ Microsoft Clarity cargado');
       }
     }
 
@@ -1569,13 +1587,111 @@
   }
 
   function updateConsentMode(choices) {
-    gtag('consent', 'update', {
-      'analytics_storage': choices.analytics ? 'granted' : 'denied',
-      'ad_storage': choices.marketing ? 'granted' : 'denied',
-      'ad_user_data': choices.marketing ? 'granted' : 'denied',
-      'ad_personalization': choices.marketing ? 'granted' : 'denied'
-    });
+    // ============================================
+    // 1. GOOGLE CONSENT MODE V2
+    // ============================================
+    if (typeof gtag === 'function') {
+      gtag('consent', 'update', {
+        'analytics_storage': choices.analytics ? 'granted' : 'denied',
+        'ad_storage': choices.marketing ? 'granted' : 'denied',
+        'ad_user_data': choices.marketing ? 'granted' : 'denied',
+        'ad_personalization': choices.marketing ? 'granted' : 'denied',
+        'functionality_storage': choices.functional ? 'granted' : 'denied',
+        'personalization_storage': choices.functional ? 'granted' : 'denied',
+        'security_storage': 'granted' // Siempre granted (necesario para CSRF, etc.)
+      });
+      console.log('[Esbilla v1.7] ✓ Google Consent Mode V2 actualizado');
+    }
 
+    // ============================================
+    // 2. META PIXEL CONSENT API (Facebook)
+    // ============================================
+    if (typeof fbq === 'function') {
+      if (choices.marketing) {
+        fbq('consent', 'grant');
+        console.log('[Esbilla v1.7] ✓ Meta Pixel Consent: granted');
+      } else {
+        fbq('consent', 'revoke');
+        console.log('[Esbilla v1.7] ✓ Meta Pixel Consent: revoked');
+      }
+    }
+
+    // ============================================
+    // 3. MICROSOFT UET CONSENT MODE
+    // ============================================
+    if (typeof window.uetq !== 'undefined') {
+      window.uetq = window.uetq || [];
+      window.uetq.push('consent', 'update', {
+        'ad_storage': choices.marketing ? 'granted' : 'denied'
+      });
+      console.log('[Esbilla v1.7] ✓ Microsoft UET Consent actualizado');
+    }
+
+    // ============================================
+    // 4. MICROSOFT CLARITY CONSENT API
+    // ============================================
+    if (typeof window.clarity === 'function') {
+      if (choices.analytics) {
+        window.clarity('consent');
+        console.log('[Esbilla v1.7] ✓ Microsoft Clarity Consent: granted');
+      } else {
+        // Clarity no tiene método revoke explícito, se pausa el tracking
+        window.clarity('stop');
+        console.log('[Esbilla v1.7] ✓ Microsoft Clarity Consent: denied (stopped)');
+      }
+    }
+
+    // ============================================
+    // 5. SHOPIFY CUSTOMER PRIVACY API
+    // ============================================
+    if (typeof window.Shopify !== 'undefined' && window.Shopify.customerPrivacy) {
+      window.Shopify.customerPrivacy.setTrackingConsent({
+        analytics: choices.analytics,
+        marketing: choices.marketing,
+        preferences: choices.functional,
+        sale_of_data: choices.marketing // CCPA compliance
+      }, function() {
+        console.log('[Esbilla v1.7] ✓ Shopify Customer Privacy API actualizado');
+      });
+    }
+
+    // ============================================
+    // 6. WORDPRESS CONSENT API
+    // ============================================
+    if (typeof wp !== 'undefined' && wp.hooks) {
+      // Disparar hook de WordPress para que plugins escuchen
+      wp.hooks.doAction('esbilla_consent_updated', choices);
+      console.log('[Esbilla v1.7] ✓ WordPress Consent API: hook disparado');
+
+      // Compatibilidad con wp-consent-api plugin
+      if (typeof wp.consent !== 'undefined') {
+        wp.consent.setConsent('analytics', choices.analytics ? 'allow' : 'deny');
+        wp.consent.setConsent('marketing', choices.marketing ? 'allow' : 'deny');
+        wp.consent.setConsent('preferences', choices.functional ? 'allow' : 'deny');
+        console.log('[Esbilla v1.7] ✓ WP Consent API plugin actualizado');
+      }
+    }
+
+    // ============================================
+    // 7. CUSTOM EVENT (para integraciones personalizadas)
+    // ============================================
+    // Disparar evento global que otros scripts pueden escuchar
+    if (typeof window.CustomEvent === 'function') {
+      const consentEvent = new CustomEvent('esbillaConsentUpdate', {
+        detail: {
+          analytics: choices.analytics,
+          marketing: choices.marketing,
+          functional: choices.functional,
+          timestamp: new Date().toISOString()
+        }
+      });
+      window.dispatchEvent(consentEvent);
+      console.log('[Esbilla v1.7] ✓ CustomEvent "esbillaConsentUpdate" disparado');
+    }
+
+    // ============================================
+    // 8. DESBLOQUEO DE SCRIPTS Y CARGA DINÁMICA
+    // ============================================
     // Desbloquear scripts de terceros basado en las categorías consentidas
     unblockScripts(choices);
 
