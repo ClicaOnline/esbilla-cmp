@@ -45,6 +45,7 @@ interface BannerConfig {
     title: string;
     content: string;
   };
+  customCSS?: string;
 }
 
 const defaultConfig: BannerConfig = {
@@ -67,6 +68,7 @@ const defaultConfig: BannerConfig = {
     title: 'Aviso Legal',
     content: '',
   },
+  customCSS: '',
 };
 
 export function SettingsPage() {
@@ -176,6 +178,14 @@ export function SettingsPage() {
     setConfig((prev) => ({
       ...prev,
       legal: { ...prev.legal, [key]: value },
+    }));
+    setSaved(false);
+  };
+
+  const updateCustomCSS = (value: string) => {
+    setConfig((prev) => ({
+      ...prev,
+      customCSS: value,
     }));
     setSaved(false);
   };
@@ -569,6 +579,59 @@ export function SettingsPage() {
               <Eye size={18} />
               {t.settings.previewModal}
             </button>
+          </div>
+        </section>
+
+        {/* Custom CSS Section */}
+        <section className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-stone-100 rounded-lg">
+              <svg className="text-stone-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-stone-800">CSS Personalizado</h2>
+          </div>
+          <p className="text-sm text-stone-500 mb-4">
+            Añade CSS personalizado para modificar el aspecto del banner de cookies.
+            Puedes usar los IDs y clases de los elementos del banner para personalizar su apariencia.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                Código CSS
+              </label>
+              <textarea
+                value={config.customCSS || ''}
+                onChange={(e) => updateCustomCSS(e.target.value)}
+                placeholder={`/* Ejemplo de personalización */\n#esbilla-banner {\n  border-radius: 16px;\n  box-shadow: 0 8px 32px rgba(0,0,0,0.12);\n}\n\n#esbilla-banner-title {\n  font-size: 1.5rem;\n  color: #1e40af;\n}\n\n.esbilla-btn.btn-primary {\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n}`}
+                rows={12}
+                className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y font-mono text-sm"
+              />
+            </div>
+            <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <svg className="text-blue-600 flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+              <div className="text-sm text-blue-700">
+                <p className="font-medium mb-1">IDs y clases disponibles:</p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li><code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-banner</code> - Contenedor principal</li>
+                  <li><code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-banner-inner</code> - Contenedor interno</li>
+                  <li><code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-banner-icon</code> - Icono del banner</li>
+                  <li><code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-banner-title</code> - Título</li>
+                  <li><code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-banner-description</code> - Descripción</li>
+                  <li><code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-btn-accept</code>, <code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-btn-reject</code>, <code className="bg-blue-100 px-1 py-0.5 rounded">#esbilla-btn-settings</code> - Botones</li>
+                </ul>
+                <p className="mt-2">
+                  <a href="https://esbilla.com/docs/personalizacion-banner" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline text-xs">
+                    Ver guía completa de personalización →
+                  </a>
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
