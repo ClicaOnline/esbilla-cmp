@@ -299,13 +299,16 @@ export function FootprintPage() {
                           </div>
 
                           <div className="text-right">
-                            <p className="text-sm font-medium text-stone-800">
-                              {record.createdAt.toLocaleDateString(language, {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric'
-                              })}
-                            </p>
+                            <div className="flex items-center justify-end gap-2 mb-1">
+                              <Calendar size={14} className="text-stone-400" />
+                              <p className="text-sm font-medium text-stone-800">
+                                {record.createdAt.toLocaleDateString(language, {
+                                  day: '2-digit',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}
+                              </p>
+                            </div>
                             <p className="text-xs text-stone-400">
                               {record.createdAt.toLocaleTimeString(language, {
                                 hour: '2-digit',
@@ -343,12 +346,18 @@ export function FootprintPage() {
                           <div className="bg-stone-50 rounded-lg p-3 space-y-2 text-xs">
                             <div className="font-medium text-stone-700 mb-2">Metadatos Técnicos</div>
 
-                            {/* User Agent (full) */}
+                            {/* User Agent (parsed + full) */}
                             <div className="flex items-start gap-2">
                               <Monitor size={12} className="mt-0.5 flex-shrink-0 text-stone-400" />
                               <div className="flex-1 min-w-0">
-                                <div className="text-stone-500 mb-1">User-Agent:</div>
-                                <code className="text-stone-700 break-all text-[10px] leading-relaxed">{record.userAgent}</code>
+                                <div className="text-stone-500 mb-1 flex items-center gap-2">
+                                  <span>Navegador:</span>
+                                  <span className="font-medium text-stone-700">{parseUserAgent(record.userAgent, 'Desconocido')}</span>
+                                </div>
+                                <details className="text-[10px] text-stone-500 cursor-pointer">
+                                  <summary className="hover:text-stone-700">Ver User-Agent completo</summary>
+                                  <code className="text-stone-700 break-all leading-relaxed mt-1 block">{record.userAgent}</code>
+                                </details>
                               </div>
                             </div>
 
