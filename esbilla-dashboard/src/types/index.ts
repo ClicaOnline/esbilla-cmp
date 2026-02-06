@@ -157,11 +157,27 @@ export interface ScriptConfig {
   analytics?: {
     googleAnalytics?: string;      // Measurement ID (ej: "G-XXXXXXXXXX")
     hotjar?: string;                // Site ID (ej: "12345")
+    amplitude?: string;             // API Key
+    crazyEgg?: string;              // Account Number (8 dígitos hex)
+    vwo?: string;                   // Account ID (6 dígitos)
+    optimizely?: string;            // Project ID (10 dígitos)
   };
   marketing?: {
     facebookPixel?: string;         // Pixel ID (ej: "123456789012345")
     linkedinInsight?: string;       // Partner ID (ej: "123456")
     tiktokPixel?: string;           // Pixel ID (ej: "ABCDEFGHIJK")
+    googleAds?: string;             // Conversion ID (ej: "AW-123456789")
+    microsoftAds?: string;          // UET Tag ID (8 dígitos)
+    criteo?: string;                // Account ID (6 dígitos)
+    pinterestTag?: string;          // Tag ID (13 dígitos, empieza con 261)
+    twitterPixel?: string;          // Pixel ID (ej: "o1234")
+    taboola?: string;               // Account ID (7 dígitos)
+    youtube?: string;               // Video ID (11 caracteres)
+    hubspot?: string;               // Portal ID (8 dígitos)
+  };
+  functional?: {
+    intercom?: string;              // App ID (8 caracteres alfanuméricos)
+    zendesk?: string;               // Snippet Key
   };
 }
 
@@ -177,7 +193,7 @@ export interface Site {
   // Configuración
   settings?: SiteSettings;
 
-  // Configuración de scripts (SDK v1.6 - modo simplified)
+  // Configuración de scripts (SDK v1.7 - modo simplified con 20+ integraciones)
   scriptConfig?: ScriptConfig;
 
   // Autenticación del SDK
