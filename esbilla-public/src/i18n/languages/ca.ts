@@ -1,6 +1,6 @@
 export const ca = {
   'nav.home': 'Inici',
-  'nav.saas': 'SaaS (Properament)',
+  'nav.saas': 'SaaS',
   'nav.community': 'Comunitat',
   'hero.tagline': 'Tradició Digital',
   'hero.title': 'Tria la',

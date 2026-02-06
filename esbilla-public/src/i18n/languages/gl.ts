@@ -1,6 +1,6 @@
 export const gl = {
   'nav.home': 'Inicio',
-  'nav.saas': 'SaaS (Proximamente)',
+  'nav.saas': 'SaaS',
   'nav.community': 'Comunidade',
   'hero.tagline': 'Tradición Dixital',
   'hero.title': 'Escolle a',

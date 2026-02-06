@@ -1,6 +1,6 @@
 export const eu = {
   'nav.home': 'Hasiera',
-  'nav.saas': 'SaaS (Laster)',
+  'nav.saas': 'SaaS',
   'nav.community': 'Komunitatea',
   'hero.tagline': 'Tradizio Digitala',
   'hero.title': 'Aukeratu',
@@ -102,5 +102,214 @@ export const eu = {
   'comm.ways.features.title': 'Proposatu Ideiak',
   'comm.ways.features.desc': 'Esan zein funtzionalitate behar dituzun zure hórreo digitalerako.',
   'comm.ways.legal.title': 'Aholkularitza Juridikoa',
-  'comm.ways.legal.desc': 'Lagundu pribatutasun testuak argi eta irisgarri egiten denentzat.'
+  'comm.ways.legal.desc': 'Lagundu pribatutasun testuak argi eta irisgarri egiten denentzat.',
+
+  // SaaS Zabaldua - Prezio Eredu Berria (Behin-behineko Eskaintza)
+  'saas.hero.new.title': 'CMP Indartsuena Prezio Onenean',
+  'saas.hero.new.subtitle': '20+ Integrazio Natibo. €9/hiletik',
+  'saas.hero.new.desc': 'CookieYes baino merkeagoa. Cookiebot baino indartsuagoa. 100% Open Source.',
+  'saas.hero.badge': '🔥 Abiaratze Eskaintza - Behin-behineko Prezioa',
+
+  'saas.plans.title': 'Merkatua Hausten Duten Prezioak',
+  'saas.plans.subtitle': 'Gutxiago ordaindu. Gehiago lortu. Iraunkortasun kontraturik gabe.',
+
+  // FREE / MAKER Plana
+  'saas.plans.free.title': 'FREE / MAKER',
+  'saas.plans.free.price': '€0',
+  'saas.plans.free.period': 'betiko',
+  'saas.plans.free.desc': 'Zaletasuna, Probak, Garatzaileak',
+  'saas.plans.free.limit': '25.000 Saio/hilabete',
+  'saas.plans.free.feature1': '1 Domeinua',
+  'saas.plans.free.feature2': 'Google Consent Mode V2 (Oinarrizkoa)',
+  'saas.plans.free.feature3': 'Logs: 30 egun',
+  'saas.plans.free.feature4': 'Eskuzko Integrazioa (HTML/GTM)',
+  'saas.plans.free.cta': 'Doan Hasi',
+
+  // STARTER Plana (Erraztasunen Hiltzailea)
+  'saas.plans.starter.title': 'STARTER',
+  'saas.plans.starter.badge': '⚡ Kalitate/Prezio Onena',
+  'saas.plans.starter.price': '€9',
+  'saas.plans.starter.priceOld': '€19',
+  'saas.plans.starter.period': '/hilabete',
+  'saas.plans.starter.desc': 'Blogak, Enpresa Webguneak, E-commerce Txikiak',
+  'saas.plans.starter.limit': '100.000 Saio/hilabete',
+  'saas.plans.starter.feature1': 'Domeinu Mugagabeak',
+  'saas.plans.starter.feature2': 'Lege Logs: 5 Urte (DBEO)',
+  'saas.plans.starter.feature3': 'Hizkuntza Anitza Automatikoa (10 hizkuntza)',
+  'saas.plans.starter.feature4': '🔌 Google Consent Mode V2 (Auto-fire)',
+  'saas.plans.starter.feature5': '🔌 GA4 + Google Ads (Natiboa)',
+  'saas.plans.starter.feature6': 'WordPress/Shopify Plugina',
+  'saas.plans.starter.compare': 'vs CookieYes €20/hilabete',
+  'saas.plans.starter.cta': '14 Egun Doan Probatu',
+
+  // GROWTH Plana (Gomendatua)
+  'saas.plans.growth.title': 'GROWTH',
+  'saas.plans.growth.badge': '🚀 Gomendatua',
+  'saas.plans.growth.price': '€29',
+  'saas.plans.growth.period': '/hilabete',
+  'saas.plans.growth.desc': 'Online Dendak, Marketers, Growth Hackers',
+  'saas.plans.growth.limit': '1.000.000 Saio/hilabete',
+  'saas.plans.growth.feature1': 'STARTER-eko guztia +',
+  'saas.plans.growth.feature2': 'Geokokapena (Banner legea denean soilik)',
+  'saas.plans.growth.feature3': 'Bihurketa Analytics (Salmentan eragina)',
+  'saas.plans.growth.feature4': '🔌 Meta Pixel (Facebook/Instagram)',
+  'saas.plans.growth.feature5': '🔌 TikTok / LinkedIn Ads',
+  'saas.plans.growth.feature6': '🔌 Hotjar / HubSpot / Clarity',
+  'saas.plans.growth.feature7': '🔌 20+ Zero-Code Integrazioak',
+  'saas.plans.growth.feature8': 'Laguntza Lehentasuna (< 24h)',
+  'saas.plans.growth.compare': 'vs Cookiebot €39/hilabete',
+  'saas.plans.growth.cta': 'Growth Aukeratu',
+
+  // AGENCY Plana
+  'saas.plans.agency.title': 'AGENCY',
+  'saas.plans.agency.price': '€99tik',
+  'saas.plans.agency.period': '/hilabete',
+  'saas.plans.agency.desc': 'Agentziak, Bolumen Altua, Bezero Anitza',
+  'saas.plans.agency.limit': '5.000.000 Saio/hilabete + Multi-tenant',
+  'saas.plans.agency.feature1': 'GROWTH-eko guztia +',
+  'saas.plans.agency.feature2': 'Bezeroen Kudeaketa Panela',
+  'saas.plans.agency.feature3': 'Marka Zuria (White-Label)',
+  'saas.plans.agency.feature4': 'Esportazio API Denbora Errealean',
+  'saas.plans.agency.feature5': 'On-Premise Migrazio Aukerakoa',
+  'saas.plans.agency.feature6': 'SLA 99.9% Bermatua',
+  'saas.plans.agency.feature7': 'Laguntza Dedikatua',
+  'saas.plans.agency.cta': 'Salmentak Kontaktatu',
+
+  // Balio Konparazioa
+  'saas.comparison.title': 'Konparazioa: Esbilla vs Lehiakideak',
+  'saas.comparison.esbilla': 'Esbilla',
+  'saas.comparison.cookieyes': 'CookieYes',
+  'saas.comparison.cookiebot': 'Cookiebot',
+  'saas.comparison.price': 'Prezioa (100K saio)',
+  'saas.comparison.integrations': 'Integrazio Natiboak',
+  'saas.comparison.opensource': 'Open Source',
+  'saas.comparison.selfhost': 'Self-Hosted Doan',
+  'saas.comparison.apis': 'Adostasun APIak',
+
+  // Integrazio Natiboak (Bereizlea)
+  'saas.integrations.title': '20+ Zero-Code Integrazio Natibo',
+  'saas.integrations.subtitle': 'Konfiguratu Dashboard-etik. Koderik ukitu gabe.',
+  'saas.integrations.analytics': 'Analytics',
+  'saas.integrations.analytics.list': 'GA4, Hotjar, Amplitude, Clarity, Crazy Egg, VWO, Optimizely',
+  'saas.integrations.marketing': 'Marketing',
+  'saas.integrations.marketing.list': 'Facebook Pixel, Google Ads, Microsoft Ads, LinkedIn, TikTok, Pinterest, Twitter, Criteo, Taboola, HubSpot',
+  'saas.integrations.functional': 'Funtzionala',
+  'saas.integrations.functional.list': 'Intercom, Zendesk',
+
+  // Zergatik Esbilla
+  'saas.why.title': 'Zergatik Esbilla Merkatua Nagusitzen Da?',
+  'saas.why.price.title': '💰 Prezio Irabazezina',
+  'saas.why.price.desc': '€9/hiletik. CookieYes baino %55 merkeagoa. Cookiebot baino %75 merkeagoa.',
+  'saas.why.integrations.title': '🔌 Integrazio Natiboak',
+  'saas.why.integrations.desc': '20+ plataforma koderik ukitu gabe. Google Consent Mode V2, Meta Pixel, Microsoft UET, Clarity, Shopify, WordPress.',
+  'saas.why.opensource.title': '🔓 100% Open Source',
+  'saas.why.opensource.desc': 'Kode auditatu dezakeena. Vendor lock-in gabe. Self-host doan nahi baduzu. MIT Lizentzia.',
+  'saas.why.compliance.title': '⚖️ Lege Betetze Osoa',
+  'saas.why.compliance.desc': 'DBEO, ePrivacy, CCPA, LGPD. Logs 5 urte. IP anonimizatua. Erregistro aldaezina.',
+
+  // Pluginak
+  'saas.plugins.title': 'Zure Plataformarako Plugin Natiboak',
+  'saas.plugins.wordpress.title': 'WordPress Plugina',
+  'saas.plugins.wordpress.desc': '3 integrazio modu (Eskuzkoa, Sinplifikatua, GTM). CSS pertsonalizazioa. 10 hizkuntza.',
+  'saas.plugins.shopify.title': 'Shopify Bateragarria',
+  'saas.plugins.shopify.desc': 'Customer Privacy API integrazioa. Betetze automatikoa checkout-ean.',
+
+  // Azken CTA
+  'saas.cta.title': '5 Minututan Hasi. Txartelik Gabe.',
+  'saas.cta.desc': 'STARTER probatu doan 14 egunez. Bertan behera utzi nahi duzunean.',
+  'saas.cta.button': 'Proba Doana Hasi',
+  'saas.cta.note': '✨ Abiaratze Eskaintza: Behin-behineko Prezioa Q2 2026 arte',
+  'saas.cta.guarantee': '✓ Txartelik gabe · ✓ Iraunkortasunik gabe · ✓ Euskarazko laguntza',
+
+  // Komunitatea - Pluginak eta Modu Erraza
+  'comm.plugins.title': 'Plugin Natiboak: Koderik Gabeko Integrazioa',
+  'comm.plugins.subtitle': 'Instalatu Esbilla zure plataforma gogokoena 5 minutu baino gutxiagotan',
+
+  'comm.plugins.wordpress.title': '🔌 WordPress Plugina',
+  'comm.plugins.wordpress.desc': 'Instalatu WordPress-en biltegi ofizialetik. 3 integrazio modu eskuragarri (Eskuzkoa, Sinplifikatua, GTM). Banneraren pertsonalizazio osoa interfazetik. WooCommerce eta builder guztiekin bateragarria (Elementor, Divi, Gutenberg).',
+  'comm.plugins.wordpress.feature1': 'Klik bateko instalazioa wp-admin-etik',
+  'comm.plugins.wordpress.feature2': 'Auto-konfigurazioa zure Site ID-rekin',
+  'comm.plugins.wordpress.feature3': 'WooCommerce checkout-erako laguntza',
+  'comm.plugins.wordpress.feature4': 'Cache pluginekin bateragarria (WP Rocket, W3 Total Cache)',
+  'comm.plugins.wordpress.cta': 'Plugina Deskargatu',
+
+  'comm.plugins.shopify.title': '🛍️ Shopify Bateragarria',
+  'comm.plugins.shopify.desc': 'Shopify-ren Customer Privacy API-rekin integrazio natiboa. Betetze automatikoa checkout-ean. Erabiltzailearen lehentasunak errespetatzen ditu erosketa funnel osoan zehar.',
+  'comm.plugins.shopify.feature1': 'Shopify Customer Privacy API integrazioa',
+  'comm.plugins.shopify.feature2': 'Banner pertsonalizatua zure temaren arabera',
+  'comm.plugins.shopify.feature3': 'Checkout eta thank-you page-an betetzea',
+  'comm.plugins.shopify.feature4': 'Shopify Plus-ekin bateragarria',
+  'comm.plugins.shopify.cta': 'Dokumentazioa Ikusi',
+
+  'comm.plugins.coming.title': '🚧 Laster',
+  'comm.plugins.coming.desc': 'Garapenean dauden pluginak: PrestaShop, Magento, Drupal, Joomla. Zure plataforma ez dago? Eskatu GitHub-en.',
+
+  // Modu Sinplea - Azalpen Zehatza
+  'comm.simple.title': 'Modu Sinplea: Zero-Code, Potentzia Maximoa',
+  'comm.simple.subtitle': 'Konfiguratu 20+ integrazioak HTML-rik ukitu gabe. Dena Dashboard-etik.',
+
+  'comm.simple.what.title': 'Zer da Modu Sinplea?',
+  'comm.simple.what.desc': 'Modu Sinplea (Simplified Mode) zure hirugarrenen script-ak kudeatzeko modu iraultzailea da. Script bakoitzaren HTML kodea eskuz aldatu beharrean, erabiltzen dituzun plataformen ID-ak Esbillaren Dashboard-ean sartzen dituzu. SDK-ak automatikoki arduratzen da:',
+  'comm.simple.what.point1': '✅ Script-ak kargatzea BAKARRIK erabiltzailearen adostasunaren ondoren',
+  'comm.simple.what.point2': '✅ Adostasun APIak eguneratzea erabiltzaileak bere lehentasunak aldatzen dituenean',
+  'comm.simple.what.point3': '✅ Script-ak eguneratuta mantentzea azken bertsio ofizialak erabiliz',
+  'comm.simple.what.point4': '✅ Karga optimizatzea zure webaren errendimenduan eragina ez izateko',
+
+  'comm.simple.how.title': 'Nola Funtzionatzen Du?',
+  'comm.simple.how.step1.title': '1. Dashboard: Sartu zure ID-ak',
+  'comm.simple.how.step1.desc': 'Esbillaren Dashboard-ean, erabiltzen dituzun plataformen ID-ak sartzen dituzu. Adibidez, zure Google Analytics-eko Measurement ID (G-XXXXXXXXXX) edo zure Facebook-eko Pixel ID.',
+  'comm.simple.how.step2.title': '2. SDK: Instalazio bakarra',
+  'comm.simple.how.step2.desc': 'Esbillaren SDK-a behin bakarrik instalatzen duzu zure webgunean. Script tag sinple bat edo WordPress plugin bat.',
+  'comm.simple.how.step3.title': '3. Magia: Karga automatikoa',
+  'comm.simple.how.step3.desc': 'SDK-ak konfiguratutako script-ak dinamikoki kargatzen ditu BAKARRIK erabiltzaileak dagokion kategoria onartzen duenean. Konexio goiztirik gabe, DBEO urraketa gabe.',
+
+  'comm.simple.legal.title': 'Zergatik da Legala?',
+  'comm.simple.legal.desc': 'Modu Sinpleak DBEO-a betetzen du EZ duelako hirugarrenen zerbitzariekin (analytics.google.com, connect.facebook.net) konexiorik ezartzen erabiltzaileak adostasun esplizitua eman arte. Hau kritikoa da inplementazio tradizional gehienek script-ak adostasuna baino lehen kargatzen dituztelako, DBEO-aren 6.1.a Artikulua urratuz.',
+
+  // Lagundutako Integrazioak - Zerrenda Osoa
+  'comm.integrations.title': '20+ Integrazio Natibo Lagunduta',
+  'comm.integrations.subtitle': 'Script optimizatuak, eguneratuak eta DBEO-arekin 100% bateragarriak',
+
+  'comm.integrations.analytics.title': '📊 Analytics / Estatistika',
+  'comm.integrations.analytics.subtitle': '"Analytics" adostasuna behar duten script-ak',
+  'comm.integrations.analytics.ga4': 'Google Analytics 4 (GA4) - Measurement ID: G-XXXXXXXXXX',
+  'comm.integrations.analytics.clarity': 'Microsoft Clarity - Project ID: alfanumerikoa',
+  'comm.integrations.analytics.hotjar': 'Hotjar - Site ID: 7 digitu',
+  'comm.integrations.analytics.amplitude': 'Amplitude - API Key: alfanumerikoa',
+  'comm.integrations.analytics.crazyegg': 'Crazy Egg - Account Number: 8 digitu hex',
+  'comm.integrations.analytics.vwo': 'VWO - Account ID: 6 digitu',
+  'comm.integrations.analytics.optimizely': 'Optimizely - Project ID: 10 digitu',
+
+  'comm.integrations.marketing.title': '📣 Marketing / Publizitatea',
+  'comm.integrations.marketing.subtitle': '"Marketing" adostasuna behar duten script-ak',
+  'comm.integrations.marketing.fbpixel': 'Facebook Pixel - Pixel ID: 15 digitu',
+  'comm.integrations.marketing.googleads': 'Google Ads - Conversion ID: AW-XXXXXXXXX',
+  'comm.integrations.marketing.msads': 'Microsoft Ads (UET) - Tag ID: 8 digitu',
+  'comm.integrations.marketing.linkedin': 'LinkedIn Insight Tag - Partner ID: 6 digitu',
+  'comm.integrations.marketing.tiktok': 'TikTok Pixel - Pixel Code: 16 karaktere',
+  'comm.integrations.marketing.criteo': 'Criteo OneTag - Account ID: 6 digitu',
+  'comm.integrations.marketing.pinterest': 'Pinterest Tag - Tag ID: 13 digitu (26XXXXXXXXXX)',
+  'comm.integrations.marketing.twitter': 'Twitter Pixel - Pixel ID: o1234',
+  'comm.integrations.marketing.taboola': 'Taboola Pixel - Account ID: 7 digitu',
+  'comm.integrations.marketing.youtube': 'YouTube (Privacy-Enhanced) - Video ID: 11 karaktere',
+  'comm.integrations.marketing.hubspot': 'HubSpot - Portal ID: 8 digitu',
+
+  'comm.integrations.functional.title': '💬 Funtzionala (Txatak)',
+  'comm.integrations.functional.subtitle': 'Funtzionalitaterako beharrezkoak diren script-ak (bannerrean informatu)',
+  'comm.integrations.functional.intercom': 'Intercom - App ID: 8 karaktere alfanumeriko',
+  'comm.integrations.functional.zendesk': 'Zendesk Web Widget - Snippet Key: alfanumerikoa',
+
+  'comm.integrations.note': '💡 Oharra: Gehitu benetan erabiltzen dituzun plataformen ID-ak soilik. Eremu hutsek EZ dituzte script-ak kargatuko (optimizazio automatikoa).',
+  'comm.integrations.request': 'Plataforma bat falta da? Eskatu GitHub Issues-en.',
+
+  // Adostasun APIak
+  'comm.apis.title': '6 Adostasun API Integratuta',
+  'comm.apis.subtitle': 'Eguneratze automatikoa erabiltzaileak bere lehentasunak aldatzen dituenean',
+  'comm.apis.google': 'Google Consent Mode V2 - gtag() dinamikoki eguneratua',
+  'comm.apis.meta': 'Meta Pixel Consent API - fbq("consent", "grant/revoke")',
+  'comm.apis.msclarity': 'Microsoft Clarity Consent API - clarity() kontrol granularra',
+  'comm.apis.msuet': 'Microsoft UET Consent Mode - uetq.push() konfigurazioarekin',
+  'comm.apis.shopify': 'Shopify Customer Privacy API - Checkout-ekin sinkronizazioa',
+  'comm.apis.wordpress': 'WordPress Consent API - wp_consent_* hook natiboak'
+
 } as const;
