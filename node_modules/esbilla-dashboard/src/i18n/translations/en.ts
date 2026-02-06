@@ -40,6 +40,163 @@ export const en: Translations = {
     pendingMessage: 'Your account is pending approval by an administrator. You will receive access once it is approved.',
     checkAgain: 'Check again',
     useOtherAccount: 'Use another account',
+    // New email/password fields
+    email: 'Email',
+    password: 'Password',
+    forgotPassword: 'Forgot your password?',
+    signIn: 'Sign in',
+    signInWith: 'Sign in with',
+    noAccount: 'Don\'t have an account?',
+    startHere: 'Start here',
+    orContinueWith: 'or continue with',
+  },
+
+  // Authentication
+  auth: {
+    // Register
+    register: {
+      title: 'Create account',
+      fullName: 'Full name',
+      email: 'Email',
+      password: 'Password',
+      confirmPassword: 'Confirm password',
+      passwordStrength: 'Password strength',
+      weak: 'Weak',
+      medium: 'Medium',
+      strong: 'Strong',
+      acceptTerms: 'I accept the terms and conditions',
+      termsLink: 'Terms of service',
+      privacyLink: 'Privacy policy',
+      createAccount: 'Create account',
+      orSignUpWith: 'or sign up with',
+      haveAccount: 'Already have an account?',
+      signIn: 'Sign in',
+      planSelected: 'Selected plan',
+      changePlan: 'Change plan',
+    },
+
+    // Verify Email
+    verifyEmail: {
+      title: 'Verify your email',
+      sentTo: 'We sent a verification email to',
+      checkInbox: 'Check your inbox and click the link to verify your account.',
+      clickLink: 'Once verified, you\'ll be able to access the control panel.',
+      didntReceive: 'Didn\'t receive the email?',
+      resend: 'Resend email',
+      resendCooldown: 'You can resend in {seconds} seconds',
+      backToLogin: 'Back to login',
+      verifying: 'Verifying...',
+      verified: 'Email verified! Redirecting...',
+    },
+
+    // Forgot Password
+    forgotPassword: {
+      title: 'Recover password',
+      enterEmail: 'Enter your email and we\'ll send you a link to reset your password.',
+      sendLink: 'Send link',
+      backToLogin: 'Back to login',
+      checkEmail: 'Check your email',
+      emailSent: 'We sent you an email with instructions to reset your password.',
+      genericMessage: 'If the email exists in our system, you will receive a recovery link.',
+    },
+
+    // Reset Password
+    resetPassword: {
+      title: 'Reset password',
+      newPassword: 'New password',
+      confirmPassword: 'Confirm password',
+      resetButton: 'Reset password',
+      success: 'Password updated! You can now sign in.',
+      backToLogin: 'Go to login',
+      invalidLink: 'The link is invalid or has been used.',
+      expiredLink: 'The link has expired. Request a new one.',
+    },
+
+    // Pending Approval
+    pending: {
+      title: 'Pending approval',
+      message: 'Your account is pending approval by an administrator. We\'ll notify you when it\'s approved.',
+      checkAgain: 'Check again',
+      useOther: 'Use another account',
+    },
+
+    // Onboarding
+    onboarding: {
+      welcome: 'Welcome to Esbilla CMP!',
+      stepOf: 'Step {current} of {total}',
+      step1: {
+        title: 'Set up your organization',
+        subtitle: 'Information about your company or project',
+        orgName: 'Organization name',
+        orgNamePlaceholder: 'My Company Inc.',
+        website: 'Main website',
+        websitePlaceholder: 'https://www.example.com',
+        taxId: 'Tax ID',
+        taxIdPlaceholder: 'B12345678',
+        taxIdOptional: '(optional)',
+        next: 'Next',
+      },
+      step2: {
+        title: 'Create your first site',
+        subtitle: 'Add the domain where you\'ll use Esbilla CMP',
+        domain: 'Domain',
+        domainPlaceholder: 'www.example.com',
+        siteName: 'Site name',
+        siteNamePlaceholder: 'My website',
+        back: 'Back',
+        next: 'Next',
+      },
+      step3: {
+        title: 'All set!',
+        subtitle: 'Copy this code and insert it in your website\'s <head>',
+        copyCode: 'Copy code',
+        copied: 'Copied!',
+        goToDashboard: 'Go to Dashboard',
+        needHelp: 'Need help?',
+        installGuide: 'View installation guide',
+      },
+      planSelected: 'Plan: {plan}',
+      creating: 'Creating your account...',
+      error: 'There was an error creating your account. Please try again.',
+    },
+
+    // Invitations
+    invitation: {
+      title: 'Invitation to Esbilla CMP',
+      invitedBy: '{name} invited you',
+      invitedTo: 'to join {organization}',
+      asRole: 'as {role}',
+      acceptWith: 'Accept with',
+      acceptAndSignIn: 'Accept and sign in',
+      noAccount: 'Don\'t have an account?',
+      createAndAccept: 'Create account and accept',
+      expired: 'Invitation expired',
+      expiredMessage: 'This invitation has expired. Contact whoever invited you to receive a new one.',
+      notFound: 'Invitation not found',
+      notFoundMessage: 'We couldn\'t find this invitation. Please verify the link.',
+      orContinueWith: 'or with email',
+      accepting: 'Accepting invitation...',
+    },
+
+    // Validation errors
+    errors: {
+      required: 'This field is required',
+      invalidEmail: 'The email is not valid',
+      passwordTooShort: 'Password must be at least 8 characters',
+      passwordRequirements: 'Password must contain at least one uppercase letter and one number',
+      passwordsMismatch: 'Passwords do not match',
+      termsRequired: 'You must accept the terms and conditions',
+      emailAlreadyExists: 'This email is already registered',
+      invalidCredentials: 'Incorrect email or password',
+      userNotFound: 'No user exists with this email',
+      wrongPassword: 'The password is incorrect',
+      tooManyAttempts: 'Too many attempts. Try again later.',
+      networkError: 'Connection error. Check your internet.',
+      unknownError: 'An unexpected error occurred. Please try again.',
+      emailNotVerified: 'You must verify your email before continuing',
+      nameTooShort: 'Name must be at least 2 characters',
+      invalidDomain: 'The domain is not valid',
+    },
   },
 
   // Dashboard page

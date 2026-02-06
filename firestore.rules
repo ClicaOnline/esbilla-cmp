@@ -158,5 +158,35 @@ service cloud.firestore {
     match /organizations/{orgId} {
       allow read, write: if isSuperAdmin();
     }
+
+    // ============================================
+    // INVITATIONS COLLECTION (Sistema de invitaciones)
+    // ============================================
+    match /invitations/{invitationId} {
+      // Leer: invitado por email o quien invitó o admin
+      allow read: if isAuthenticated() && (
+        resource.data.email == request.auth.token.email ||
+        resource.data.invitedBy == request.auth.uid ||
+        isSuperAdmin()
+      );
+
+      // Crear: admins o users con rol de org_owner/org_admin
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        (getUserData().orgAccess != null &&
+         request.resource.data.organizationId in getUserData().orgAccess &&
+         getUserData().orgAccess[request.resource.data.organizationId].role in ['org_owner', 'org_admin'])
+      );
+
+      // Actualizar: solo el invitado (para aceptar) o quien invitó (para revocar)
+      allow update: if isAuthenticated() && (
+        request.auth.token.email == resource.data.email ||
+        request.auth.uid == resource.data.invitedBy ||
+        isSuperAdmin()
+      );
+
+      // No permitir eliminar invitaciones (audit trail)
+      allow delete: if false;
+    }
   }
 }

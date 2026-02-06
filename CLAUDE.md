@@ -191,3 +191,171 @@ SITE (site_admin/site_viewer)
 - Cache layers: 5-min domain cache, config cache
 - Composite indexes: Optimized queries for common patterns
 - Static SDK caching: Browser-level caching for SDK delivery
+
+## Authentication & Onboarding System (Sprints 1-4)
+
+### Features Implemented
+
+**Sprint 1-2: Email/Password Authentication**
+- Firebase Auth with email/password + Google SSO
+- Email verification required for email/password users
+- Password reset flow with Firebase action codes
+- Feature flags: `VITE_ESBILLA_MODE` (saas | selfhosted)
+
+**Sprint 3: Onboarding Wizard**
+- 3-step wizard: Organization → First Site → Installation Code
+- Plan-based organizations (Free, Pro, Enterprise)
+- Auto-creation of user document with orgAccess
+- Real-time approval detection (onSnapshot)
+
+**Sprint 4: Invitation System**
+- Email invitations with HTML templates (3 languages)
+- API endpoints: `/api/invitations/send`, `/api/invitations/:id`, `/api/invitations/:id/accept`
+- Invitation expiration (7 days)
+- Auto-application of orgAccess on acceptance
+
+### Key Files
+
+**Authentication:**
+- [esbilla-dashboard/src/context/AuthContext.tsx](esbilla-dashboard/src/context/AuthContext.tsx) - Complete auth context with email/password support
+- [esbilla-dashboard/src/components/ProtectedRoute.tsx](esbilla-dashboard/src/components/ProtectedRoute.tsx) - Three-tier route protection (Public, Onboarding, Protected)
+- [esbilla-dashboard/src/pages/Login.tsx](esbilla-dashboard/src/pages/Login.tsx) - Login with email/password and Google
+- [esbilla-dashboard/src/pages/Register.tsx](esbilla-dashboard/src/pages/Register.tsx) - Registration with plan selection
+- [esbilla-dashboard/src/pages/VerifyEmail.tsx](esbilla-dashboard/src/pages/VerifyEmail.tsx) - Email verification with polling
+- [esbilla-dashboard/src/pages/ForgotPassword.tsx](esbilla-dashboard/src/pages/ForgotPassword.tsx) - Password recovery
+- [esbilla-dashboard/src/pages/AuthAction.tsx](esbilla-dashboard/src/pages/AuthAction.tsx) - Firebase action handler (verify/reset)
+
+**Onboarding:**
+- [esbilla-dashboard/src/pages/OnboardingSetup.tsx](esbilla-dashboard/src/pages/OnboardingSetup.tsx) - 3-step wizard with batch writes
+- [esbilla-dashboard/src/pages/PendingApproval.tsx](esbilla-dashboard/src/pages/PendingApproval.tsx) - Real-time approval detection
+
+**Invitations:**
+- [esbilla-api/src/routes/invitations.js](esbilla-api/src/routes/invitations.js) - API routes for invitations
+- [esbilla-api/src/services/email.js](esbilla-api/src/services/email.js) - Email service with Nodemailer
+- [esbilla-dashboard/src/pages/AcceptInvite.tsx](esbilla-dashboard/src/pages/AcceptInvite.tsx) - Invitation acceptance page
+- [esbilla-dashboard/src/pages/Users.tsx](esbilla-dashboard/src/pages/Users.tsx) - Invite modal (lines 513-527, 1184-1293)
+
+**Configuration:**
+- [esbilla-dashboard/src/utils/featureFlags.ts](esbilla-dashboard/src/utils/featureFlags.ts) - SaaS vs self-hosted mode
+- [esbilla-dashboard/src/config/plans.ts](esbilla-dashboard/src/config/plans.ts) - Plan definitions and limits
+- [docs/FIREBASE-AUTH-SETUP.md](docs/FIREBASE-AUTH-SETUP.md) - Firebase Console setup guide
+- [docs/INVITATIONS-SYSTEM.md](docs/INVITATIONS-SYSTEM.md) - Complete invitations documentation
+
+### Environment Variables (Additional)
+
+**API SMTP Configuration (esbilla-api/.env):**
+```bash
+SMTP_HOST=smtp.gmail.com          # SMTP server
+SMTP_PORT=587                     # SMTP port (587 for TLS, 465 for SSL)
+SMTP_USER=user@example.com        # SMTP username
+SMTP_PASS=app-password            # SMTP password/app password
+FROM_EMAIL=Esbilla CMP <noreply@esbilla.com>  # From address
+FRONTEND_URL=https://app.esbilla.com           # Dashboard URL for invite links
+```
+
+**Dashboard Mode (esbilla-dashboard/.env):**
+```bash
+VITE_ESBILLA_MODE=saas           # "saas" or "selfhosted"
+```
+
+### Firestore Collections (New)
+
+**invitations:**
+```javascript
+{
+  id: "auto-generated",
+  email: "user@example.com",
+  type: "organization",
+  targetId: "org_xxx",
+  targetName: "Organization Name",
+  role: "org_admin",
+  organizationId: "org_xxx",
+  invitedBy: "uid",
+  invitedByName: "Admin Name",
+  status: "pending" | "accepted" | "expired" | "revoked",
+  createdAt: Timestamp,
+  expiresAt: Timestamp (+7 days),
+  acceptedAt: Timestamp | null,
+  acceptedBy: "uid" | null
+}
+```
+
+### Routes (Dashboard)
+
+**Public Routes (Authentication):**
+- `/login` - Login with email/password or Google
+- `/register` - Registration with plan selection (SaaS only)
+- `/verify-email` - Email verification with resend
+- `/forgot-password` - Password recovery
+- `/__/auth/action` - Firebase action handler
+- `/invite/:inviteId` - Accept invitation
+
+**Onboarding Routes:**
+- `/onboarding/setup` - 3-step wizard (requires email verified)
+- `/pending` - Pending approval (real-time listener)
+
+**Protected Routes:**
+- All dashboard routes require: auth + email verified + onboarding complete + orgAccess
+
+### API Endpoints (New)
+
+**Invitations:**
+- `POST /api/invitations/send` - Send invitation (requires auth, org_owner/org_admin)
+- `GET /api/invitations/:id` - Get invitation details (public)
+- `POST /api/invitations/:id/accept` - Accept invitation (requires auth, email match)
+
+### Authentication Flow
+
+```
+User Registration (SaaS)
+  ↓
+Email Verification
+  ↓
+Onboarding Wizard (3 steps)
+  ├─ Step 1: Create Organization (with plan)
+  ├─ Step 2: Create First Site
+  └─ Step 3: Installation Code
+  ↓
+Dashboard Access (with orgAccess)
+```
+
+```
+User Invitation
+  ↓
+Admin sends invitation
+  ↓
+Email sent with unique link
+  ↓
+User accepts (login or register)
+  ↓
+orgAccess auto-applied
+  ↓
+Dashboard Access
+```
+
+### Security Considerations
+
+**Firestore Rules:**
+- `invitations` collection: Read/write based on email match and org permissions
+- Email verification required for email/password users
+- Auto-promotion to superadmin (first user in self-hosted mode only)
+
+**Email Templates:**
+- HTML with inline CSS (email client compatibility)
+- 3 languages: Spanish, English, Asturian
+- 7-day expiration clearly stated
+- Responsive design with Esbilla branding (#FFBF00)
+
+### Testing
+
+**Unit Tests:**
+- [esbilla-api/src/routes/invitations.test.js](esbilla-api/src/routes/invitations.test.js) - Invitation API tests
+
+**Manual Testing Flows:**
+1. Auto-registration with plan (SaaS)
+2. Invitation to organization
+3. Invitation + new user registration
+4. Login existing user
+5. Pending approval detection
+
+See [docs/SPRINT-5-CHECKLIST.md](docs/SPRINT-5-CHECKLIST.md) for complete verification checklist.

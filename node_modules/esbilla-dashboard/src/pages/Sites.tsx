@@ -30,6 +30,7 @@ import {
 interface SiteFormData {
   name: string;
   domains: string;
+  organizationId?: string;
   // SDK v1.6: Dynamic Script Loading (Modo Simplified)
   googleAnalytics?: string;
   hotjar?: string;
@@ -165,6 +166,7 @@ export function SitesPage() {
     setFormData({
       name: site.name,
       domains: site.domains.join(', '),
+      organizationId: site.organizationId || '',
       googleAnalytics: site.scriptConfig?.analytics?.googleAnalytics || '',
       hotjar: site.scriptConfig?.analytics?.hotjar || '',
       facebookPixel: site.scriptConfig?.marketing?.facebookPixel || '',
@@ -205,6 +207,7 @@ export function SitesPage() {
         const updateData: any = {
           name: formData.name,
           domains,
+          organizationId: formData.organizationId || null,
           updatedAt: new Date()
         };
 
@@ -221,6 +224,7 @@ export function SitesPage() {
                 ...s,
                 name: formData.name,
                 domains,
+                organizationId: formData.organizationId || undefined,
                 scriptConfig: Object.keys(scriptConfig).length > 0 ? scriptConfig : undefined,
                 updatedAt: new Date()
               }
@@ -233,6 +237,7 @@ export function SitesPage() {
           id: siteId,
           name: formData.name,
           domains,
+          organizationId: formData.organizationId || undefined,
           settings: { banner: DEFAULT_BANNER_SETTINGS },
           apiKey: generateApiKey(),
           createdAt: new Date(),
@@ -542,8 +547,13 @@ export function SitesPage() {
                         <Globe2 size={20} className="text-amber-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-stone-800">{site.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-stone-800">{site.name}</h3>
+                          <code className="px-2 py-0.5 bg-stone-100 text-xs text-stone-600 rounded font-mono">
+                            {site.id}
+                          </code>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           {site.organizationId && (
                             <>
                               <span className="text-xs text-stone-500 flex items-center gap-1">
@@ -738,6 +748,29 @@ export function SitesPage() {
                     className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   />
                   <p className="mt-1 text-xs text-stone-500">{t.sites.domainsHelp}</p>
+                </div>
+
+                {/* Organization Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1 flex items-center gap-2">
+                    <Building2 size={16} className="text-amber-500" />
+                    Organización
+                  </label>
+                  <select
+                    value={formData.organizationId || ''}
+                    onChange={(e) => setFormData({ ...formData, organizationId: e.target.value })}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  >
+                    <option value="">Sin organización</option>
+                    {organizations.map((org) => (
+                      <option key={org.id} value={org.id}>
+                        {org.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-stone-500">
+                    Asigna este sitio a una organización para control de acceso multi-tenant
+                  </p>
                 </div>
 
                 {/* SDK v1.6: Dynamic Script Loading Configuration */}

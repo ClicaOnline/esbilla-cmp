@@ -677,6 +677,89 @@ gcloud firestore indexes composite create \
 
 ---
 
+## Sistema de Invitaciones (Sprint 4)
+
+### Invitar usuarios a tu organización
+
+Los usuarios con rol `org_owner` o `org_admin` pueden invitar colaboradores por email.
+
+#### Desde el Dashboard
+
+1. Ve a [/users](/users) en el dashboard
+2. Click en "Invitar Usuario" (botón azul)
+3. Completa el formulario:
+   - **Email**: Email del usuario a invitar
+   - **Organización**: Selecciona la organización
+   - **Rol**: org_owner / org_admin / org_viewer
+4. Click "Enviar Invitación"
+
+#### Qué sucede
+
+1. **Se crea** un documento en `invitations` collection
+2. **Se envía** un email HTML con branding Esbilla al usuario
+3. **Email expira** automáticamente en 7 días
+4. **Usuario recibe** un link único: `https://app.esbilla.com/invite/{id}`
+
+#### Aceptar invitación
+
+El usuario invitado puede:
+- **Con cuenta existente**: Login con Google o email/password
+- **Sin cuenta**: Crear cuenta directamente desde la invitación
+- **Auto-aplicación**: El acceso a la organización se aplica automáticamente
+
+### Configurar SMTP
+
+Para enviar emails, configura las variables en `esbilla-api/.env`:
+
+```bash
+# Gmail (Desarrollo)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=tu-email@gmail.com
+SMTP_PASS=xxxx-xxxx-xxxx-xxxx  # App Password desde Google Account
+
+# SendGrid (Producción)
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASS=SG.xxxxxxxxxxxxx
+
+FROM_EMAIL=Esbilla CMP <noreply@esbilla.com>
+FRONTEND_URL=https://app.esbilla.com
+```
+
+**Sin SMTP configurado:** Los emails se loguean en consola (modo desarrollo).
+
+**Gmail App Password:**
+1. Google Account → Security → 2-Step Verification
+2. App Passwords → Generate for "Mail"
+3. Copiar código de 16 caracteres
+
+### Colección: `invitations`
+
+```json
+{
+  "id": "auto-generated",
+  "email": "usuario@empresa.com",
+  "type": "organization",
+  "targetId": "org_xxx",
+  "targetName": "Mi Empresa S.L.",
+  "role": "org_admin",
+  "organizationId": "org_xxx",
+  "invitedBy": "uid-admin",
+  "invitedByName": "Admin Principal",
+  "status": "pending",
+  "createdAt": "Timestamp",
+  "expiresAt": "Timestamp (+7 días)",
+  "acceptedAt": "Timestamp | null",
+  "acceptedBy": "uid | null"
+}
+```
+
+**Ver documentación completa:** [docs/INVITATIONS-SYSTEM.md](docs/INVITATIONS-SYSTEM.md)
+
+---
+
 ## Soporte
 
 - **Issues**: https://github.com/ClicaOnline/esbilla-cmp/issues

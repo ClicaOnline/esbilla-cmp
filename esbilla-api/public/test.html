@@ -428,6 +428,23 @@
       a.click();
       URL.revokeObjectURL(url);
     }
+
+    // ============================================
+    // BOTÓN: Probar el Banner
+    // ============================================
+    document.getElementById('btn-test-banner')?.addEventListener('click', function() {
+      // Usar la API pública del Pegoyu si está disponible
+      if (window.Esbilla && typeof window.Esbilla.resetConsent === 'function') {
+        window.Esbilla.resetConsent();
+        // Actualizar display después de resetear
+        setTimeout(updateDisplay, 100);
+      } else {
+        // Fallback: limpiar manualmente y recargar
+        localStorage.removeItem('esbilla_consent');
+        deleteCookie('esbilla_consent');
+        window.location.reload();
+      }
+    });
   </script>
 
   <!-- Cargar el Pegoyu de Esbilla -->

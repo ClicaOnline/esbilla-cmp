@@ -35,6 +35,162 @@ export interface Translations {
     pendingMessage: string;
     checkAgain: string;
     useOtherAccount: string;
+    // New email/password fields
+    email: string;
+    password: string;
+    forgotPassword: string;
+    signIn: string;
+    signInWith: string;
+    noAccount: string;
+    startHere: string;
+    orContinueWith: string;
+  };
+
+  auth: {
+    // Register
+    register: {
+      title: string;
+      fullName: string;
+      email: string;
+      password: string;
+      confirmPassword: string;
+      passwordStrength: string;
+      weak: string;
+      medium: string;
+      strong: string;
+      acceptTerms: string;
+      termsLink: string;
+      privacyLink: string;
+      createAccount: string;
+      orSignUpWith: string;
+      haveAccount: string;
+      signIn: string;
+      planSelected: string;
+      changePlan: string;
+    };
+
+    // Verify Email
+    verifyEmail: {
+      title: string;
+      sentTo: string;
+      checkInbox: string;
+      clickLink: string;
+      didntReceive: string;
+      resend: string;
+      resendCooldown: string;
+      backToLogin: string;
+      verifying: string;
+      verified: string;
+    };
+
+    // Forgot Password
+    forgotPassword: {
+      title: string;
+      enterEmail: string;
+      sendLink: string;
+      backToLogin: string;
+      checkEmail: string;
+      emailSent: string;
+      genericMessage: string;
+    };
+
+    // Reset Password
+    resetPassword: {
+      title: string;
+      newPassword: string;
+      confirmPassword: string;
+      resetButton: string;
+      success: string;
+      backToLogin: string;
+      invalidLink: string;
+      expiredLink: string;
+    };
+
+    // Pending Approval
+    pending: {
+      title: string;
+      message: string;
+      checkAgain: string;
+      useOther: string;
+    };
+
+    // Onboarding
+    onboarding: {
+      welcome: string;
+      stepOf: string;
+      step1: {
+        title: string;
+        subtitle: string;
+        orgName: string;
+        orgNamePlaceholder: string;
+        website: string;
+        websitePlaceholder: string;
+        taxId: string;
+        taxIdPlaceholder: string;
+        taxIdOptional: string;
+        next: string;
+      };
+      step2: {
+        title: string;
+        subtitle: string;
+        domain: string;
+        domainPlaceholder: string;
+        siteName: string;
+        siteNamePlaceholder: string;
+        back: string;
+        next: string;
+      };
+      step3: {
+        title: string;
+        subtitle: string;
+        copyCode: string;
+        copied: string;
+        goToDashboard: string;
+        needHelp: string;
+        installGuide: string;
+      };
+      planSelected: string;
+      creating: string;
+      error: string;
+    };
+
+    // Invitations
+    invitation: {
+      title: string;
+      invitedBy: string;
+      invitedTo: string;
+      asRole: string;
+      acceptWith: string;
+      acceptAndSignIn: string;
+      noAccount: string;
+      createAndAccept: string;
+      expired: string;
+      expiredMessage: string;
+      notFound: string;
+      notFoundMessage: string;
+      orContinueWith: string;
+      accepting: string;
+    };
+
+    // Validation errors
+    errors: {
+      required: string;
+      invalidEmail: string;
+      passwordTooShort: string;
+      passwordRequirements: string;
+      passwordsMismatch: string;
+      termsRequired: string;
+      emailAlreadyExists: string;
+      invalidCredentials: string;
+      userNotFound: string;
+      wrongPassword: string;
+      tooManyAttempts: string;
+      networkError: string;
+      unknownError: string;
+      emailNotVerified: string;
+      nameTooShort: string;
+      invalidDomain: string;
+    };
   };
 
   dashboard: {

@@ -1497,6 +1497,44 @@
   }
 
   // ============================================
+  // API PÚBLICA (para testing y debugging)
+  // ============================================
+  window.Esbilla = {
+    // Resetear el banner (útil para testing)
+    resetConsent: function() {
+      localStorage.removeItem('esbilla_consent');
+      document.cookie = 'esbilla_consent=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      console.log('[Esbilla] Consentimiento reseteado');
+      // Ocultar panoya si existe
+      const panoya = document.getElementById('esbilla-panoya');
+      if (panoya) panoya.remove();
+      // Mostrar el banner de nuevo
+      init();
+    },
+
+    // Obtener el Footprint ID actual
+    getFootprintId: function() {
+      return localStorage.getItem('esbilla_footprint') || null;
+    },
+
+    // Obtener el consentimiento actual
+    getConsent: function() {
+      const consent = localStorage.getItem('esbilla_consent');
+      return consent ? JSON.parse(consent) : null;
+    },
+
+    // Mostrar la panoya manualmente
+    showPanoya: function() {
+      if (typeof showPanoya === 'function') {
+        showPanoya();
+      }
+    },
+
+    // Versión del Pegoyu
+    version: '2.0.0'
+  };
+
+  // ============================================
   // INICIAR
   // ============================================
   init();
