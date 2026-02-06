@@ -125,7 +125,7 @@ class Esbilla_Admin {
         // Sección de Analytics (acordeón)
         add_settings_section(
             'esbilla_scripts_analytics_section',
-            __('Analytics (7 plataformas)', 'esbilla-cmp'),
+            __('Analytics (8 plataformas)', 'esbilla-cmp'),
             array($this, 'scripts_analytics_section_callback'),
             $this->options_page_slug
         );
@@ -187,10 +187,18 @@ class Esbilla_Admin {
             'esbilla_scripts_analytics_section'
         );
 
+        add_settings_field(
+            'sealmetrics_id',
+            __('SealMetrics (Cookieless)', 'esbilla-cmp'),
+            array($this, 'sealmetrics_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_analytics_section'
+        );
+
         // Sección de Marketing (acordeón)
         add_settings_section(
             'esbilla_scripts_marketing_section',
-            __('Marketing (10 plataformas)', 'esbilla-cmp'),
+            __('Marketing (11 plataformas)', 'esbilla-cmp'),
             array($this, 'scripts_marketing_section_callback'),
             $this->options_page_slug
         );
@@ -276,6 +284,14 @@ class Esbilla_Admin {
             'esbilla_scripts_marketing_section'
         );
 
+        add_settings_field(
+            'uinterbox_id',
+            __('Uinterbox (Afiliados)', 'esbilla-cmp'),
+            array($this, 'uinterbox_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
         // Sección de Functional (acordeón)
         add_settings_section(
             'esbilla_scripts_functional_section',
@@ -345,6 +361,7 @@ class Esbilla_Admin {
         $sanitized['crazyegg_id'] = sanitize_text_field($input['crazyegg_id'] ?? '');
         $sanitized['vwo_id'] = sanitize_text_field($input['vwo_id'] ?? '');
         $sanitized['optimizely_id'] = sanitize_text_field($input['optimizely_id'] ?? '');
+        $sanitized['sealmetrics_id'] = sanitize_text_field($input['sealmetrics_id'] ?? '');
 
         // Marketing
         $sanitized['facebook_pixel_id'] = sanitize_text_field($input['facebook_pixel_id'] ?? '');
@@ -357,6 +374,7 @@ class Esbilla_Admin {
         $sanitized['twitter_pixel_id'] = sanitize_text_field($input['twitter_pixel_id'] ?? '');
         $sanitized['taboola_id'] = sanitize_text_field($input['taboola_id'] ?? '');
         $sanitized['hubspot_id'] = sanitize_text_field($input['hubspot_id'] ?? '');
+        $sanitized['uinterbox_id'] = sanitize_text_field($input['uinterbox_id'] ?? '');
 
         // Functional
         $sanitized['intercom_id'] = sanitize_text_field($input['intercom_id'] ?? '');
@@ -724,6 +742,24 @@ class Esbilla_Admin {
         <?php
     }
 
+    public function sealmetrics_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['sealmetrics_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[sealmetrics_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="your-site-id"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Site ID de SealMetrics (Cookieless - se carga siempre sin consentimiento)', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
     public function google_ads_id_callback() {
         $options = get_option('esbilla_settings', array());
         $mode = $options['implementation_mode'] ?? 'manual';
@@ -846,6 +882,24 @@ class Esbilla_Admin {
                <?php echo $disabled; ?>>
         <p class="description">
             <?php esc_html_e('Hub ID de HubSpot', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function uinterbox_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['uinterbox_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[uinterbox_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="pixel-id"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Pixel ID de Uinterbox (Marketing de afiliados)', 'esbilla-cmp'); ?>
         </p>
         <?php
     }
