@@ -3,7 +3,7 @@
  * Plugin Name: Esbilla CMP - Consent Management Platform
  * Plugin URI: https://esbilla.com
  * Description: Gestión de consentimiento RGPD/ePrivacy de código abierto. Controla cookies y scripts con transparencia.
- * Version: 1.0.0
+ * Version: 1.2.0
  * Author: Clica Online Soluciones S.L.
  * Author URI: https://clicaonline.com
  * License: GPL v3 or later
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Constantes del plugin
-define('ESBILLA_VERSION', '1.0.0');
+define('ESBILLA_VERSION', '1.2.0');
 define('ESBILLA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('ESBILLA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('ESBILLA_SDK_VERSION', '1.6.0');

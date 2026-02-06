@@ -414,7 +414,7 @@ Añade el script antes del cierre de `</body>`:
 
 ```html
 <script
-  src="https://tu-api.esbilla.com/sdk.js"
+  src="https://tu-api.esbilla.com/pegoyu.js"
   data-id="mi-sitio-001"
   data-gtm="GTM-XXXXXX">
 </script>

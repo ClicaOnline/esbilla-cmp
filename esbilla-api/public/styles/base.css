@@ -36,10 +36,10 @@
   /* Transiciones */
   --esbilla-transition: all 0.2s ease;
 
-  /* Mosca */
-  --esbilla-mosca-size: 56px;
-  --esbilla-mosca-bottom: 20px;
-  --esbilla-mosca-left: 20px;
+  /* Panoya */
+  --esbilla-panoya-size: 56px;
+  --esbilla-panoya-bottom: 20px;
+  --esbilla-panoya-left: 20px;
 }
 
 /* ============================================
@@ -203,6 +203,24 @@
   box-shadow: var(--esbilla-shadow-hover);
 }
 
+.btn-primary-outline {
+  background: transparent;
+  color: var(--esbilla-text);
+  border: 2px solid var(--esbilla-primary);
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: var(--esbilla-font-size-text);
+  transition: var(--esbilla-transition);
+}
+
+.btn-primary-outline:hover {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: var(--esbilla-primary-hover);
+  transform: translateY(-2px);
+}
+
 .btn-secondary {
   background: transparent;
   color: var(--esbilla-text);
@@ -336,12 +354,12 @@
 }
 
 /* ============================================
-   MOSCA (BOTÓN FLOTANTE)
+   PANOYA (BOTÓN FLOTANTE)
    ============================================ */
-#esbilla-mosca {
+#esbilla-panoya {
   position: fixed;
-  bottom: var(--esbilla-mosca-bottom);
-  left: var(--esbilla-mosca-left);
+  bottom: var(--esbilla-panoya-bottom);
+  left: var(--esbilla-panoya-left);
   cursor: pointer;
   z-index: 999998;
   background: linear-gradient(145deg, var(--esbilla-primary), var(--esbilla-primary-hover));
@@ -354,29 +372,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--esbilla-mosca-size);
-  height: var(--esbilla-mosca-size);
+  width: var(--esbilla-panoya-size);
+  height: var(--esbilla-panoya-size);
 }
 
-#esbilla-mosca:hover {
+#esbilla-panoya:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 16px rgba(61, 43, 31, 0.4);
 }
 
-/* Mosca expandida con footprint */
-#esbilla-mosca.esbilla-mosca-expanded {
+/* Panoya expandida con footprint */
+#esbilla-panoya.esbilla-panoya-expanded {
   border-radius: 28px;
   width: auto;
   padding: 10px 16px;
   gap: 10px;
 }
 
-.esbilla-mosca-icon {
+.esbilla-panoya-icon {
   font-size: 22px;
   line-height: 1;
 }
 
-.esbilla-mosca-footprint {
+.esbilla-panoya-footprint {
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', monospace;
   font-size: 11px;
   font-weight: 600;

@@ -1,0 +1,125 @@
+{
+  "version": "2.0.0",
+  "modules": {
+    "analytics": {
+      "googleAnalytics": {
+        "name": "Google Analytics 4",
+        "file": "modules/analytics/google-analytics.js",
+        "size": "2.1kb",
+        "required": false
+      },
+      "hotjar": {
+        "name": "Hotjar",
+        "file": "modules/analytics/hotjar.js",
+        "size": "1.5kb",
+        "required": false
+      },
+      "microsoftClarity": {
+        "name": "Microsoft Clarity",
+        "file": "modules/analytics/microsoft-clarity.js",
+        "size": "1.2kb",
+        "required": false
+      },
+      "amplitude": {
+        "name": "Amplitude",
+        "file": "modules/analytics/amplitude.js",
+        "size": "4.8kb",
+        "required": false
+      },
+      "crazyEgg": {
+        "name": "Crazy Egg",
+        "file": "modules/analytics/crazyegg.js",
+        "size": "0.3kb",
+        "required": false
+      },
+      "vwo": {
+        "name": "VWO",
+        "file": "modules/analytics/vwo.js",
+        "size": "5.2kb",
+        "required": false
+      },
+      "optimizely": {
+        "name": "Optimizely",
+        "file": "modules/analytics/optimizely.js",
+        "size": "0.4kb",
+        "required": false
+      }
+    },
+    "marketing": {
+      "facebookPixel": {
+        "name": "Facebook Pixel",
+        "file": "modules/marketing/facebook-pixel.js",
+        "size": "2.3kb",
+        "required": false
+      },
+      "linkedinInsight": {
+        "name": "LinkedIn Insight Tag",
+        "file": "modules/marketing/linkedin-insight.js",
+        "size": "1.8kb",
+        "required": false
+      },
+      "tiktokPixel": {
+        "name": "TikTok Pixel",
+        "file": "modules/marketing/tiktok-pixel.js",
+        "size": "2.0kb",
+        "required": false
+      },
+      "googleAds": {
+        "name": "Google Ads",
+        "file": "modules/marketing/google-ads.js",
+        "size": "1.5kb",
+        "required": false
+      },
+      "microsoftAds": {
+        "name": "Microsoft Ads",
+        "file": "modules/marketing/microsoft-ads.js",
+        "size": "1.7kb",
+        "required": false
+      },
+      "criteo": {
+        "name": "Criteo",
+        "file": "modules/marketing/criteo.js",
+        "size": "1.3kb",
+        "required": false
+      },
+      "pinterest": {
+        "name": "Pinterest Tag",
+        "file": "modules/marketing/pinterest.js",
+        "size": "1.6kb",
+        "required": false
+      },
+      "twitterPixel": {
+        "name": "Twitter Pixel",
+        "file": "modules/marketing/twitter-pixel.js",
+        "size": "1.1kb",
+        "required": false
+      },
+      "taboola": {
+        "name": "Taboola",
+        "file": "modules/marketing/taboola.js",
+        "size": "1.4kb",
+        "required": false
+      },
+      "hubspot": {
+        "name": "HubSpot",
+        "file": "modules/marketing/hubspot.js",
+        "size": "0.5kb",
+        "required": false
+      }
+    },
+    "functional": {
+      "intercom": {
+        "name": "Intercom",
+        "file": "modules/functional/intercom.js",
+        "size": "1.9kb",
+        "required": false
+      },
+      "zendesk": {
+        "name": "Zendesk",
+        "file": "modules/functional/zendesk.js",
+        "size": "0.4kb",
+        "required": false
+      }
+    }
+  }
+}

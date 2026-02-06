@@ -48,7 +48,7 @@
     }
   },
 
-  "moscaPositions": {
+  "panoyaPositions": {
     "bottom-left": { "name": "Inferior Izquierda", "css": { "bottom": "20px", "left": "20px" } },
     "bottom-right": { "name": "Inferior Derecha", "css": { "bottom": "20px", "right": "20px", "left": "auto" } },
     "top-left": { "name": "Superior Izquierda", "css": { "top": "20px", "bottom": "auto", "left": "20px" } },

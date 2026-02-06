@@ -60,8 +60,8 @@ msgstr "You modify scripts to type=\"text/plain\" data-category=\"...\""
 msgid "Simplificado"
 msgstr "Simplified"
 
-msgid "Configuras IDs aquí, el SDK carga los scripts automáticamente"
-msgstr "Configure IDs here, SDK loads scripts automatically"
+msgid "Configuras IDs aquí, el Pegoyu carga los scripts automáticamente"
+msgstr "Configure IDs here, Pegoyu loads scripts automatically"
 
 msgid "Google Tag Manager"
 msgstr "Google Tag Manager"
