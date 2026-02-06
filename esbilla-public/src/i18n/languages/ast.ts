@@ -1,8 +1,9 @@
 export const ast = {
     'only.in.asturianu':'Textu en Asturianu',
     'nav.home': 'Entamu',
-    'nav.saas': 'SaaS (Próximamente)',
+    'nav.saas': 'SaaS',
     'nav.community': 'Comunidá',
+    'nav.getstarted': 'Cómu Entamar',
     'hero.tagline': 'Tradición Dixital',
     'hero.title': 'Esbilla la',
     'hero.highlight': 'tresparencia.',

@@ -1,7 +1,8 @@
 export const en = {
   'nav.home': 'Home',
-  'nav.saas': 'SaaS (Soon)',
+  'nav.saas': 'SaaS',
   'nav.community': 'Community',
+  'nav.getstarted': 'Get Started',
   'hero.tagline': 'Digital Tradition',
   'hero.title': 'Choose',
   'hero.highlight': 'transparency.',

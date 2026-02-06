@@ -1,7 +1,8 @@
 export const es = {
   'nav.home': 'Inicio',
-    'nav.saas': 'SaaS (Pronto)',
+    'nav.saas': 'SaaS',
     'nav.community': 'Comunidad',
+    'nav.getstarted': 'Cómo Empezar',
     'hero.tagline': 'Tradición Digital',
     'hero.title': 'Escoge la',
     'hero.highlight': 'transparencia.',
@@ -106,7 +107,6 @@ export const es = {
     'comm.ways.legal.desc': 'Ayúdanos a que los textos de privacidad sean claros y limpios para todos.',
 
     // Cómo Empezar
-    'nav.getstarted': 'Cómo Empezar',
     'getstarted.hero.title': 'Empieza con',
     'getstarted.hero.highlight': 'Esbilla.',
     'getstarted.hero.desc': 'Tres pasos para cumplir con el RGPD de forma ética y transparente.',
