@@ -33,7 +33,11 @@
       "Bash(docker:*)",
       "Bash(gcloud:*)",
       "Bash(firebase hosting:channel:list:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(gh secret list:*)",
+      "Bash(gh run:*)",
+      "Bash(git fetch:*)",
+      "Bash(msgfmt:*)"
     ]
   }
 }

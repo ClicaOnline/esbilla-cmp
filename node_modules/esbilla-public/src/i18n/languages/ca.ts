@@ -102,5 +102,214 @@ export const ca = {
   'comm.ways.features.title': 'Proposa Idees',
   'comm.ways.features.desc': 'Digues-nos quines característiques necessites pel teu graner digital.',
   'comm.ways.legal.title': 'Assessoria Legal',
-  'comm.ways.legal.desc': 'Ajuda\'ns a que els textos de privadesa siguin clars i nets per a tothom.'
+  'comm.ways.legal.desc': 'Ajuda\'ns a que els textos de privadesa siguin clars i nets per a tothom.',
+
+  // SaaS Expandit - Nou Model de Preus (Oferta Temporal)
+  'saas.hero.new.title': 'El CMP Més Potent al Millor Preu',
+  'saas.hero.new.subtitle': '20+ Integracions Natives. Des de €9/mes',
+  'saas.hero.new.desc': 'Més barat que CookieYes. Més potent que Cookiebot. 100% Open Source.',
+  'saas.hero.badge': '🔥 Oferta de Llançament - Preu Temporal',
+
+  'saas.plans.title': 'Preus que Trenquen el Mercat',
+  'saas.plans.subtitle': 'Paga menys. Aconsegueix més. Sense contractes de permanència.',
+
+  // Pla FREE / MAKER
+  'saas.plans.free.title': 'FREE / MAKER',
+  'saas.plans.free.price': '€0',
+  'saas.plans.free.period': 'per sempre',
+  'saas.plans.free.desc': 'Hobbies, Proves, Developers',
+  'saas.plans.free.limit': '25.000 Sessions/mes',
+  'saas.plans.free.feature1': '1 Domini',
+  'saas.plans.free.feature2': 'Google Consent Mode V2 (Bàsic)',
+  'saas.plans.free.feature3': 'Logs: 30 dies',
+  'saas.plans.free.feature4': 'Integració Manual (HTML/GTM)',
+  'saas.plans.free.cta': 'Començar Gratis',
+
+  // Pla STARTER (Matagegants)
+  'saas.plans.starter.title': 'STARTER',
+  'saas.plans.starter.badge': '⚡ Millor Qualitat/Preu',
+  'saas.plans.starter.price': '€9',
+  'saas.plans.starter.priceOld': '€19',
+  'saas.plans.starter.period': '/mes',
+  'saas.plans.starter.desc': 'Blogs, Webs Corporatives, Petits E-commerce',
+  'saas.plans.starter.limit': '100.000 Sessions/mes',
+  'saas.plans.starter.feature1': 'Dominis Il·limitats',
+  'saas.plans.starter.feature2': 'Logs Legals: 5 Anys (RGPD)',
+  'saas.plans.starter.feature3': 'Multiidioma Automàtic (10 idiomes)',
+  'saas.plans.starter.feature4': '🔌 Google Consent Mode V2 (Auto-fire)',
+  'saas.plans.starter.feature5': '🔌 GA4 + Google Ads (Natiu)',
+  'saas.plans.starter.feature6': 'Plugin WordPress/Shopify',
+  'saas.plans.starter.compare': 'vs CookieYes €20/mes',
+  'saas.plans.starter.cta': 'Prova 14 Dies Gratis',
+
+  // Pla GROWTH (Recomanat)
+  'saas.plans.growth.title': 'GROWTH',
+  'saas.plans.growth.badge': '🚀 Recomanat',
+  'saas.plans.growth.price': '€29',
+  'saas.plans.growth.period': '/mes',
+  'saas.plans.growth.desc': 'Botigues Online, Marketers, Growth Hackers',
+  'saas.plans.growth.limit': '1.000.000 Sessions/mes',
+  'saas.plans.growth.feature1': 'Tot el de STARTER +',
+  'saas.plans.growth.feature2': 'Geolocalització (Banner només on sigui llei)',
+  'saas.plans.growth.feature3': 'Analytics de Conversió (Impacte en vendes)',
+  'saas.plans.growth.feature4': '🔌 Meta Pixel (Facebook/Instagram)',
+  'saas.plans.growth.feature5': '🔌 TikTok / LinkedIn Ads',
+  'saas.plans.growth.feature6': '🔌 Hotjar / HubSpot / Clarity',
+  'saas.plans.growth.feature7': '🔌 20+ Integracions Zero-Code',
+  'saas.plans.growth.feature8': 'Suport Prioritari (< 24h)',
+  'saas.plans.growth.compare': 'vs Cookiebot €39/mes',
+  'saas.plans.growth.cta': 'Triar Growth',
+
+  // Pla AGENCY
+  'saas.plans.agency.title': 'AGENCY',
+  'saas.plans.agency.price': 'des de €99',
+  'saas.plans.agency.period': '/mes',
+  'saas.plans.agency.desc': 'Agències, Alt Volum, Multi-Client',
+  'saas.plans.agency.limit': '5.000.000 Sessions/mes + Multi-tenant',
+  'saas.plans.agency.feature1': 'Tot el de GROWTH +',
+  'saas.plans.agency.feature2': 'Panell de Gestió de Clients',
+  'saas.plans.agency.feature3': 'Marca Blanca (White-Label)',
+  'saas.plans.agency.feature4': 'API d\'Exportació en Temps Real',
+  'saas.plans.agency.feature5': 'Migració On-Premise Opcional',
+  'saas.plans.agency.feature6': 'SLA 99.9% Garantit',
+  'saas.plans.agency.feature7': 'Suport Dedicat',
+  'saas.plans.agency.cta': 'Contactar Vendes',
+
+  // Comparativa de Valor
+  'saas.comparison.title': 'Comparativa: Esbilla vs Competència',
+  'saas.comparison.esbilla': 'Esbilla',
+  'saas.comparison.cookieyes': 'CookieYes',
+  'saas.comparison.cookiebot': 'Cookiebot',
+  'saas.comparison.price': 'Preu (100K sessions)',
+  'saas.comparison.integrations': 'Integracions Natives',
+  'saas.comparison.opensource': 'Open Source',
+  'saas.comparison.selfhost': 'Self-Hosted Gratis',
+  'saas.comparison.apis': 'APIs de Consentiment',
+
+  // Integracions Natives (Diferenciador)
+  'saas.integrations.title': '20+ Integracions Natives Zero-Code',
+  'saas.integrations.subtitle': 'Configura des del Dashboard. Sense tocar codi.',
+  'saas.integrations.analytics': 'Analytics',
+  'saas.integrations.analytics.list': 'GA4, Hotjar, Amplitude, Clarity, Crazy Egg, VWO, Optimizely',
+  'saas.integrations.marketing': 'Màrqueting',
+  'saas.integrations.marketing.list': 'Facebook Pixel, Google Ads, Microsoft Ads, LinkedIn, TikTok, Pinterest, Twitter, Criteo, Taboola, HubSpot',
+  'saas.integrations.functional': 'Funcional',
+  'saas.integrations.functional.list': 'Intercom, Zendesk',
+
+  // Per Què Esbilla
+  'saas.why.title': 'Per Què Esbilla Domina el Mercat?',
+  'saas.why.price.title': '💰 Preu Imbatible',
+  'saas.why.price.desc': 'Des de €9/mes. 55% més barat que CookieYes. 75% més barat que Cookiebot.',
+  'saas.why.integrations.title': '🔌 Integracions Natives',
+  'saas.why.integrations.desc': '20+ plataformes sense tocar codi. Google Consent Mode V2, Meta Pixel, Microsoft UET, Clarity, Shopify, WordPress.',
+  'saas.why.opensource.title': '🔓 100% Open Source',
+  'saas.why.opensource.desc': 'Codi auditable. Sense vendor lock-in. Self-host gratis si vols. MIT License.',
+  'saas.why.compliance.title': '⚖️ Compliment Legal Total',
+  'saas.why.compliance.desc': 'RGPD, ePrivacy, CCPA, LGPD. Logs 5 anys. IP anonimitzada. Registre immutable.',
+
+  // Plugins
+  'saas.plugins.title': 'Plugins Natius per a la teva Plataforma',
+  'saas.plugins.wordpress.title': 'WordPress Plugin',
+  'saas.plugins.wordpress.desc': '3 modes d\'integració (Manual, Simplificat, GTM). Personalització CSS. 10 idiomes.',
+  'saas.plugins.shopify.title': 'Shopify Compatible',
+  'saas.plugins.shopify.desc': 'Integració amb Customer Privacy API. Compliment automàtic en checkout.',
+
+  // CTA Final
+  'saas.cta.title': 'Comença en 5 Minuts. Sense Targeta.',
+  'saas.cta.desc': 'Prova STARTER gratis durant 14 dies. Cancel·la quan vulguis.',
+  'saas.cta.button': 'Començar Prova Gratuïta',
+  'saas.cta.note': '✨ Oferta de Llançament: Preu Temporal fins Q2 2026',
+  'saas.cta.guarantee': '✓ Sense targeta · ✓ Sense permanència · ✓ Suport en català',
+
+  // Comunitat - Plugins i Mode Senzill
+  'comm.plugins.title': 'Plugins Natius: Integració Sense Codi',
+  'comm.plugins.subtitle': 'Instal·la Esbilla a la teva plataforma favorita en menys de 5 minuts',
+
+  'comm.plugins.wordpress.title': '🔌 Plugin WordPress',
+  'comm.plugins.wordpress.desc': 'Instal·la des del repositori oficial de WordPress. 3 modes d\'integració disponibles (Manual, Simplificat, GTM). Personalització total del banner des de la interfície. Compatible amb WooCommerce i tots els builders (Elementor, Divi, Gutenberg).',
+  'comm.plugins.wordpress.feature1': 'Instal·lació amb 1 clic des de wp-admin',
+  'comm.plugins.wordpress.feature2': 'Auto-configuració amb el teu Site ID',
+  'comm.plugins.wordpress.feature3': 'Suport per WooCommerce checkout',
+  'comm.plugins.wordpress.feature4': 'Compatible amb cache plugins (WP Rocket, W3 Total Cache)',
+  'comm.plugins.wordpress.cta': 'Descarregar Plugin',
+
+  'comm.plugins.shopify.title': '🛍️ Shopify Compatible',
+  'comm.plugins.shopify.desc': 'Integració nativa amb la Customer Privacy API de Shopify. Compliment automàtic al checkout. Respecta les preferències de l\'usuari durant tot el funnel de compra.',
+  'comm.plugins.shopify.feature1': 'Integració amb Shopify Customer Privacy API',
+  'comm.plugins.shopify.feature2': 'Banner personalitzat segons el teu tema',
+  'comm.plugins.shopify.feature3': 'Compliment en checkout i thank-you page',
+  'comm.plugins.shopify.feature4': 'Compatible amb Shopify Plus',
+  'comm.plugins.shopify.cta': 'Veure Documentació',
+
+  'comm.plugins.coming.title': '🚧 Properament',
+  'comm.plugins.coming.desc': 'Plugins en desenvolupament: PrestaShop, Magento, Drupal, Joomla. La teva plataforma no hi és? Demana-la a GitHub.',
+
+  // Mode Senzill - Explicació Detallada
+  'comm.simple.title': 'Mode Senzill: Zero-Code, Màxima Potència',
+  'comm.simple.subtitle': 'Configura 20+ integracions sense tocar HTML. Tot des del Dashboard.',
+
+  'comm.simple.what.title': 'Què és el Mode Senzill?',
+  'comm.simple.what.desc': 'El Mode Senzill (Simplified Mode) és una forma revolucionària de gestionar els teus scripts de tercers. En lloc de modificar manualment el codi HTML de cada script, introdueixes els IDs de les plataformes que uses al Dashboard d\'Esbilla. El SDK s\'encarrega automàticament de:',
+  'comm.simple.what.point1': '✅ Carregar els scripts NOMÉS després del consentiment de l\'usuari',
+  'comm.simple.what.point2': '✅ Actualitzar les APIs de consentiment quan l\'usuari canvia les seves preferències',
+  'comm.simple.what.point3': '✅ Mantenir els scripts actualitzats amb les últimes versions oficials',
+  'comm.simple.what.point4': '✅ Optimitzar la càrrega per no afectar el rendiment de la teva web',
+
+  'comm.simple.how.title': 'Com Funciona?',
+  'comm.simple.how.step1.title': '1. Dashboard: Introdueix els teus IDs',
+  'comm.simple.how.step1.desc': 'Al Dashboard d\'Esbilla, introdueixes els IDs de les plataformes que uses. Per exemple, el teu Measurement ID de Google Analytics (G-XXXXXXXXXX) o el teu Pixel ID de Facebook.',
+  'comm.simple.how.step2.title': '2. SDK: Instal·lació única',
+  'comm.simple.how.step2.desc': 'Instal·les el SDK d\'Esbilla una sola vegada a la teva web. Un simple script tag o plugin de WordPress.',
+  'comm.simple.how.step3.title': '3. Màgia: Càrrega automàtica',
+  'comm.simple.how.step3.desc': 'El SDK carrega dinàmicament els scripts configurats NOMÉS quan l\'usuari accepta la categoria corresponent. Sense connexions prematures, sense violacions RGPD.',
+
+  'comm.simple.legal.title': 'Per Què és Legal?',
+  'comm.simple.legal.desc': 'El Mode Senzill compleix amb el RGPD perquè NO estableix cap connexió amb servidors de tercers (analytics.google.com, connect.facebook.net) fins que l\'usuari dóna consentiment explícit. Això és crític perquè la majoria d\'implementacions tradicionals carreguen els scripts abans del consentiment, violant l\'Article 6.1.a del RGPD.',
+
+  // Integracions Suportades - Llista Completa
+  'comm.integrations.title': '20+ Integracions Natives Suportades',
+  'comm.integrations.subtitle': 'Scripts optimitzats, actualitzats i 100% compatibles amb RGPD',
+
+  'comm.integrations.analytics.title': '📊 Analytics / Estadística',
+  'comm.integrations.analytics.subtitle': 'Scripts que requereixen consentiment d\'"Analytics"',
+  'comm.integrations.analytics.ga4': 'Google Analytics 4 (GA4) - Measurement ID: G-XXXXXXXXXX',
+  'comm.integrations.analytics.clarity': 'Microsoft Clarity - Project ID: alfanumèric',
+  'comm.integrations.analytics.hotjar': 'Hotjar - Site ID: 7 dígits',
+  'comm.integrations.analytics.amplitude': 'Amplitude - API Key: alfanumèric',
+  'comm.integrations.analytics.crazyegg': 'Crazy Egg - Account Number: 8 dígits hex',
+  'comm.integrations.analytics.vwo': 'VWO - Account ID: 6 dígits',
+  'comm.integrations.analytics.optimizely': 'Optimizely - Project ID: 10 dígits',
+
+  'comm.integrations.marketing.title': '📣 Màrqueting / Publicitat',
+  'comm.integrations.marketing.subtitle': 'Scripts que requereixen consentiment de "Màrqueting"',
+  'comm.integrations.marketing.fbpixel': 'Facebook Pixel - Pixel ID: 15 dígits',
+  'comm.integrations.marketing.googleads': 'Google Ads - Conversion ID: AW-XXXXXXXXX',
+  'comm.integrations.marketing.msads': 'Microsoft Ads (UET) - Tag ID: 8 dígits',
+  'comm.integrations.marketing.linkedin': 'LinkedIn Insight Tag - Partner ID: 6 dígits',
+  'comm.integrations.marketing.tiktok': 'TikTok Pixel - Pixel Code: 16 caràcters',
+  'comm.integrations.marketing.criteo': 'Criteo OneTag - Account ID: 6 dígits',
+  'comm.integrations.marketing.pinterest': 'Pinterest Tag - Tag ID: 13 dígits (26XXXXXXXXXX)',
+  'comm.integrations.marketing.twitter': 'Twitter Pixel - Pixel ID: o1234',
+  'comm.integrations.marketing.taboola': 'Taboola Pixel - Account ID: 7 dígits',
+  'comm.integrations.marketing.youtube': 'YouTube (Privacy-Enhanced) - Video ID: 11 caràcters',
+  'comm.integrations.marketing.hubspot': 'HubSpot - Portal ID: 8 dígits',
+
+  'comm.integrations.functional.title': '💬 Funcional (Xats)',
+  'comm.integrations.functional.subtitle': 'Scripts necessaris per a funcionalitat (informar al banner)',
+  'comm.integrations.functional.intercom': 'Intercom - App ID: 8 caràcters alfanumèrics',
+  'comm.integrations.functional.zendesk': 'Zendesk Web Widget - Snippet Key: alfanumèric',
+
+  'comm.integrations.note': '💡 Nota: Només afegeix els IDs de les plataformes que realment usis. Els camps buits NO carregaran scripts (optimització automàtica).',
+  'comm.integrations.request': 'Falta alguna plataforma? Demana-la a GitHub Issues.',
+
+  // Consent APIs
+  'comm.apis.title': '6 APIs de Consentiment Integrades',
+  'comm.apis.subtitle': 'Actualització automàtica quan l\'usuari canvia les seves preferències',
+  'comm.apis.google': 'Google Consent Mode V2 - gtag() actualitzat dinàmicament',
+  'comm.apis.meta': 'Meta Pixel Consent API - fbq("consent", "grant/revoke")',
+  'comm.apis.msclarity': 'Microsoft Clarity Consent API - clarity() control granular',
+  'comm.apis.msuet': 'Microsoft UET Consent Mode - uetq.push() amb configuració',
+  'comm.apis.shopify': 'Shopify Customer Privacy API - Sync amb checkout',
+  'comm.apis.wordpress': 'WordPress Consent API - Hooks natius wp_consent_*'
+
 } as const;
