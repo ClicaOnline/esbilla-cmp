@@ -27,8 +27,11 @@ export function VerifyEmailPage() {
   useEffect(() => {
     if (!auth) return;
 
+    // Capture auth in closure to satisfy TypeScript null check
+    const authInstance = auth;
+
     const checkInterval = setInterval(async () => {
-      const currentUser = auth.currentUser;
+      const currentUser = authInstance.currentUser;
 
       if (currentUser) {
         // Reload user to get latest emailVerified status
