@@ -48,24 +48,24 @@ describe('Esbilla API - Pruebes de Gobernanza', () => {
 
 describe('Esbilla API - SDK y ficheros estáticos', () => {
 
-  it('Debería servir el SDK (sdk.js)', async () => {
-    const response = await request(app).get('/sdk.js');
+  it('Debería servir el Pegoyu (pegoyu.js)', async () => {
+    const response = await request(app).get('/pegoyu.js');
     expect(response.status).toBe(200);
     expect(response.type).toMatch(/javascript/);
     expect(response.text).toContain('ESBILLA CMP');
   });
 
-  it('El SDK debería contener la función getFootprintId', async () => {
-    const response = await request(app).get('/sdk.js');
+  it('El Pegoyu debería contener la función getFootprintId', async () => {
+    const response = await request(app).get('/pegoyu.js');
     expect(response.text).toContain('getFootprintId');
     expect(response.text).toContain('esbilla_footprint');
   });
 
-  it('El SDK debería tener la mosca con footprint', async () => {
-    const response = await request(app).get('/sdk.js');
-    expect(response.text).toContain('showMosca');
-    expect(response.text).toContain('esbilla-mosca-expanded');
-    expect(response.text).toContain('esbilla-mosca-footprint');
+  it('El Pegoyu debería tener la panoya con footprint', async () => {
+    const response = await request(app).get('/pegoyu.js');
+    expect(response.text).toContain('showPanoya');
+    expect(response.text).toContain('esbilla-panoya-expanded');
+    expect(response.text).toContain('esbilla-panoya-footprint');
   });
 
   it('Debería servir el manifest de configuración', async () => {
@@ -82,10 +82,10 @@ describe('Esbilla API - SDK y ficheros estáticos', () => {
     expect(response.text).toContain('--esbilla-primary');
   });
 
-  it('Los estilos deberían incluir la mosca expandida', async () => {
+  it('Los estilos deberían incluir la panoya expandida', async () => {
     const response = await request(app).get('/styles/base.css');
-    expect(response.text).toContain('.esbilla-mosca-expanded');
-    expect(response.text).toContain('.esbilla-mosca-footprint');
+    expect(response.text).toContain('.esbilla-panoya-expanded');
+    expect(response.text).toContain('.esbilla-panoya-footprint');
   });
 
   it('Debería servir las traducciones i18n', async () => {

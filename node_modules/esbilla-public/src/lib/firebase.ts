@@ -1,7 +1,6 @@
 // src/lib/firebase.ts
 import { initializeApp } from "firebase/app";
-// Importa equí otros servicios que precises, como Auth o Firestore
-// import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
@@ -14,6 +13,7 @@ const firebaseConfig = {
 
 // Inicializamos Firebase solo una vegada
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // Esportamos pa usalo n'otros sitios
-export { app };
+export { app, db };

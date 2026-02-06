@@ -157,6 +157,7 @@ $mode = $options['implementation_mode'] ?? 'manual';
     </div>
 </div>
 
+
 <script>
 // Mostrar/ocultar secciones según el modo seleccionado
 jQuery(document).ready(function($) {
@@ -177,19 +178,108 @@ jQuery(document).ready(function($) {
             $gtmFields.find('input').prop('disabled', true);
         }
 
-        // Scripts section
+        // Scripts section principal
         const $scriptsSection = $('#esbilla_scripts_section').closest('tr').prev('tr');
-        const $scriptsFields = $scriptsSection.nextAll('tr').slice(0, 5);
+
+        // Analytics section (7 fields)
+        const $analyticsSection = $('#esbilla_scripts_analytics_section').closest('tr').prev('tr');
+        const $analyticsFields = $analyticsSection.nextAll('tr').slice(0, 7);
+
+        // Marketing section (10 fields)
+        const $marketingSection = $('#esbilla_scripts_marketing_section').closest('tr').prev('tr');
+        const $marketingFields = $marketingSection.nextAll('tr').slice(0, 10);
+
+        // Functional section (2 fields)
+        const $functionalSection = $('#esbilla_scripts_functional_section').closest('tr').prev('tr');
+        const $functionalFields = $functionalSection.nextAll('tr').slice(0, 2);
 
         if (mode === 'simplified') {
             $scriptsSection.show();
-            $scriptsFields.show();
-            $scriptsFields.find('input').prop('disabled', false);
+
+            // Mostrar todas las secciones de scripts
+            $analyticsSection.show();
+            $analyticsFields.show();
+            $analyticsFields.find('input').prop('disabled', false);
+
+            $marketingSection.show();
+            $marketingFields.show();
+            $marketingFields.find('input').prop('disabled', false);
+
+            $functionalSection.show();
+            $functionalFields.show();
+            $functionalFields.find('input').prop('disabled', false);
+
+            // Convertir headers en acordeones
+            setupAccordions();
         } else {
             $scriptsSection.hide();
-            $scriptsFields.hide();
-            $scriptsFields.find('input').prop('disabled', true);
+
+            $analyticsSection.hide();
+            $analyticsFields.hide();
+            $analyticsFields.find('input').prop('disabled', true);
+
+            $marketingSection.hide();
+            $marketingFields.hide();
+            $marketingFields.find('input').prop('disabled', true);
+
+            $functionalSection.hide();
+            $functionalFields.hide();
+            $functionalFields.find('input').prop('disabled', true);
         }
+    }
+
+    function setupAccordions() {
+        // Encontrar todas las secciones de scripts (analytics, marketing, functional)
+        const sections = [
+            { id: 'esbilla_scripts_analytics_section', fields: 7, badge: '7', icon: 'dashicons-chart-line' },
+            { id: 'esbilla_scripts_marketing_section', fields: 10, badge: '10', icon: 'dashicons-megaphone' },
+            { id: 'esbilla_scripts_functional_section', fields: 2, badge: '2', icon: 'dashicons-admin-tools' }
+        ];
+
+        sections.forEach((section, index) => {
+            const $sectionHeader = $('#' + section.id).closest('tr').prev('tr');
+            const $h2 = $sectionHeader.find('h2');
+
+            // Evitar duplicar el setup
+            if ($h2.find('.dashicons-arrow-down-alt2').length > 0) return;
+
+            // Añadir clase de acordeón
+            $sectionHeader.addClass('esbilla-accordion-section');
+
+            // Obtener el texto del título
+            const titleText = $h2.text().trim();
+
+            // Limpiar y reconstruir el h2
+            $h2.empty();
+            $h2.append('<span class="dashicons ' + section.icon + '" style="margin-right: 8px;"></span>');
+            $h2.append('<span class="esbilla-accordion-title">' + titleText + '</span>');
+            $h2.append('<span class="esbilla-accordion-badge">' + section.badge + '</span>');
+            $h2.append('<span class="dashicons dashicons-arrow-down-alt2" style="margin-left: auto;"></span>');
+
+            // Wrapper para el contenido
+            const $description = $('#' + section.id).closest('tr');
+            const $fields = $description.nextAll('tr').slice(0, section.fields);
+
+            $description.addClass('esbilla-accordion-content');
+            $fields.addClass('esbilla-accordion-content');
+
+            // Comenzar con el primer acordeón abierto
+            if (index === 0) {
+                $h2.addClass('accordion-active');
+                $description.addClass('active');
+                $fields.addClass('active');
+            }
+
+            // Click handler para toggle
+            $h2.off('click').on('click', function(e) {
+                e.preventDefault();
+                const $header = $(this);
+                const $content = $(this).closest('tr').nextAll('.esbilla-accordion-content').slice(0, section.fields + 1);
+
+                $header.toggleClass('accordion-active');
+                $content.toggleClass('active');
+            });
+        });
     }
 
     $('input[name="esbilla_settings[implementation_mode]"]').on('change', toggleSections);

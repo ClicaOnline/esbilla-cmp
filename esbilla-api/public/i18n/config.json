@@ -14,7 +14,7 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permiten personalizar anuncios",
     "saveSettings": "Guardar preferencies",
-    "moscaTitle": "Configurar cookies",
+    "panoyaTitle": "Configurar cookies",
     "footprintLabel": "El to ID de privacidá"
   },
   "es": {
@@ -32,7 +32,7 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permiten personalizar anuncios",
     "saveSettings": "Guardar preferencias",
-    "moscaTitle": "Configurar cookies",
+    "panoyaTitle": "Configurar cookies",
     "footprintLabel": "Tu ID de privacidad"
   },
   "en": {
@@ -50,7 +50,7 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Allow personalized ads",
     "saveSettings": "Save preferences",
-    "moscaTitle": "Configure cookies",
+    "panoyaTitle": "Configure cookies",
     "footprintLabel": "Your privacy ID"
   },
   "fr": {
@@ -68,7 +68,7 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permettent de personnaliser les publicités",
     "saveSettings": "Enregistrer les préférences",
-    "moscaTitle": "Configurer les cookies",
+    "panoyaTitle": "Configurer les cookies",
     "footprintLabel": "Votre ID de confidentialité"
   },
   "pt": {
@@ -86,6 +86,6 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permitem personalizar anúncios",
     "saveSettings": "Salvar preferências",
-    "moscaTitle": "Configurar cookies"
+    "panoyaTitle": "Configurar cookies"
   }
 }

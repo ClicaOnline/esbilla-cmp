@@ -31,11 +31,11 @@
     "textSize": "15px"
   },
 
-  "mosca": {
+  "panoya": {
     "enabled": true,
     "position": "bottom-left",
     "size": "56px",
-    "icon": "🍪"
+    "icon": "🌽"
   },
 
   "features": {

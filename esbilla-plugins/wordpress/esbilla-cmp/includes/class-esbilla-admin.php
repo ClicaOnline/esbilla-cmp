@@ -122,13 +122,21 @@ class Esbilla_Admin {
             $this->options_page_slug
         );
 
+        // Sección de Analytics (acordeón)
+        add_settings_section(
+            'esbilla_scripts_analytics_section',
+            __('Analytics (7 plataformas)', 'esbilla-cmp'),
+            array($this, 'scripts_analytics_section_callback'),
+            $this->options_page_slug
+        );
+
         // Analytics
         add_settings_field(
             'google_analytics_id',
             __('Google Analytics 4', 'esbilla-cmp'),
             array($this, 'google_analytics_id_callback'),
             $this->options_page_slug,
-            'esbilla_scripts_section'
+            'esbilla_scripts_analytics_section'
         );
 
         add_settings_field(
@@ -136,7 +144,55 @@ class Esbilla_Admin {
             __('Hotjar', 'esbilla-cmp'),
             array($this, 'hotjar_id_callback'),
             $this->options_page_slug,
-            'esbilla_scripts_section'
+            'esbilla_scripts_analytics_section'
+        );
+
+        add_settings_field(
+            'microsoft_clarity_id',
+            __('Microsoft Clarity', 'esbilla-cmp'),
+            array($this, 'microsoft_clarity_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_analytics_section'
+        );
+
+        add_settings_field(
+            'amplitude_id',
+            __('Amplitude', 'esbilla-cmp'),
+            array($this, 'amplitude_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_analytics_section'
+        );
+
+        add_settings_field(
+            'crazyegg_id',
+            __('Crazy Egg', 'esbilla-cmp'),
+            array($this, 'crazyegg_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_analytics_section'
+        );
+
+        add_settings_field(
+            'vwo_id',
+            __('VWO (Visual Website Optimizer)', 'esbilla-cmp'),
+            array($this, 'vwo_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_analytics_section'
+        );
+
+        add_settings_field(
+            'optimizely_id',
+            __('Optimizely', 'esbilla-cmp'),
+            array($this, 'optimizely_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_analytics_section'
+        );
+
+        // Sección de Marketing (acordeón)
+        add_settings_section(
+            'esbilla_scripts_marketing_section',
+            __('Marketing (10 plataformas)', 'esbilla-cmp'),
+            array($this, 'scripts_marketing_section_callback'),
+            $this->options_page_slug
         );
 
         // Marketing
@@ -145,7 +201,7 @@ class Esbilla_Admin {
             __('Facebook Pixel', 'esbilla-cmp'),
             array($this, 'facebook_pixel_id_callback'),
             $this->options_page_slug,
-            'esbilla_scripts_section'
+            'esbilla_scripts_marketing_section'
         );
 
         add_settings_field(
@@ -153,7 +209,7 @@ class Esbilla_Admin {
             __('LinkedIn Insight Tag', 'esbilla-cmp'),
             array($this, 'linkedin_insight_id_callback'),
             $this->options_page_slug,
-            'esbilla_scripts_section'
+            'esbilla_scripts_marketing_section'
         );
 
         add_settings_field(
@@ -161,7 +217,88 @@ class Esbilla_Admin {
             __('TikTok Pixel', 'esbilla-cmp'),
             array($this, 'tiktok_pixel_id_callback'),
             $this->options_page_slug,
-            'esbilla_scripts_section'
+            'esbilla_scripts_marketing_section'
+        );
+
+        add_settings_field(
+            'google_ads_id',
+            __('Google Ads', 'esbilla-cmp'),
+            array($this, 'google_ads_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
+        add_settings_field(
+            'microsoft_ads_id',
+            __('Microsoft Ads (Bing)', 'esbilla-cmp'),
+            array($this, 'microsoft_ads_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
+        add_settings_field(
+            'criteo_id',
+            __('Criteo', 'esbilla-cmp'),
+            array($this, 'criteo_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
+        add_settings_field(
+            'pinterest_id',
+            __('Pinterest Tag', 'esbilla-cmp'),
+            array($this, 'pinterest_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
+        add_settings_field(
+            'twitter_pixel_id',
+            __('Twitter (X) Pixel', 'esbilla-cmp'),
+            array($this, 'twitter_pixel_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
+        add_settings_field(
+            'taboola_id',
+            __('Taboola', 'esbilla-cmp'),
+            array($this, 'taboola_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
+        add_settings_field(
+            'hubspot_id',
+            __('HubSpot', 'esbilla-cmp'),
+            array($this, 'hubspot_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_marketing_section'
+        );
+
+        // Sección de Functional (acordeón)
+        add_settings_section(
+            'esbilla_scripts_functional_section',
+            __('Functional (2 plataformas)', 'esbilla-cmp'),
+            array($this, 'scripts_functional_section_callback'),
+            $this->options_page_slug
+        );
+
+        // Functional
+        add_settings_field(
+            'intercom_id',
+            __('Intercom', 'esbilla-cmp'),
+            array($this, 'intercom_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_functional_section'
+        );
+
+        add_settings_field(
+            'zendesk_id',
+            __('Zendesk', 'esbilla-cmp'),
+            array($this, 'zendesk_id_callback'),
+            $this->options_page_slug,
+            'esbilla_scripts_functional_section'
         );
 
         // Sección: Personalización
@@ -199,11 +336,31 @@ class Esbilla_Admin {
             : 'manual';
 
         $sanitized['gtm_id'] = sanitize_text_field($input['gtm_id'] ?? '');
+
+        // Analytics
         $sanitized['google_analytics_id'] = sanitize_text_field($input['google_analytics_id'] ?? '');
         $sanitized['hotjar_id'] = sanitize_text_field($input['hotjar_id'] ?? '');
+        $sanitized['microsoft_clarity_id'] = sanitize_text_field($input['microsoft_clarity_id'] ?? '');
+        $sanitized['amplitude_id'] = sanitize_text_field($input['amplitude_id'] ?? '');
+        $sanitized['crazyegg_id'] = sanitize_text_field($input['crazyegg_id'] ?? '');
+        $sanitized['vwo_id'] = sanitize_text_field($input['vwo_id'] ?? '');
+        $sanitized['optimizely_id'] = sanitize_text_field($input['optimizely_id'] ?? '');
+
+        // Marketing
         $sanitized['facebook_pixel_id'] = sanitize_text_field($input['facebook_pixel_id'] ?? '');
         $sanitized['linkedin_insight_id'] = sanitize_text_field($input['linkedin_insight_id'] ?? '');
         $sanitized['tiktok_pixel_id'] = sanitize_text_field($input['tiktok_pixel_id'] ?? '');
+        $sanitized['google_ads_id'] = sanitize_text_field($input['google_ads_id'] ?? '');
+        $sanitized['microsoft_ads_id'] = sanitize_text_field($input['microsoft_ads_id'] ?? '');
+        $sanitized['criteo_id'] = sanitize_text_field($input['criteo_id'] ?? '');
+        $sanitized['pinterest_id'] = sanitize_text_field($input['pinterest_id'] ?? '');
+        $sanitized['twitter_pixel_id'] = sanitize_text_field($input['twitter_pixel_id'] ?? '');
+        $sanitized['taboola_id'] = sanitize_text_field($input['taboola_id'] ?? '');
+        $sanitized['hubspot_id'] = sanitize_text_field($input['hubspot_id'] ?? '');
+
+        // Functional
+        $sanitized['intercom_id'] = sanitize_text_field($input['intercom_id'] ?? '');
+        $sanitized['zendesk_id'] = sanitize_text_field($input['zendesk_id'] ?? '');
 
         // Sanitizar CSS personalizado (permitir CSS válido)
         $sanitized['custom_css'] = isset($input['custom_css'])
@@ -247,8 +404,22 @@ class Esbilla_Admin {
         $mode = $options['implementation_mode'] ?? 'manual';
 
         if ($mode !== 'simplified') {
-            echo '<p style="opacity: 0.6;">' . esc_html__('Esta sección solo está disponible en modo Simplificado.', 'esbilla-cmp') . '</p>';
+            echo '<p style="opacity: 0.6;">' . esc_html__('Esta sección solo está disponible en modo Simplificado. Cambia a modo Simplificado para configurar los IDs de las plataformas.', 'esbilla-cmp') . '</p>';
+        } else {
+            echo '<p>' . esc_html__('Configura los IDs de las plataformas que usas. Los scripts se cargarán automáticamente cuando el usuario dé consentimiento.', 'esbilla-cmp') . '</p>';
         }
+    }
+
+    public function scripts_analytics_section_callback() {
+        echo '<p style="margin: 0; color: #666; font-size: 13px;">' . esc_html__('Plataformas de análisis y comportamiento de usuarios', 'esbilla-cmp') . '</p>';
+    }
+
+    public function scripts_marketing_section_callback() {
+        echo '<p style="margin: 0; color: #666; font-size: 13px;">' . esc_html__('Plataformas de publicidad y remarketing', 'esbilla-cmp') . '</p>';
+    }
+
+    public function scripts_functional_section_callback() {
+        echo '<p style="margin: 0; color: #666; font-size: 13px;">' . esc_html__('Herramientas de soporte y comunicación con usuarios', 'esbilla-cmp') . '</p>';
     }
 
     public function customization_section_callback() {
@@ -459,6 +630,258 @@ class Esbilla_Admin {
                <?php echo $disabled; ?>>
         <p class="description">
             <?php esc_html_e('Pixel ID de TikTok', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function microsoft_clarity_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['microsoft_clarity_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[microsoft_clarity_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="abcdefghij"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Project ID de Microsoft Clarity', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function amplitude_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['amplitude_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[amplitude_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="abcdefghijklmnopqrstuvwxyz123456"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('API Key de Amplitude', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function crazyegg_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['crazyegg_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[crazyegg_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="12345678"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Account Number de Crazy Egg', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function vwo_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['vwo_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[vwo_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="123456"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Account ID de VWO', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function optimizely_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['optimizely_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[optimizely_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="1234567890"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Project ID de Optimizely', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function google_ads_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['google_ads_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[google_ads_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="AW-123456789"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Conversion ID de Google Ads (AW-XXXXXXXXXX)', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function microsoft_ads_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['microsoft_ads_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[microsoft_ads_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="12345678"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('UET Tag ID de Microsoft Ads', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function criteo_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['criteo_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[criteo_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="12345"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Account ID de Criteo', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function pinterest_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['pinterest_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[pinterest_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="1234567890123"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Tag ID de Pinterest', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function twitter_pixel_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['twitter_pixel_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[twitter_pixel_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="o1234"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Pixel ID de Twitter/X', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function taboola_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['taboola_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[taboola_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="1234567"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Account ID de Taboola', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function hubspot_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['hubspot_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[hubspot_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="12345678"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Hub ID de HubSpot', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function intercom_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['intercom_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[intercom_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="abcd1234"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('App ID de Intercom', 'esbilla-cmp'); ?>
+        </p>
+        <?php
+    }
+
+    public function zendesk_id_callback() {
+        $options = get_option('esbilla_settings', array());
+        $mode = $options['implementation_mode'] ?? 'manual';
+        $value = $options['zendesk_id'] ?? '';
+        $disabled = $mode !== 'simplified' ? 'disabled' : '';
+        ?>
+        <input type="text"
+               name="esbilla_settings[zendesk_id]"
+               value="<?php echo esc_attr($value); ?>"
+               class="regular-text"
+               placeholder="abcdefgh-1234-5678-90ab-cdefghijklmn"
+               <?php echo $disabled; ?>>
+        <p class="description">
+            <?php esc_html_e('Key de Zendesk Web Widget', 'esbilla-cmp'); ?>
         </p>
         <?php
     }

@@ -37,7 +37,9 @@
       "Bash(gh secret list:*)",
       "Bash(gh run:*)",
       "Bash(git fetch:*)",
-      "Bash(msgfmt:*)"
+      "Bash(msgfmt:*)",
+      "Bash(node scripts/verify-modular-architecture.js:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

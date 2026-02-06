@@ -5,7 +5,7 @@ import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
 import type { Site } from '../types';
-import { Search, Download, CheckCircle, XCircle, Settings, Calendar, Globe, Monitor, Globe2, Link } from 'lucide-react';
+import { Search, Download, CheckCircle, XCircle, Settings, Calendar, Globe, Monitor, Globe2, Link, Clock, ExternalLink, ArrowRight, Maximize2, Tag } from 'lucide-react';
 
 interface ConsentRecord {
   id: string;
@@ -20,9 +20,16 @@ interface ConsentRecord {
   metadata?: {
     domain?: string;
     pageUrl?: string;
+    referrer?: string | null;
+    userAgent?: string;
     language?: string;
-    sdkVersion?: string;
+    screenWidth?: number;
+    screenHeight?: number;
+    timezone?: string;
+    pegoyuVersion?: string;
+    consentVersion?: string;
   };
+  attribution?: Record<string, any>;
   timestamp: string;
   userAgent: string;
   lang: string;
@@ -122,6 +129,7 @@ export function FootprintPage() {
           choices: data.choices,
           action: data.action,
           metadata: data.metadata,
+          attribution: data.attribution,
           timestamp: data.timestamp,
           userAgent: data.metadata?.userAgent || data.userAgent,
           lang: data.metadata?.language || data.lang || 'es',
@@ -308,25 +316,109 @@ export function FootprintPage() {
                         </div>
 
                         {/* Details */}
-                        <div className="mt-4 pt-4 border-t border-stone-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          <div className="flex items-center gap-2 text-stone-500">
-                            <Calendar size={14} />
-                            <span>{t.footprint.analytics}: {record.choices.analytics ? '✓' : '✗'}</span>
+                        <div className="mt-4 pt-4 border-t border-stone-100 space-y-4">
+                          {/* Consent choices */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div className="flex items-center gap-2 text-stone-600">
+                              <CheckCircle size={14} className={record.choices.analytics ? 'text-green-600' : 'text-stone-300'} />
+                              <span>{t.footprint.analytics}: {record.choices.analytics ? '✓' : '✗'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-stone-600">
+                              <CheckCircle size={14} className={record.choices.marketing ? 'text-green-600' : 'text-stone-300'} />
+                              <span>{t.footprint.marketing}: {record.choices.marketing ? '✓' : '✗'}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-stone-600">
+                              <Globe size={14} />
+                              <span>Idioma: {record.lang.toUpperCase()}</span>
+                            </div>
+                            {record.metadata?.timezone && (
+                              <div className="flex items-center gap-2 text-stone-600">
+                                <Clock size={14} />
+                                <span className="truncate" title={record.metadata.timezone}>{record.metadata.timezone.split('/').pop()}</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2 text-stone-500">
-                            <Calendar size={14} />
-                            <span>{t.footprint.marketing}: {record.choices.marketing ? '✓' : '✗'}</span>
+
+                          {/* Technical metadata */}
+                          <div className="bg-stone-50 rounded-lg p-3 space-y-2 text-xs">
+                            <div className="font-medium text-stone-700 mb-2">Metadatos Técnicos</div>
+
+                            {/* User Agent (full) */}
+                            <div className="flex items-start gap-2">
+                              <Monitor size={12} className="mt-0.5 flex-shrink-0 text-stone-400" />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-stone-500 mb-1">User-Agent:</div>
+                                <code className="text-stone-700 break-all text-[10px] leading-relaxed">{record.userAgent}</code>
+                              </div>
+                            </div>
+
+                            {/* Screen resolution */}
+                            {record.metadata?.screenWidth && record.metadata?.screenHeight && (
+                              <div className="flex items-center gap-2 text-stone-600">
+                                <Maximize2 size={12} className="text-stone-400" />
+                                <span>Pantalla: {record.metadata.screenWidth}×{record.metadata.screenHeight}px</span>
+                              </div>
+                            )}
+
+                            {/* Page URL */}
+                            {record.metadata?.pageUrl && (
+                              <div className="flex items-start gap-2">
+                                <ExternalLink size={12} className="mt-0.5 flex-shrink-0 text-stone-400" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-stone-500 mb-1">URL de la página:</div>
+                                  <a href={record.metadata.pageUrl} target="_blank" rel="noopener noreferrer"
+                                     className="text-blue-600 hover:underline break-all text-[10px]">
+                                    {record.metadata.pageUrl}
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Referrer */}
+                            {record.metadata?.referrer && (
+                              <div className="flex items-start gap-2">
+                                <ArrowRight size={12} className="mt-0.5 flex-shrink-0 text-stone-400" />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-stone-500 mb-1">Referrer:</div>
+                                  <code className="text-stone-700 break-all text-[10px]">{record.metadata.referrer}</code>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Pegoyu Version */}
+                            {record.metadata?.pegoyuVersion && (
+                              <div className="flex items-center gap-2 text-stone-600">
+                                <Tag size={12} className="text-stone-400" />
+                                <span>Pegoyu: v{record.metadata.pegoyuVersion}</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2 text-stone-500">
-                            <Globe size={14} />
-                            <span>{t.footprint.language}: {record.lang.toUpperCase()}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-stone-500 truncate">
-                            <Monitor size={14} />
-                            <span className="truncate" title={record.userAgent}>
-                              {parseUserAgent(record.userAgent, t.common.unknown)}
-                            </span>
-                          </div>
+
+                          {/* Attribution data (UTMs, click IDs) */}
+                          {record.attribution && Object.keys(record.attribution).length > 0 && (
+                            <div className="bg-amber-50 rounded-lg p-3 space-y-2 text-xs">
+                              <div className="font-medium text-amber-900 mb-2 flex items-center gap-2">
+                                <Tag size={14} />
+                                Atribución de Marketing
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {Object.entries(record.attribution).map(([key, value]) => {
+                                  if (key.startsWith('_')) return null; // Skip internal fields
+                                  return (
+                                    <div key={key} className="flex items-center gap-2">
+                                      <span className="font-medium text-amber-800">{key}:</span>
+                                      <span className="text-amber-700 truncate" title={String(value)}>{String(value)}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {record.attribution._captured_at && (
+                                <div className="text-[10px] text-amber-600 mt-2 pt-2 border-t border-amber-200">
+                                  Capturado: {new Date(record.attribution._captured_at).toLocaleString(language)}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         {/* Footprint ID */}

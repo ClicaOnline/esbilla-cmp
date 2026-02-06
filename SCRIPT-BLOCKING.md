@@ -62,7 +62,7 @@ Al obtener consentimiento, solo desbloquea los scripts de las categorías consen
 
 ```html
 <!-- Debe ir ANTES de cualquier otro script de terceros -->
-<script src="https://api.esbilla.com/sdk.js" data-id="tu-site-id"></script>
+<script src="https://api.esbilla.com/pegoyu.js" data-id="tu-site-id"></script>
 ```
 
 ### Paso 2: Bloquear Scripts de Terceros
@@ -190,7 +190,7 @@ Ve a tu sitio en el Dashboard de Esbilla y configura los scripts en la sección 
 
 ```html
 <!-- Solo necesitas esto en tu HTML -->
-<script src="https://api.esbilla.com/sdk.js" data-id="tu-site-id"></script>
+<script src="https://api.esbilla.com/pegoyu.js" data-id="tu-site-id"></script>
 
 <!-- ¡Eso es todo! Los scripts se cargan automáticamente según el consentimiento -->
 ```
@@ -273,7 +273,7 @@ window.addEventListener('esbilla:consent:changed', (event) => {
 
 ```html
 <!-- IMPORTANTE: Debe ir ANTES de GTM -->
-<script src="https://api.esbilla.com/sdk.js"
+<script src="https://api.esbilla.com/pegoyu.js"
         data-id="tu-site-id"
         data-gtm-mode="true"></script>
 
@@ -655,7 +655,7 @@ Al dar consentimiento:
 
 ```html
 <!-- ✅ BIEN: GTM se maneja internamente -->
-<script src="/sdk.js" data-id="site-id" data-gtm="GTM-XXXXXXX"></script>
+<script src="/pegoyu.js" data-id="site-id" data-gtm="GTM-XXXXXXX"></script>
 
 <!-- ❌ MAL: No bloquees GTM manualmente -->
 <script type="text/plain" data-consent-category="analytics">
@@ -675,7 +675,7 @@ Al dar consentimiento:
    <script src="https://api.esbilla.com/sdk-v1.4.js"></script>
 
    <!-- A: -->
-   <script src="https://api.esbilla.com/sdk.js"></script>
+   <script src="https://api.esbilla.com/pegoyu.js"></script>
    ```
 
 2. **Actualiza todos tus scripts de terceros**:

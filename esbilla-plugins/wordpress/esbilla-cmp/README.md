@@ -4,7 +4,7 @@ Plugin de WordPress para integrar Esbilla CMP (Consent Management Platform) en t
 
 ## Descripción
 
-Esbilla CMP es una plataforma de gestión de consentimiento RGPD/ePrivacy de código abierto. Este plugin facilita la integración del SDK de Esbilla en sitios WordPress.
+Esbilla CMP es una plataforma de gestión de consentimiento RGPD/ePrivacy de código abierto. Este plugin facilita la integración del Pegoyu de Esbilla en sitios WordPress.
 
 ### Características
 
@@ -69,14 +69,34 @@ Esbilla CMP es una plataforma de gestión de consentimiento RGPD/ePrivacy de có
 
 #### Modo Simplificado
 - Introduces los IDs de las plataformas que usas
-- El SDK carga los scripts automáticamente
+- El Pegoyu carga los scripts automáticamente
 
 Plataformas soportadas:
+
+**Analytics (7)**
 - Google Analytics 4
 - Hotjar
+- Microsoft Clarity
+- Amplitude
+- Crazy Egg
+- VWO (Visual Website Optimizer)
+- Optimizely
+
+**Marketing (10)**
 - Facebook Pixel
 - LinkedIn Insight Tag
 - TikTok Pixel
+- Google Ads
+- Microsoft Ads (Bing)
+- Criteo
+- Pinterest Tag
+- Twitter (X) Pixel
+- Taboola
+- HubSpot
+
+**Functional (2)**
+- Intercom
+- Zendesk
 
 #### Modo Google Tag Manager
 - Introduces tu GTM Container ID (GTM-XXXXXXX)
@@ -108,7 +128,7 @@ Sí, Esbilla funciona con cualquier page builder (Elementor, Divi, Beaver Builde
 
 ### ¿Afecta al rendimiento?
 
-El SDK de Esbilla (v1.6.0) es extremadamente ligero (~15KB gzipped) y se carga de forma asíncrona sin bloquear la renderización de la página.
+El Pegoyu de Esbilla (v2.0) es extremadamente ligero (~25KB, 58% más pequeño que v1.7) y se carga de forma asíncrona sin bloquear la renderización de la página. Los módulos de integración se cargan bajo demanda.
 
 ### ¿Es compatible con otros plugins?
 

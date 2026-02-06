@@ -56,7 +56,7 @@ npm run generate-data:dry -w esbilla-api     # Dry run (preview without writing)
 ### API (esbilla-api)
 - **Framework**: Express.js (v5) with CORS
 - **Entry Point**: `src/index.js` (server) / `src/app.js` (Express app, exported for testing)
-- **SDK**: Cookie consent banner (v1.4.0) at `public/sdk.js` with configurable templates in `public/templates/`
+- **SDK**: Cookie consent banner (v2.0.0) at `public/pegoyu.js` with configurable templates in `public/templates/`
 - **SDK i18n**: Configuration at `public/i18n/config.json`
 - **Security Features**:
   - Rate limiting: 30 requests/min per IP (in-memory store)
@@ -69,7 +69,7 @@ npm run generate-data:dry -w esbilla-api     # Dry run (preview without writing)
   - `GET /api/consent/history/:footprintId` - User consent history (GDPR Art. 15)
   - `POST /api/consent/sync` - Cross-domain footprint synchronization
   - `GET /api/health` - Health check
-  - `GET /sdk.js` - Consent SDK delivery
+  - `GET /pegoyu.js` - Consent SDK delivery (Pegoyu)
   - `GET /dashboard/*` - Dashboard SPA (static fallback)
 
 ### Dashboard (esbilla-dashboard)
@@ -139,7 +139,7 @@ May require `.env` for build-time configuration (check `.env.example` if present
 The consent SDK is loaded via script tag:
 ```html
 <script
-  src="https://[api-url]/sdk.js"
+  src="https://[api-url]/pegoyu.js"
   data-id="site-id"
   data-gtm="GTM-XXXXX"
   data-api="https://custom-api-url"
@@ -158,7 +158,7 @@ SDK Features:
 
 ### Core Application Files
 - [esbilla-api/src/app.js](esbilla-api/src/app.js) - Express app with all routes and middleware
-- [esbilla-api/public/sdk.js](esbilla-api/public/sdk.js) - Consent banner SDK (v1.4.0)
+- [esbilla-api/public/pegoyu.js](esbilla-api/public/pegoyu.js) - Consent banner SDK (Pegoyu v2.0.0)
 - [esbilla-dashboard/src/context/AuthContext.tsx](esbilla-dashboard/src/context/AuthContext.tsx) - Role-based access control logic
 - [esbilla-dashboard/src/types/index.ts](esbilla-dashboard/src/types/index.ts) - Complete TypeScript type definitions
 

@@ -375,7 +375,7 @@ El SDK v1.7 solo incluye el **código de inicialización** de cada plataforma. E
 
 ```html
 <script
-  src="https://api.esbilla.com/sdk.js"
+  src="https://api.esbilla.com/pegoyu.js"
   data-id="site_example123"
   data-api="https://api.esbilla.com"
 ></script>
