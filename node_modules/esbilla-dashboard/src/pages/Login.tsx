@@ -6,7 +6,7 @@ import { useState, FormEvent } from 'react';
 import { isSaasMode } from '../utils/featureFlags';
 
 export function LoginPage() {
-  const { user, userData, loading, error, signInWithGoogle, signInWithEmail, signOut, isEmailVerified, hasCompletedOnboarding, hasOrgAccess } = useAuth();
+  const { user, userData, loading, error, signInWithGoogle, signInWithEmail, isEmailVerified, hasCompletedOnboarding, hasOrgAccess } = useAuth();
   const { language, setLanguage, t } = useI18n();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

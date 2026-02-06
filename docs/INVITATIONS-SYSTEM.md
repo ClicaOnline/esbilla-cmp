@@ -481,7 +481,7 @@ invitation: {
 
 **Documentación completa:** Ver `docs/` folder
 **Issues:** Reportar en GitHub
-**Email:** privacy@esbilla.com
+**Email:** esbilla+privacy@clicaonline.com
 
 ---
 

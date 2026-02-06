@@ -32,7 +32,7 @@ Guía para configurar Firebase Authentication con soporte de Email/Password y Go
 1. En la misma lista, verifica que **Google** esté habilitado
 2. Si no está habilitado, actívalo:
    - Nombre público del proyecto: `Esbilla CMP`
-   - Email de soporte: `soporte@esbilla.com`
+   - Email de soporte: `esbilla+soporte@clicaonline.com`
 
 ---
 
@@ -95,7 +95,7 @@ El equipo de Esbilla CMP 🌽</p>
 
 <p style="font-size: 0.85em; color: #666;">
 Esbilla CMP — Consent management made in Asturias<br>
-<a href="https://esbilla.com">esbilla.com</a> | <a href="mailto:soporte@esbilla.com">soporte@esbilla.com</a>
+<a href="https://esbilla.com">esbilla.com</a> | <a href="mailto:esbilla+soporte@clicaonline.com">esbilla+soporte@clicaonline.com</a>
 </p>
 ```
 
@@ -137,7 +137,7 @@ El equipo de Esbilla CMP 🌽</p>
 
 <p style="font-size: 0.85em; color: #666;">
 Esbilla CMP — Consent management made in Asturias<br>
-<a href="https://esbilla.com">esbilla.com</a> | <a href="mailto:soporte@esbilla.com">soporte@esbilla.com</a>
+<a href="https://esbilla.com">esbilla.com</a> | <a href="mailto:esbilla+soporte@clicaonline.com">esbilla+soporte@clicaonline.com</a>
 </p>
 ```
 

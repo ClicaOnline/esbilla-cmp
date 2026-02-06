@@ -154,6 +154,9 @@ export interface SiteSettings {
  * Para modo "simplified" - el SDK carga automáticamente estos scripts
  */
 export interface ScriptConfig {
+  gtm?: {
+    serverUrl?: string;             // URL del servidor GTM Server Side (ej: "https://gtm.tudominio.com")
+  };
   analytics?: {
     googleAnalytics?: string;      // Measurement ID (ej: "G-XXXXXXXXXX")
     hotjar?: string;                // Site ID (ej: "12345")

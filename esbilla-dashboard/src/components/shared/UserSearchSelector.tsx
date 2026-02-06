@@ -53,6 +53,7 @@ export function UserSearchSelector({
 
   // Show dropdown when there are results
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowDropdown(filteredUsers.length > 0 && searchTerm.trim() !== '');
   }, [filteredUsers.length, searchTerm]);
 

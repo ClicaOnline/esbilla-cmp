@@ -2,7 +2,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useI18n, SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../i18n';
-import { Globe, User, Mail, Lock, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Globe, User, Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { isSaasMode } from '../utils/featureFlags';
 import { getPlan, type PlanId } from '../config/plans';
 

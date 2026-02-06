@@ -32,6 +32,7 @@ interface SiteFormData {
   domains: string;
   organizationId?: string;
   // SDK v1.6: Dynamic Script Loading (Modo Simplified)
+  gtmServerUrl?: string;
   googleAnalytics?: string;
   hotjar?: string;
   facebookPixel?: string;
@@ -49,6 +50,7 @@ export function SitesPage() {
   const [formData, setFormData] = useState<SiteFormData>({
     name: '',
     domains: '',
+    gtmServerUrl: '',
     googleAnalytics: '',
     hotjar: '',
     facebookPixel: '',
@@ -167,6 +169,7 @@ export function SitesPage() {
       name: site.name,
       domains: site.domains.join(', '),
       organizationId: site.organizationId || '',
+      gtmServerUrl: site.scriptConfig?.gtm?.serverUrl || '',
       googleAnalytics: site.scriptConfig?.analytics?.googleAnalytics || '',
       hotjar: site.scriptConfig?.analytics?.hotjar || '',
       facebookPixel: site.scriptConfig?.marketing?.facebookPixel || '',
@@ -189,7 +192,12 @@ export function SitesPage() {
         .filter(d => d.length > 0);
 
       // Build scriptConfig from form data
-      const scriptConfig: any = {};
+      const scriptConfig: Record<string, Record<string, string>> = {};
+      if (formData.gtmServerUrl) {
+        scriptConfig.gtm = {
+          serverUrl: formData.gtmServerUrl
+        };
+      }
       if (formData.googleAnalytics || formData.hotjar) {
         scriptConfig.analytics = {};
         if (formData.googleAnalytics) scriptConfig.analytics.googleAnalytics = formData.googleAnalytics;
@@ -204,7 +212,13 @@ export function SitesPage() {
 
       if (editingSite) {
         // Update existing site
-        const updateData: any = {
+        const updateData: {
+          name: string;
+          domains: string[];
+          organizationId: string | null;
+          updatedAt: Date;
+          scriptConfig?: typeof scriptConfig;
+        } = {
           name: formData.name,
           domains,
           organizationId: formData.organizationId || null,
@@ -771,6 +785,31 @@ export function SitesPage() {
                   <p className="mt-1 text-xs text-stone-500">
                     Asigna este sitio a una organización para control de acceso multi-tenant
                   </p>
+                </div>
+
+                {/* GTM Server Side */}
+                <div className="border-t border-stone-200 pt-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Code size={16} className="text-amber-500" />
+                    <h3 className="text-sm font-semibold text-stone-700">
+                      Google Tag Manager Server Side
+                    </h3>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-stone-600 mb-1">
+                      URL del servidor GTM Server Side (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.gtmServerUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, gtmServerUrl: e.target.value })}
+                      placeholder="https://gtm.tudominio.com"
+                      className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">
+                      Si usas GTM Server Side, introduce la URL de tu servidor. El SDK enviará eventos a esta URL en lugar del endpoint estándar de Google.
+                    </p>
+                  </div>
                 </div>
 
                 {/* SDK v1.6: Dynamic Script Loading Configuration */}

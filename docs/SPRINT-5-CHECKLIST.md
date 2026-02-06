@@ -84,9 +84,10 @@
 
 ### Archivos Actualizados
 - [x] INVITATIONS-SYSTEM.md - Creado
-- [ ] HOWTO.md - Actualizar con invitaciones
-- [ ] CLAUDE.md - Actualizar con nuevas features
+- [x] HOWTO.md - Actualizar con invitaciones
+- [x] CLAUDE.md - Actualizar con nuevas features
 - [x] FIREBASE-AUTH-SETUP.md - Ya existe (Sprint 2)
+- [x] BACKLOG.md - Creado con roadmap completo
 - [ ] README.md - Añadir instrucciones SMTP
 
 ### Comentarios en Código
@@ -140,6 +141,23 @@
 - [x] Iconos Lucide-react consistentes
 - [x] Tipografía (stone-xxx colores)
 - [x] Espaciado (px-6 py-4 standard)
+
+---
+
+## 🏢 Sites Management (Nuevo)
+
+### Funcionalidades Completadas
+- [x] Selector de organización en crear/editar sitio
+- [x] ID del sitio visible en tarjetas
+- [x] Nombre de organización mostrado en tarjetas de sitio
+- [x] GTM Server Side URL en configuración
+- [x] Tipos actualizados (ScriptConfig.gtm)
+
+### Próximas Funcionalidades (Priorizado)
+- [ ] Filtrar sitios por organización en lista
+- [ ] Mostrar sitios en Organizations.tsx
+- [ ] Bulk assign - asignar múltiples sitios a la vez
+- [ ] Validar permisos (solo org_admin+ puede asignar)
 
 ---
 
@@ -237,9 +255,9 @@ firebase deploy --only firestore:rules,firestore:indexes
 **Fecha de inicio:** 2026-02-06
 **Fecha prevista fin:** 2026-02-07
 
-**Total items:** 72
-**Completados:** 32 (44%)
-**Pendientes:** 40 (56%)
+**Total items:** 81
+**Completados:** 40 (49%)
+**Pendientes:** 41 (51%)
 
 ---
 
@@ -266,12 +284,12 @@ Para considerar Sprint 5 completado, deben cumplirse:
 2. ⬜ Al menos 2 flujos E2E verificados manualmente
 3. ⬜ Responsive en mobile/tablet/desktop
 4. ✅ Traducciones completas en 3 idiomas
-5. ⬜ Documentación actualizada (HOWTO.md, CLAUDE.md)
+5. ✅ Documentación actualizada (HOWTO.md, CLAUDE.md, BACKLOG.md)
 6. ⬜ Sin errores de TypeScript/ESLint críticos
 7. ⬜ Firebase rules deployadas
 8. ⬜ SMTP configurado y funcionando
 
-**Estado actual:** 1/8 completado
+**Estado actual:** 3/8 completado (38%)
 
 ---
 
