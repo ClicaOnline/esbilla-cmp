@@ -140,6 +140,9 @@ class Esbilla_SDK {
         if (!empty($this->options['optimizely_id'])) {
             $script_config['analytics']['optimizely'] = $this->options['optimizely_id'];
         }
+        if (!empty($this->options['sealmetrics_id'])) {
+            $script_config['analytics']['sealmetrics'] = $this->options['sealmetrics_id'];
+        }
 
         // Marketing
         if (!empty($this->options['facebook_pixel_id'])) {
@@ -171,6 +174,9 @@ class Esbilla_SDK {
         }
         if (!empty($this->options['hubspot_id'])) {
             $script_config['marketing']['hubspot'] = $this->options['hubspot_id'];
+        }
+        if (!empty($this->options['uinterbox_id'])) {
+            $script_config['marketing']['uinterbox'] = $this->options['uinterbox_id'];
         }
 
         // Functional

@@ -43,6 +43,14 @@
         "file": "modules/analytics/optimizely.js",
         "size": "0.4kb",
         "required": false
+      },
+      "sealmetrics": {
+        "name": "SealMetrics",
+        "file": "modules/analytics/sealmetrics.js",
+        "size": "0.8kb",
+        "required": false,
+        "cookieless": true,
+        "description": "Analytics cookieless sin consentimiento requerido"
       }
     },
     "marketing": {
@@ -105,6 +113,13 @@
         "file": "modules/marketing/hubspot.js",
         "size": "0.5kb",
         "required": false
+      },
+      "uinterbox": {
+        "name": "Uinterbox",
+        "file": "modules/marketing/uinterbox.js",
+        "size": "1.2kb",
+        "required": false,
+        "description": "Pixel de tracking para marketing de afiliados"
       }
     },
     "functional": {

@@ -654,20 +654,36 @@
     // ============================================
     // ANALYTICS / ESTADÍSTICA
     // ============================================
-    if (choices.analytics && scriptConfig.analytics) {
+    if (scriptConfig.analytics) {
       const analytics = scriptConfig.analytics;
 
       // Cargar cada módulo de analytics configurado
       Object.keys(analytics).forEach(async (moduleName) => {
         const configValue = analytics[moduleName];
         if (configValue) {
-          const promise = loadModule(moduleName).then(moduleFunc => {
-            if (moduleFunc) {
-              const scriptHTML = moduleFunc(configValue);
-              injectScript(scriptHTML, 'analytics');
-            }
-          });
-          loadPromises.push(promise);
+          // G100: Google Analytics se carga SIEMPRE (para pings anónimos)
+          // SealMetrics: Se carga SIEMPRE (cookieless, sin consentimiento requerido)
+          // Otros analytics solo con consentimiento
+          const isGA4 = moduleName === 'googleAnalytics';
+          const isSealMetrics = moduleName === 'sealmetrics';
+          const isCookieless = isGA4 || isSealMetrics;
+          const shouldLoad = isCookieless || choices.analytics;
+
+          if (shouldLoad) {
+            const promise = loadModule(moduleName).then(moduleFunc => {
+              if (moduleFunc) {
+                const scriptHTML = moduleFunc(configValue);
+                injectScript(scriptHTML, 'analytics');
+                if (isGA4 && !choices.analytics) {
+                  console.log('[Esbilla v2.0] ✓ GA4 cargado para G100 (pings anónimos)');
+                }
+                if (isSealMetrics) {
+                  console.log('[Esbilla v2.0] ✓ SealMetrics cargado (cookieless, sin consentimiento)');
+                }
+              }
+            });
+            loadPromises.push(promise);
+          }
         }
       });
     }
@@ -1333,7 +1349,7 @@
 
   function updateConsentMode(choices) {
     // ============================================
-    // 1. GOOGLE CONSENT MODE V2
+    // 1. GOOGLE CONSENT MODE V2 + G100 COMPLIANCE
     // ============================================
     if (typeof gtag === 'function') {
       gtag('consent', 'update', {
@@ -1345,7 +1361,18 @@
         'personalization_storage': choices.functional ? 'granted' : 'denied',
         'security_storage': 'granted' // Siempre granted (necesario para CSRF, etc.)
       });
-      console.log('[Esbilla v1.7] ✓ Google Consent Mode V2 actualizado');
+      console.log('[Esbilla v2.0] ✓ Google Consent Mode V2 actualizado');
+
+      // G100: Enviar page_view después de actualizar consent
+      // Si analytics_storage='denied': ping anónimo para modelado de conversiones
+      // Si analytics_storage='granted': hit normal con cookies
+      if (window._esbilla_ga4_ready && window._esbilla_ga4_id) {
+        gtag('event', 'page_view', {
+          'send_to': window._esbilla_ga4_id
+        });
+        console.log('[Esbilla v2.0] ✓ G100: page_view enviado (' +
+          (choices.analytics ? 'hit con cookies' : 'ping anónimo') + ')');
+      }
     }
 
     // ============================================

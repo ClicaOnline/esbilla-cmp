@@ -183,11 +183,11 @@ jQuery(document).ready(function($) {
 
         // Analytics section (7 fields)
         const $analyticsSection = $('#esbilla_scripts_analytics_section').closest('tr').prev('tr');
-        const $analyticsFields = $analyticsSection.nextAll('tr').slice(0, 7);
+        const $analyticsFields = $analyticsSection.nextAll('tr').slice(0, 8);
 
-        // Marketing section (10 fields)
+        // Marketing section (11 fields)
         const $marketingSection = $('#esbilla_scripts_marketing_section').closest('tr').prev('tr');
-        const $marketingFields = $marketingSection.nextAll('tr').slice(0, 10);
+        const $marketingFields = $marketingSection.nextAll('tr').slice(0, 11);
 
         // Functional section (2 fields)
         const $functionalSection = $('#esbilla_scripts_functional_section').closest('tr').prev('tr');
