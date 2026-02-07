@@ -167,11 +167,30 @@
   color: white;
 }
 
-/* Main content */
+/* Main content - Más espacioso */
 .dashboard-main {
   grid-area: main;
-  padding: 2rem;
+  padding: 2.5rem;
   overflow-y: auto;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Page headers con mejor espaciado */
+.dashboard-main > div > div:first-child {
+  margin-bottom: 2rem;
+}
+
+/* Grid de cards más espaciado */
+.dashboard-main .grid {
+  gap: 1.5rem;
+}
+
+/* Cards individuales respiran mejor */
+.dashboard-main > div > div[class*="bg-white"] {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Responsive */
