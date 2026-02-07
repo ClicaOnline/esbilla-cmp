@@ -2,13 +2,15 @@
 
 **Fecha:** 2026-02-07
 **Versión Esbilla CMP:** 1.8+
-**Arquitectura:** Proxy via Esbilla API (optimizado con cache + compresión)
+**Arquitectura:** Multi-tenant DNS-based proxy con escalabilidad modular (Cloud CDN + Load Balancer + Cloud Run)
 
 ---
 
 ## 📖 ¿Qué es GTM Gateway Proxy?
 
-**GTM Gateway Proxy** es una solución que permite cargar los scripts de Google Tag Manager **a través de Esbilla API** en lugar de directamente desde `googletagmanager.com`.
+**GTM Gateway Proxy** es una solución multi-tenant que permite cargar los scripts de Google Tag Manager **desde tu propio dominio** (ej: `gtm.tudominio.com`) que apunta a Esbilla API, en lugar de directamente desde `googletagmanager.com`.
+
+**Configuración DNS requerida:** Debes configurar un registro DNS (CNAME o A) en tu dominio apuntando a Esbilla API. Esto garantiza que los ad blockers no puedan bloquear el script (es tu propio dominio).
 
 ### Ventajas
 
@@ -41,30 +43,60 @@
 
 ## 🏗️ Arquitectura del Proxy
 
-### Flujo de Datos
+### Flujo de Datos (Multi-Tenant DNS-Based)
 
 ```
-┌─────────┐      1. Petición      ┌──────────────┐     2. Fetch      ┌─────────────┐
-│ Cliente │ ───────────────────>  │ Esbilla API  │ ─────────────────> │   Google    │
-│ (Browser)│                       │ (/gtm.js)    │                    │ G-XXX.fps   │
-└─────────┘                        └──────────────┘                    │ .goog       │
-     ▲                                     │                            └─────────────┘
-     │                                     │ 3. Cache + Compress                ▼
-     │                                     ▼                                    │
-     │                              ┌──────────────┐                           │
-     └──────── 4. Response ─────────│  In-Memory   │ ◄────── Respuesta ────────┘
-                                    │    Cache     │
-                                    │  (TTL 5min)  │
-                                    └──────────────┘
+┌─────────┐   1. GET gtm.js      ┌──────────────────┐   2. DNS Lookup   ┌──────────────┐
+│ Cliente │ ──────────────────>  │ gtm.cliente.com  │ ───────────────>  │  Cloud CDN   │
+│ (Browser)│                      │ (Dominio cliente)│                    │ (Global PoPs)│
+└─────────┘                       └──────────────────┘                    └──────┬───────┘
+     ▲                                                                            │
+     │                                                                    3. Cache HIT?
+     │                                                                            │
+     │                                                                            ▼
+     │                                                                  ┌──────────────────┐
+     │                                                                  │  Load Balancer   │
+     │                                                                  │ (Multi-región UE)│
+     │                                                                  └────────┬─────────┘
+     │                                                                           │
+     │                                                                  4. Route to region
+     │                                                                           ▼
+     │                                                                  ┌──────────────────┐
+     │                                                                  │   Cloud Run      │
+     │                          7. Compressed Response                  │ (Auto-scaling)   │
+     │                          (Brotli, 20 KB)                        │ + In-Memory Cache│
+     │ ◄────────────────────────────────────────────────────────────── └────────┬─────────┘
+     │                                                                           │
+     │                                                                  5. Identify Client
+     │                                                                  (Host: gtm.cliente.com)
+     │                                                                  Query Firestore
+     │                                                                  → containerId
+     │                                                                           │
+     │                                                                  6. Fetch from Google
+     │                                                                           ▼
+     │                                                                  ┌──────────────────┐
+     └────────────────────────────────────────────────────────────────│  Google GTM      │
+                                                                       │ G-XXX.fps.goog   │
+                                                                       └──────────────────┘
 ```
 
 ### Detalles Técnicos
 
-1. **Cliente solicita GTM**: `GET https://api.esbilla.com/gtm.js?id=GTM-XXXXX`
-2. **Esbilla API verifica cache**:
-   - **Cache HIT** → Respuesta inmediata (latencia ~50ms)
-   - **Cache MISS** → Fetch a Google
-3. **Fetch a Google con headers enriquecidos**:
+1. **Cliente carga GTM desde su dominio personalizado**: `GET https://gtm.cliente.com/gtm.js`
+   - **Ventaja:** Ad blockers no bloquean (es el dominio del cliente)
+2. **DNS resuelve a Esbilla API**:
+   - CNAME: `gtm.cliente.com → api.esbilla.com`
+   - O A record: `gtm.cliente.com → [IP del Load Balancer]`
+3. **Cloud CDN verifica cache global**:
+   - **Cache HIT** → Respuesta inmediata desde PoP más cercano (~20ms)
+   - **Cache MISS** → Forward to Load Balancer
+4. **Load Balancer distribuye** a región Cloud Run más cercana (europe-west4, west1, west3)
+5. **Cloud Run identifica cliente**:
+   - Lee Host header: `gtm.cliente.com`
+   - Query Firestore: `sites.gtmGatewayDomain == 'gtm.cliente.com'`
+   - Obtiene `containerId` (GTM-XXXXX o G-XXXXX)
+   - Verifica in-memory cache (TTL 5 min)
+6. **Fetch a Google con headers enriquecidos**:
    ```http
    GET https://G-XXXXX.fps.goog/gtm.js?id=GTM-XXXXX
    Host: G-XXXXX.fps.goog
@@ -74,12 +106,13 @@
    X-Forwarded-Region: AS
    User-Agent: Mozilla/5.0 ...
    ```
-4. **Google responde** con script GTM (~80 KB sin comprimir)
-5. **Esbilla API procesa**:
-   - Almacena en cache (TTL 5 min)
+7. **Google responde** con script GTM (~80 KB sin comprimir)
+8. **Cloud Run procesa**:
+   - Almacena en cache in-memory (TTL 5 min)
    - Comprime con Brotli/Gzip (80 KB → 20 KB)
-   - Añade headers: `Cache-Control: public, max-age=300`
-6. **Cliente recibe** script comprimido y cacheado
+   - Añade headers: `Cache-Control: public, max-age=300`, `X-GTM-Site-Id: xxx`
+9. **Cloud CDN cachea** la respuesta (cache global)
+10. **Cliente recibe** script comprimido (20 KB) desde CDN o Cloud Run
 
 ---
 
@@ -92,28 +125,65 @@
 3. Marcar checkbox **"Habilitar GTM Gateway Proxy"**
 4. Introducir:
    - **Container ID**: `GTM-XXXXX` (GTM tradicional) o `G-XXXXX` (GA4)
+   - **Gateway Domain**: `gtm.tudominio.com` (subdominio que usarás para el proxy)
 5. Click **"Guardar"**
 
-**¡Eso es todo!** No se requiere configuración adicional de DNS ni archivos de verificación.
+**Importante:** El dominio personalizado (Gateway Domain) es **obligatorio** para evitar ad blockers. Si lo dejas vacío, el SDK usará `api.esbilla.com` como fallback, pero esto es menos efectivo contra ad blockers.
 
-### Paso 2: Verificar Implementación
+### Paso 2: Configurar DNS
 
-El SDK de Esbilla cargará automáticamente GTM desde Esbilla API:
+Añade un registro DNS en tu proveedor (Cloudflare, GoDaddy, etc.):
+
+**Opción A: CNAME (recomendado)**
+```
+Tipo: CNAME
+Nombre: gtm (o el subdominio que elijas)
+Valor: api.esbilla.com
+TTL: 3600
+```
+
+**Opción B: A Record**
+```
+Tipo: A
+Nombre: gtm
+Valor: [IP del Load Balancer de Esbilla - consultar soporte]
+TTL: 3600
+```
+
+**Tiempo de propagación:** 5-30 minutos (puede tomar hasta 48h en algunos casos)
+
+**Verificar DNS:**
+```bash
+# Linux/Mac
+dig gtm.tudominio.com
+
+# Windows
+nslookup gtm.tudominio.com
+```
+
+Debe resolver a `api.esbilla.com` (CNAME) o la IP del Load Balancer (A record).
+
+### Paso 3: Verificar Implementación
+
+El SDK de Esbilla cargará automáticamente GTM desde tu dominio personalizado:
 
 ```html
 <!-- Antes (sin Gateway Proxy) -->
 <script src="https://www.googletagmanager.com/gtm.js?id=GTM-XXXXX"></script>
 
-<!-- Después (con Gateway Proxy) -->
-<script src="https://api.esbilla.com/gtm.js?id=GTM-XXXXX"></script>
+<!-- Después (con Gateway Proxy DNS-based) -->
+<script src="https://gtm.tudominio.com/gtm.js"></script>
 ```
 
 **Verificar en navegador:**
 
 1. Abrir **DevTools → Network**
 2. Buscar peticiones `gtm.js`
-3. Debe cargarse desde `api.esbilla.com` o tu dominio de Esbilla API
-4. Verificar header: `X-Cache: HIT` (si está en cache) o `X-Cache: MISS` (primera carga)
+3. Debe cargarse desde `gtm.tudominio.com` (tu dominio personalizado)
+4. Verificar headers:
+   - `X-Cache: HIT` (si está en cache CDN/in-memory) o `X-Cache: MISS` (primera carga)
+   - `X-GTM-Site-Id: [tu-site-id]` (identifica qué site se usó para lookup)
+5. Verificar que NO hay errores de CORS o SSL
 
 ---
 
@@ -163,40 +233,6 @@ El SDK de Esbilla cargará automáticamente GTM desde Esbilla API:
 **Impacto**:
 - Mejor targeting de anuncios
 - Cumplimiento con geolocalización de Google
-
----
-
-## 💰 Costos y Pricing
-
-### Impacto en Costos de Infraestructura
-
-| Volumen | Coste Sin Proxy | Coste Con Proxy (optimizado) | Δ Coste | % Aumento |
-|---------|-----------------|------------------------------|---------|-----------|
-| **100K PV** | €3.40/mes | **€3.50/mes** | +€0.10 | +2.9% |
-| **1M PV** | €32.10/mes | **€33.60/mes** | +€1.50 | +4.7% |
-| **10M PV** | €316/mes | **€331/mes** | +€15 | +4.7% |
-
-**Desglose del aumento** (1M PV/mes):
-- Cloud Run adicional: +€2.50
-- Egress adicional: +€0.85 (con compresión)
-- **Total**: +€1.50/mes (con cache + compresión)
-
-### Pricing Sugerido como Add-on
-
-**Opción 1: Incluido en plan Enterprise**
-- Plan Profesional: Sin GTM Gateway Proxy
-- Plan Enterprise: GTM Gateway Proxy incluido
-
-**Opción 2: Add-on de pago**
-- Clientes Free/Pro: **+€10-15/mes** (cubre coste + margen)
-- Clientes Enterprise: **+€30-50/mes** (volúmenes altos)
-
-**Justificación**:
-- Cubre coste adicional de infraestructura
-- Feature premium (no todos los clientes lo necesitan)
-- Competitivo vs alternativas (Google Cloud Load Balancer requiere infra propia)
-
-📖 **Análisis completo de costos**: [docs/GTM-GATEWAY-PROXY-COSTS.md](GTM-GATEWAY-PROXY-COSTS.md)
 
 ---
 

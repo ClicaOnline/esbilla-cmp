@@ -1108,48 +1108,127 @@ function getGeoLocation(req) {
 }
 
 /**
- * ENDPOINT: Proxy de gtm.js
- * Proxea el script principal de GTM desde googletagmanager.com
- * Incluye cache en memoria y headers de geolocalización
+ * ENDPOINT: GTM Gateway Proxy - Multi-tenant DNS-based proxy
+ *
+ * Arquitectura:
+ * Cliente configura DNS: gtm.cliente.com → Esbilla API (Cloud Run)
+ * Cliente carga: <script src="https://gtm.cliente.com/gtm.js"></script>
+ *
+ * Flujo:
+ * 1. Leer Host header (gtm.cliente.com)
+ * 2. Buscar en Firestore qué site tiene ese gtmGatewayDomain
+ * 3. Usar containerId de ese site
+ * 4. Fetch desde Google con geolocalización
+ * 5. Cache + compresión + respuesta
+ *
+ * Escalabilidad:
+ * - Cloud CDN global (cache en PoPs)
+ * - Load Balancer multi-región UE
+ * - Cache in-memory por instancia (5 min TTL)
+ *
+ * Query params opcionales:
+ * - id: Container ID override (GTM-XXXXX o G-XXXXX) - para testing
+ * - l: dataLayer name (opcional, default: dataLayer)
  */
 app.get('/gtm.js', gtmRateLimitMiddleware, async (req, res) => {
   try {
-    const containerId = req.query.id; // GTM-XXXXX o G-XXXXX
     const dataLayer = req.query.l || 'dataLayer';
+    let containerId = req.query.id; // Puede venir por query param (fallback/testing)
+    let siteId = null;
 
+    // PASO 1: Identificar cliente por Host header
+    const hostHeader = req.headers.host || req.hostname;
+
+    // Normalizar dominio (quitar puerto si existe)
+    const clientDomain = hostHeader.split(':')[0].toLowerCase();
+
+    // PASO 2: Si no viene containerId por query param, buscar en Firestore por dominio
     if (!containerId) {
-      return res.status(400).json({
-        error: 'Missing container ID',
-        code: 'MISSING_CONTAINER_ID',
-        message: 'Query parameter "id" (GTM-XXXXX or G-XXXXX) is required'
-      });
+      try {
+        // Buscar site que tenga este gtmGatewayDomain
+        const sitesSnapshot = await db.collection('sites')
+          .where('gtmGatewayDomain', '==', clientDomain)
+          .limit(1)
+          .get();
+
+        if (sitesSnapshot.empty) {
+          // No hay site configurado con este dominio
+          console.error(`[GTM Proxy] No site found for domain: ${clientDomain}`);
+          return res.status(404).json({
+            error: 'GTM Gateway domain not configured',
+            code: 'DOMAIN_NOT_CONFIGURED',
+            message: `Domain "${clientDomain}" is not configured as GTM Gateway in any site. Please configure gtmGatewayDomain in Dashboard → Sites → Edit Site.`,
+            domain: clientDomain
+          });
+        }
+
+        const siteDoc = sitesSnapshot.docs[0];
+        const siteData = siteDoc.data();
+        siteId = siteDoc.id;
+
+        // Verificar que el site tiene GTM habilitado
+        if (!siteData.gtmGatewayEnabled) {
+          console.error(`[GTM Proxy] GTM Gateway disabled for site ${siteId}`);
+          return res.status(403).json({
+            error: 'GTM Gateway disabled',
+            code: 'GTM_GATEWAY_DISABLED',
+            message: 'GTM Gateway is disabled for this site. Enable it in Dashboard → Sites → Edit Site.',
+            siteId
+          });
+        }
+
+        // Obtener Container ID de la configuración del site
+        containerId = siteData.gtmContainerId;
+
+        if (!containerId) {
+          console.error(`[GTM Proxy] No GTM Container ID configured for site ${siteId}`);
+          return res.status(400).json({
+            error: 'Missing GTM Container ID',
+            code: 'MISSING_CONTAINER_ID',
+            message: 'GTM Container ID not configured for this site. Configure it in Dashboard → Sites → Edit Site.',
+            siteId
+          });
+        }
+
+        console.log(`[GTM Proxy] Multi-tenant routing: ${clientDomain} → site ${siteId} → ${containerId}`);
+
+      } catch (firestoreError) {
+        console.error('[GTM Proxy] Firestore query error:', firestoreError);
+        return res.status(500).json({
+          error: 'Database error',
+          code: 'FIRESTORE_ERROR',
+          message: 'Failed to lookup GTM Gateway configuration'
+        });
+      }
     }
 
-    // Validar formato de container ID
+    // PASO 3: Validar formato del Container ID
     if (!containerId.match(/^(GTM|G)-[A-Z0-9]+$/)) {
       return res.status(400).json({
         error: 'Invalid container ID',
         code: 'INVALID_CONTAINER_ID',
-        message: 'Container ID must match format GTM-XXXXX or G-XXXXX'
+        message: 'Container ID must match format GTM-XXXXX or G-XXXXX',
+        containerId
       });
     }
 
-    // Construir cache key
-    const cacheKey = `gtm_${containerId}_${dataLayer}`;
+    // PASO 4: Verificar cache (ahora incluye el dominio en la key)
+    const cacheKey = `gtm_${clientDomain}_${containerId}_${dataLayer}`;
 
     // Verificar cache
     const cached = gtmCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < GTM_CACHE_TTL) {
-      console.log(`[GTM Proxy] Cache HIT para ${containerId}`);
+      console.log(`[GTM Proxy] Cache HIT para ${clientDomain} (${containerId})`);
       res.set({
         'Content-Type': 'application/javascript; charset=utf-8',
         'Cache-Control': 'public, max-age=300', // 5 min browser cache
-        'X-Cache': 'HIT'
+        'X-Cache': 'HIT',
+        'X-GTM-Site-Id': siteId || 'unknown'
       });
       return res.send(cached.content);
     }
 
-    console.log(`[GTM Proxy] Cache MISS para ${containerId}, fetching from Google...`);
+    console.log(`[GTM Proxy] Cache MISS para ${clientDomain} (${containerId}), fetching from Google...`);
 
     // Determinar URL de origen según el tipo de container
     let targetUrl;
@@ -1213,13 +1292,14 @@ app.get('/gtm.js', gtmRateLimitMiddleware, async (req, res) => {
       size: Buffer.byteLength(content, 'utf8')
     });
 
-    console.log(`[GTM Proxy] Cached ${containerId}, size: ${Buffer.byteLength(content, 'utf8')} bytes`);
+    console.log(`[GTM Proxy] Cached ${clientDomain} (${containerId}), size: ${Buffer.byteLength(content, 'utf8')} bytes`);
 
     // Enviar respuesta con compresión automática (middleware compression)
     res.set({
       'Content-Type': 'application/javascript; charset=utf-8',
       'Cache-Control': 'public, max-age=300', // 5 min browser cache
-      'X-Cache': 'MISS'
+      'X-Cache': 'MISS',
+      'X-GTM-Site-Id': siteId || 'unknown'
     });
 
     res.send(content);

@@ -882,22 +882,51 @@ export function SitesPage() {
                         </p>
                       </div>
 
-                      {/* Info Box - Proxy Architecture */}
+                      {/* GTM Gateway Domain */}
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          Dominio personalizado para Gateway (recomendado) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.gtmGatewayDomain || ''}
+                          onChange={(e) => setFormData({ ...formData, gtmGatewayDomain: e.target.value })}
+                          placeholder="gtm.tudominio.com"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                        <p className="mt-1 text-xs text-stone-500">
+                          Subdominio que apuntará a Esbilla API via DNS. <strong>Obligatorio para evitar ad blockers.</strong>
+                        </p>
+                        <div className="mt-2 bg-blue-50 border border-blue-200 rounded p-2">
+                          <p className="text-xs text-blue-800 font-semibold mb-1">📝 Configuración DNS requerida:</p>
+                          <p className="text-xs text-blue-700">
+                            Añade un registro CNAME en tu DNS:
+                          </p>
+                          <code className="block mt-1 text-xs bg-white px-2 py-1 rounded border border-blue-200">
+                            gtm.tudominio.com → api.esbilla.com
+                          </code>
+                          <p className="text-xs text-blue-700 mt-2">
+                            O registro A apuntando a la IP del Load Balancer (consultar soporte).
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Info Box - Multi-Tenant DNS-Based Architecture */}
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                         <p className="text-xs text-stone-700 font-semibold mb-2">
-                          🚀 Arquitectura de Proxy (v1.8+)
+                          🚀 Arquitectura Multi-Tenant DNS-Based Proxy (v1.8+)
                         </p>
                         <p className="text-xs text-stone-600 mb-2">
-                          Esbilla API actúa como proxy entre tu sitio y Google GTM:
+                          Tu dominio personalizado apunta a Esbilla API (Cloud Run + Load Balancer + CDN):
                         </p>
                         <div className="text-xs text-stone-600 bg-white p-2 rounded font-mono">
-                          Cliente → Esbilla API (/gtm.js) → Google → Cliente
+                          Cliente → gtm.tudominio.com → Esbilla API → Google → Cliente
                         </div>
                         <p className="text-xs text-stone-600 mt-2">
-                          <strong>Beneficios:</strong> Cache (TTL 5min), compresión 75%, headers de geolocalización, rate limiting
+                          <strong>Beneficios:</strong> ✅ Evita ad blockers (dominio propio), ✅ Cache global (CDN), ✅ Compresión 75%, ✅ Geolocalización, ✅ Escalabilidad multi-región UE
                         </p>
                         <p className="text-xs text-amber-700 mt-2">
-                          ⚠️ <strong>Importante:</strong> Esta feature tiene un coste adicional del 5-15% en egress bandwidth (ver análisis de costos).
+                          ⚠️ <strong>Importante:</strong> Esta feature tiene un coste adicional del 5-15% en egress bandwidth (ver análisis de costos). Requiere configuración DNS.
                         </p>
                         <p className="text-xs text-stone-600 mt-2">
                           📖 Documentación: <a href="https://github.com/anthropics/esbilla-cmp/blob/main/docs/GTM-GATEWAY-SETUP.md" target="_blank" className="text-amber-600 underline">GTM-GATEWAY-SETUP.md</a>
