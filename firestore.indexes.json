@@ -54,6 +54,13 @@
       ]
     },
     {
+      "collectionGroup": "sites",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "gtmGatewayDomain", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "users",
       "queryScope": "COLLECTION",
       "fields": [

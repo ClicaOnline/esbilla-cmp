@@ -13,7 +13,9 @@ const firebaseConfig = {
 
 // Inicializamos Firebase solo una vegada
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+
+// IMPORTANTE: Usar la named database 'esbilla-cmp' (no la base de datos por defecto)
+const db = getFirestore(app, 'esbilla-cmp');
 
 // Esportamos pa usalo n'otros sitios
 export { app, db };

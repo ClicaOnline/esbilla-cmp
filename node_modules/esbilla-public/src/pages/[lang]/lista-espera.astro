@@ -286,22 +286,40 @@ const t = useTranslations(lang as any);
 
     try {
       const formData = new FormData(form);
+
+      // Validar que todos los campos obligatorios existen
+      const name = formData.get('name');
+      const email = formData.get('email');
+      const company = formData.get('company');
+      const domain = formData.get('domain');
+      const details = formData.get('details');
+      const plan = formData.get('plan');
+
+      if (!name || !email || !company || !domain || !details || !plan) {
+        throw new Error('Todos los campos obligatorios son requeridos');
+      }
+
       const data = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        company: formData.get('company'),
-        website: formData.get('domain'),           // Renombrado: domain → website
-        message: formData.get('details'),          // Renombrado: details → message
-        phone: formData.get('phone') || null,
-        plan: formData.get('plan'),                // NUEVO: plan obligatorio
+        name: name as string,
+        email: email as string,
+        company: company as string,
+        website: domain as string,                  // Guardar como 'website' en Firestore
+        message: details as string,                 // Guardar como 'message' en Firestore
+        phone: (formData.get('phone') as string) || null,
+        plan: plan as string,
         consent: formData.get('consent') === 'on',
-        locale: document.documentElement.lang || 'ast',  // Renombrado: language → locale
-        source: 'landing',                         // NUEVO: origen del registro
+        locale: document.documentElement.lang || 'ast',
+        source: 'landing',
         createdAt: serverTimestamp(),
         status: 'pending'
       };
 
-      await addDoc(collection(db, 'waitlist'), data);
+      console.log('[Waitlist] Enviando datos a Firestore...', { ...data, createdAt: 'serverTimestamp()' });
+
+      // IMPORTANTE: La colección se llama 'waitingList' (camelCase), no 'waitlist'
+      await addDoc(collection(db, 'waitingList'), data);
+
+      console.log('[Waitlist] ✅ Datos guardados exitosamente en Firestore');
 
       // Show success message
       successMessage?.classList.remove('hidden');
@@ -311,7 +329,7 @@ const t = useTranslations(lang as any);
       successMessage?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     } catch (error) {
-      console.error('Error submitting waitlist form:', error);
+      console.error('[Waitlist] ❌ Error al guardar en Firestore:', error);
       errorMessage?.classList.remove('hidden');
       errorMessage?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } finally {
