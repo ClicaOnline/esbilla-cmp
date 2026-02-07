@@ -1,7 +1,19 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { PublicRoute, OnboardingRoute, ProtectedRoute } from './components/ProtectedRoute';
+
+// Create a client for React Query
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -177,9 +189,11 @@ function App() {
 
   return (
     <BrowserRouter basename={basename}>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 }

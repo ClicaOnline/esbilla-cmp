@@ -10,7 +10,42 @@ Scripts de configuración para la infraestructura modular del GTM Gateway Proxy.
 
 ## 🚀 Orden de Ejecución
 
-### 1. Configurar Load Balancer
+### Opción A: Deploy Automático (Recomendado)
+
+```bash
+cd infrastructure
+chmod +x deploy-all.sh
+./deploy-all.sh
+```
+
+**Qué hace:**
+- ✅ Despliega índices de Firestore
+- ✅ Configura Load Balancer multi-región
+- ✅ Habilita Cloud CDN
+- ✅ Configura Monitoring y Alertas
+- ✅ Verificaciones interactivas entre pasos
+- ✅ Resumen completo al finalizar
+
+**Tiempo estimado:** 15-30 minutos (incluyendo espera de SSL certificate)
+
+---
+
+### Opción B: Deploy Manual (Paso a Paso)
+
+#### 0. Deploy Firestore Indexes
+
+```bash
+cd ..  # Ir a raíz del proyecto
+firebase deploy --only firestore:indexes --project=esbilla-cmp
+```
+
+**Qué hace:**
+- Despliega índice para `sites.gtmGatewayDomain`
+- Necesario para queries rápidas de multi-tenant routing
+
+**Tiempo estimado:** 2-5 minutos (construcción del índice puede tardar más)
+
+#### 1. Configurar Load Balancer
 
 ```bash
 cd infrastructure

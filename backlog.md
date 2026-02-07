@@ -34,7 +34,7 @@
 **🔥 Backlog Prioritario (Próximos Sprints)**
 
 **🎯 Alta Prioridad (Semana 1-2)**
-1. ❌ **Crear LICENSE** - Definir modelo de licencia (MIT/Apache/comercial) en raíz del proyecto
+1. ✅ **Crear LICENSE** - COMPLETADO: MIT License con términos adicionales para uso SaaS (protege marca "Esbilla")
 2. ✅ **Crear CONTRIBUTING.md** - COMPLETADO: Guía de contribución para la comunidad open-source
 3. ✅ **SDK: Implementar script blocking** - COMPLETADO: MutationObserver implementado en SDK v1.5 con documentación completa
 4. ✅ **SDK v1.6: Carga Dinámica de Scripts (modo GTM)** - COMPLETADO: Sistema de carga automática de scripts desde configuración del Dashboard, sin modificar HTML. Actúa como Tag Manager simplificado para cumplimiento GDPR automático
@@ -77,6 +77,9 @@
    - ✅ `infrastructure/README.md` creado con orden de ejecución
    - ✅ Comandos de verificación y troubleshooting
    - ✅ Estimación de costos por fase
+   - ✅ `deploy-all.sh` - Script maestro para deploy completo automático
+   - ✅ Opción A (Deploy Automático) y Opción B (Deploy Manual) documentadas
+   - ✅ Guía de verificación post-deploy con comandos útiles
 
 **🎉 Completado (2026-02-05 / 2026-02-07)**
 - ✅ **Plugin de WordPress v1.0.0** - Plugin completo con 3 modos (Manual, Simplificado, GTM)
@@ -136,6 +139,13 @@
   - Nota: Solo español (es) completado en este sprint
 - ⏳ **Plugin WordPress: Traducciones** - EN PROGRESO: Archivos base .po creados (ast, en_US), faltan traducciones restantes
 - ❌ **Plugin WordPress: Assets gráficos** - Iconos y banners para WordPress.org
+- ❌ **Dashboard: Editor de permisos de usuario** - UI intuitiva para cambiar roles fácilmente
+  - Poder cambiar un superadmin a org_admin desde el panel
+  - Restricción crítica: SIEMPRE debe haber al menos 1 superadmin en el sistema
+  - Validación: Antes de cambiar el rol de un superadmin, verificar que existe otro superadmin activo
+  - UI sugerida: Select dropdown con roles disponibles en la tabla de usuarios (Users.tsx)
+  - Mostrar warning modal si intenta eliminar el último superadmin
+  - Permisos necesarios: Solo superadmin puede cambiar roles de otros usuarios
 
 **📊 Prioridad Media (Semana 3-4)**
 5. ❌ **Tests automatizados completos** - Unit tests para componentes críticos, E2E tests para flujos principales
