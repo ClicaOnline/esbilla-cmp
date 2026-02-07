@@ -139,7 +139,7 @@ export const eu = {
   'saas.plans.starter.feature4': '🔌 Google Consent Mode V2 (Auto-fire)',
   'saas.plans.starter.feature5': '🔌 GA4 + Google Ads (Natiboa)',
   'saas.plans.starter.feature6': 'WordPress/Shopify Plugina',
-  'saas.plans.starter.compare': ''
+  'saas.plans.starter.compare': '',
   'saas.plans.starter.cta': '14 Egun Doan Probatu',
 
   // GROWTH Plana (Gomendatua)
