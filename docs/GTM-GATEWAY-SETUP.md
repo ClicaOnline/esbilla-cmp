@@ -254,9 +254,10 @@ El SDK de Esbilla cargará automáticamente GTM desde Esbilla API:
 
 ### Endpoints del Proxy
 
-- **GET `/gtm.js?id={containerId}`** - Script principal de GTM
-- **GET `/gtm/*`** - Recursos adicionales de GTM
-- **GET `/metrics/healthy`** - Health check de GTM Gateway
+- **GET `/gtm.js?id={containerId}`** - Script principal de GTM (endpoint crítico)
+- **GET `/metrics/:check`** - Health checks de GTM Gateway (ej: `/metrics/healthy`)
+
+**Nota**: El endpoint `/gtm/*` para recursos adicionales está comentado temporalmente debido a incompatibilidad con Express 5. GTM generalmente solo necesita `/gtm.js`, por lo que este endpoint no es crítico.
 
 ### Headers de Respuesta
 
