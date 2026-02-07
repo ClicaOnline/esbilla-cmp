@@ -282,6 +282,7 @@ export const en = {
   'waitlist.form.email.placeholder': 'email@example.com',
   'waitlist.form.company.label': 'Company / Project',
   'waitlist.form.company.placeholder': 'Company or project name',
+  'waitlist.form.plan.label': 'Plan of Interest',
   'waitlist.form.domain.label': 'Domain / Website',
   'waitlist.form.domain.placeholder': 'https://www.example.com',
   'waitlist.form.details.label': 'How do you plan to use Esbilla CMP?',

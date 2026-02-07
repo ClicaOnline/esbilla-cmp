@@ -8,6 +8,7 @@
  * v1.6: Carga dinámica de scripts desde Dashboard - 3 modos (manual/simplified/gtm)
  * v1.7: Integraciones extendidas (20+ scripts) - Amplitude, Criteo, Google Ads, Microsoft Ads,
  *       Pinterest, Twitter, Taboola, HubSpot, Intercom, Zendesk, Crazy Egg, VWO, Optimizely
+ * v1.8: GTM Gateway support - carga GTM desde dominio personalizado (evita ad blockers)
  * v2.0: Arquitectura modular - Pegoyu core ~58% más pequeño, módulos cargados bajo demanda
  */
 (function() {
@@ -740,14 +741,44 @@
   }
 
   // ============================================
-  // 2. CARGAR GTM
+  // 2. CARGAR GTM (moved to init() to support Gateway)
   // ============================================
-  if (gtmId) {
-    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer',gtmId);
+  // GTM is now loaded after config is fetched to support Gateway Domain
+
+  /**
+   * Carga Google Tag Manager con soporte para Gateway
+   * Si config.scriptConfig.gtm.gatewayDomain está configurado,
+   * carga el script desde el dominio personalizado en lugar de googletagmanager.com
+   * Esto ayuda a evitar ad blockers y mejora la privacidad
+   */
+  function loadGTM() {
+    // Determinar Container ID: config > data-gtm attribute
+    const containerId = config?.scriptConfig?.gtm?.containerId || gtmId;
+    if (!containerId) return;
+
+    // Determinar origen del script: Gateway domain > googletagmanager.com
+    const gatewayDomain = config?.scriptConfig?.gtm?.gatewayDomain;
+    const scriptOrigin = gatewayDomain
+      ? `https://${gatewayDomain}`
+      : 'https://www.googletagmanager.com';
+
+    console.log('[Esbilla] Loading GTM:', {
+      containerId,
+      origin: scriptOrigin,
+      usingGateway: !!gatewayDomain
+    });
+
+    // Cargar GTM con el origen determinado
+    (function(w,d,s,l,i,origin){
+      w[l]=w[l]||[];
+      w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),
+      dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true;
+      j.src=origin+'/gtm.js?id='+i+dl;
+      f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer',containerId,scriptOrigin);
   }
 
   // ============================================
@@ -770,6 +801,10 @@
       // B. Cargar configuración del sitio
       const configRes = await fetch(`${apiBase}/api/config/${cmpId}`);
       config = await configRes.json();
+
+      // B0.5. Cargar GTM con soporte para Gateway (v1.8)
+      // Se carga después de obtener config para acceder a scriptConfig.gtm
+      loadGTM();
 
       // B1. Detectar modo de implementación (v1.7)
       detectImplementationMode();

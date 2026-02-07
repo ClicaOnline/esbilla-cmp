@@ -155,7 +155,10 @@ export interface SiteSettings {
  */
 export interface ScriptConfig {
   gtm?: {
-    serverUrl?: string;             // URL del servidor GTM Server Side (ej: "https://gtm.tudominio.com")
+    serverUrl?: string;              // URL del servidor GTM Server Side (ej: "https://gtm-server.tudominio.com")
+    gatewayEnabled?: boolean;        // Habilitar GTM Gateway (carga script desde tu dominio)
+    gatewayDomain?: string;          // Dominio del Gateway (ej: "gtm.tudominio.com")
+    containerId?: string;            // Container ID (ej: "GTM-XXXXX")
   };
   analytics?: {
     googleAnalytics?: string;      // Measurement ID (ej: "G-XXXXXXXXXX")
@@ -623,4 +626,26 @@ export function canManageUser(
   }
 
   return false;
+}
+
+// ============================================
+// WAITING LIST (LISTA DE ESPERA)
+// ============================================
+
+export interface WaitingListEntry {
+  id: string;                         // ID del documento
+  email: string;                      // Email del interesado
+  name?: string;                      // Nombre opcional
+  plan: 'free' | 'starter' | 'growth' | 'agency';  // Plan seleccionado
+  company?: string;                   // Nombre de empresa (opcional)
+  website?: string;                   // URL del sitio web (opcional)
+  message?: string;                   // Mensaje adicional (opcional)
+  status: 'pending' | 'contacted' | 'converted' | 'rejected';  // Estado
+  notes?: string;                     // Notas internas (solo superadmin)
+  contactedAt?: Date;                 // Fecha de contacto
+  contactedBy?: string;               // UID de quien contactó
+  convertedAt?: Date;                 // Fecha de conversión
+  source?: string;                    // Origen: 'landing', 'referral', 'other'
+  locale?: string;                    // Idioma preferido (es, en, ast, etc.)
+  createdAt: Date;                    // Fecha de registro
 }

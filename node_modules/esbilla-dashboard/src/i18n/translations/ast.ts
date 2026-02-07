@@ -26,6 +26,7 @@ export const ast: Translations = {
     users: 'Usuarios',
     footprint: 'Buscar Footprint',
     urlStats: 'URLs',
+    waitingList: 'Llista d\'Espera',
     settings: 'Configuración',
     logout: 'Zarrar sesión',
     controlPanel: 'Panel de Control',
@@ -439,5 +440,10 @@ export const ast: Translations = {
     saveChanges: 'Guardar Cambeos',
     resetDefaults: 'Restaurar por Defectu',
     saved: 'Cambeos guardaos',
+  },
+
+  waitingList: {
+    title: 'Llista d\'Espera',
+    subtitle: 'Xestión de rexistros d\'interesaos n\'Esbilla CMP',
   },
 };

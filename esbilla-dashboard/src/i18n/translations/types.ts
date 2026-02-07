@@ -22,6 +22,7 @@ export interface Translations {
     users: string;
     footprint: string;
     urlStats: string;
+    waitingList: string;
     settings: string;
     logout: string;
     controlPanel: string;
@@ -411,5 +412,10 @@ export interface Translations {
     saveChanges: string;
     resetDefaults: string;
     saved: string;
+  };
+
+  waitingList: {
+    title: string;
+    subtitle: string;
   };
 }

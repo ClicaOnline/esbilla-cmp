@@ -188,5 +188,22 @@ service cloud.firestore {
       // No permitir eliminar invitaciones (audit trail)
       allow delete: if false;
     }
+
+    // ============================================
+    // WAITING LIST COLLECTION (Lista de espera SaaS)
+    // ============================================
+    match /waitingList/{entryId} {
+      // Leer: solo superadmins
+      allow read: if isSuperAdmin();
+
+      // Crear: público (desde landing page)
+      allow create: if true;
+
+      // Actualizar: solo superadmins (para cambiar estado, notas, etc.)
+      allow update: if isSuperAdmin();
+
+      // No permitir eliminar (audit trail)
+      allow delete: if false;
+    }
   }
 }

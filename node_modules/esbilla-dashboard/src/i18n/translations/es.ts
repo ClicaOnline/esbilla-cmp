@@ -440,4 +440,9 @@ export const es: Translations = {
     resetDefaults: 'Restaurar por Defecto',
     saved: 'Cambios guardados',
   },
+
+  waitingList: {
+    title: 'Lista de Espera',
+    subtitle: 'Gestión de registros de interesados en Esbilla CMP',
+  },
 };

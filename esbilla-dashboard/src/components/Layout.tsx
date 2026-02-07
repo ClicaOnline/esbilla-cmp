@@ -12,7 +12,8 @@ import {
   Globe,
   Globe2,
   Link2,
-  Building2
+  Building2,
+  ClipboardList
 } from 'lucide-react';
 import './Layout.css';
 
@@ -20,24 +21,29 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-type NavKey = 'dashboard' | 'organizations' | 'sites' | 'users' | 'footprint' | 'urlStats' | 'settings';
+type NavKey = 'dashboard' | 'organizations' | 'sites' | 'users' | 'footprint' | 'urlStats' | 'waitingList' | 'settings';
 
-const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean }[] = [
+const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean; superAdminOnly?: boolean }[] = [
   { key: 'dashboard', href: '/', icon: LayoutDashboard },
   { key: 'organizations', href: '/organizations', icon: Building2, adminOnly: true },
   { key: 'sites', href: '/sites', icon: Globe2, adminOnly: true },
   { key: 'urlStats', href: '/url-stats', icon: Link2 },
   { key: 'users', href: '/users', icon: Users, adminOnly: true },
   { key: 'footprint', href: '/footprint', icon: Search },
+  { key: 'waitingList', href: '/waiting-list', icon: ClipboardList, superAdminOnly: true },
   { key: 'settings', href: '/settings', icon: Settings, adminOnly: true },
 ];
 
 export function Layout({ children }: LayoutProps) {
-  const { user, userData, signOut, isAdmin } = useAuth();
+  const { user, userData, signOut, isAdmin, isSuperAdmin } = useAuth();
   const { language, setLanguage, t } = useI18n();
   const location = useLocation();
 
-  const filteredNav = navigation.filter(item => !item.adminOnly || isAdmin);
+  const filteredNav = navigation.filter(item => {
+    if (item.superAdminOnly && !isSuperAdmin) return false;
+    if (item.adminOnly && !isAdmin) return false;
+    return true;
+  });
 
   return (
     <div className="dashboard-layout">

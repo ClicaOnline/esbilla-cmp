@@ -31,8 +31,12 @@ interface SiteFormData {
   name: string;
   domains: string;
   organizationId?: string;
-  // SDK v1.6: Dynamic Script Loading (Modo Simplified)
+  // GTM Server Side + Gateway
   gtmServerUrl?: string;
+  gtmGatewayEnabled?: boolean;
+  gtmGatewayDomain?: string;
+  gtmContainerId?: string;
+  // SDK v1.6: Dynamic Script Loading (Modo Simplified)
   googleAnalytics?: string;
   hotjar?: string;
   facebookPixel?: string;
@@ -51,6 +55,9 @@ export function SitesPage() {
     name: '',
     domains: '',
     gtmServerUrl: '',
+    gtmGatewayEnabled: false,
+    gtmGatewayDomain: '',
+    gtmContainerId: '',
     googleAnalytics: '',
     hotjar: '',
     facebookPixel: '',
@@ -170,6 +177,9 @@ export function SitesPage() {
       domains: site.domains.join(', '),
       organizationId: site.organizationId || '',
       gtmServerUrl: site.scriptConfig?.gtm?.serverUrl || '',
+      gtmGatewayEnabled: site.scriptConfig?.gtm?.gatewayEnabled || false,
+      gtmGatewayDomain: site.scriptConfig?.gtm?.gatewayDomain || '',
+      gtmContainerId: site.scriptConfig?.gtm?.containerId || '',
       googleAnalytics: site.scriptConfig?.analytics?.googleAnalytics || '',
       hotjar: site.scriptConfig?.analytics?.hotjar || '',
       facebookPixel: site.scriptConfig?.marketing?.facebookPixel || '',
@@ -192,11 +202,15 @@ export function SitesPage() {
         .filter(d => d.length > 0);
 
       // Build scriptConfig from form data
-      const scriptConfig: Record<string, Record<string, string>> = {};
-      if (formData.gtmServerUrl) {
-        scriptConfig.gtm = {
-          serverUrl: formData.gtmServerUrl
-        };
+      const scriptConfig: Record<string, Record<string, string | boolean>> = {};
+      if (formData.gtmServerUrl || formData.gtmGatewayEnabled) {
+        scriptConfig.gtm = {};
+        if (formData.gtmServerUrl) scriptConfig.gtm.serverUrl = formData.gtmServerUrl;
+        if (formData.gtmGatewayEnabled) {
+          scriptConfig.gtm.gatewayEnabled = formData.gtmGatewayEnabled;
+          if (formData.gtmGatewayDomain) scriptConfig.gtm.gatewayDomain = formData.gtmGatewayDomain;
+          if (formData.gtmContainerId) scriptConfig.gtm.containerId = formData.gtmContainerId;
+        }
       }
       if (formData.googleAnalytics || formData.hotjar) {
         scriptConfig.analytics = {};
@@ -810,6 +824,93 @@ export function SitesPage() {
                       Si usas GTM Server Side, introduce la URL de tu servidor. El SDK enviará eventos a esta URL en lugar del endpoint estándar de Google.
                     </p>
                   </div>
+                </div>
+
+                {/* GTM Gateway */}
+                <div className="border-t border-stone-200 pt-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Code size={16} className="text-amber-500" />
+                    <h3 className="text-sm font-semibold text-stone-700">
+                      Google Tag Manager Gateway
+                    </h3>
+                  </div>
+                  <p className="text-xs text-stone-500 mb-3">
+                    Carga el script GTM desde tu propio dominio para evitar ad blockers y mejorar privacidad.
+                    <a
+                      href="https://developers.google.com/tag-platform/tag-manager/gateway/setup-guide"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-1 text-amber-600 hover:text-amber-700 underline"
+                    >
+                      Ver guía oficial
+                    </a>
+                  </p>
+
+                  {/* Gateway Enabled Checkbox */}
+                  <div className="mb-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.gtmGatewayEnabled || false}
+                        onChange={(e) => setFormData({ ...formData, gtmGatewayEnabled: e.target.checked })}
+                        className="w-4 h-4 text-amber-600 border-stone-300 rounded focus:ring-amber-500"
+                      />
+                      <span className="text-sm text-stone-700">Habilitar GTM Gateway</span>
+                    </label>
+                  </div>
+
+                  {formData.gtmGatewayEnabled && (
+                    <div className="space-y-3 pl-6 border-l-2 border-amber-200">
+                      {/* Gateway Domain */}
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          Dominio del Gateway (requerido)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.gtmGatewayDomain || ''}
+                          onChange={(e) => setFormData({ ...formData, gtmGatewayDomain: e.target.value })}
+                          placeholder="gtm.tudominio.com"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                        <p className="mt-1 text-xs text-stone-500">
+                          Subdominio configurado con CNAME a googletagmanager.com
+                        </p>
+                      </div>
+
+                      {/* Container ID */}
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          Container ID (requerido)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.gtmContainerId || ''}
+                          onChange={(e) => setFormData({ ...formData, gtmContainerId: e.target.value })}
+                          placeholder="GTM-XXXXX"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                        <p className="mt-1 text-xs text-stone-500">
+                          Tu ID de contenedor de Google Tag Manager
+                        </p>
+                      </div>
+
+                      {/* Help text */}
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <p className="text-xs text-stone-700">
+                          <strong>Pasos requeridos:</strong>
+                        </p>
+                        <ol className="text-xs text-stone-600 mt-1 ml-4 list-decimal space-y-1">
+                          <li>Crear CNAME en DNS: <code className="bg-white px-1 rounded">gtm.tudominio.com → googletagmanager.com</code></li>
+                          <li>Crear archivo de verificación: <code className="bg-white px-1 rounded">/.well-known/gateway/gtm-verification.txt</code></li>
+                          <li>Configurar en GTM Console: Admin → Container Settings → Enable custom tagging paths</li>
+                        </ol>
+                        <p className="text-xs text-amber-700 mt-2">
+                          📖 Ver guía completa en: <code className="bg-white px-1 rounded">docs/GTM-GATEWAY-SETUP.md</code>
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* SDK v1.6: Dynamic Script Loading Configuration */}
