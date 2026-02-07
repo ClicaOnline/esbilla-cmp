@@ -264,7 +264,7 @@ export const es = {
     'saas.plans.starter.feature4': '🔌 Google Consent Mode V2 (Auto-fire)',
     'saas.plans.starter.feature5': '🔌 GA4 + Google Ads (Nativo)',
     'saas.plans.starter.feature6': 'Plugin WordPress/Shopify',
-    'saas.plans.starter.compare': 'vs CookieYes €20/mes',
+    'saas.plans.starter.compare': '',
     'saas.plans.starter.cta': 'Prueba 14 Días Gratis',
 
     // Plan GROWTH (Recomendado)
