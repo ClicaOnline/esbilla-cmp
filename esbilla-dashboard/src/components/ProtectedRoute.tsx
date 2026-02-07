@@ -99,17 +99,14 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     return <Navigate to={`/verify-email?email=${encodeURIComponent(user.email || '')}`} replace />;
   }
 
-  // 3. Onboarding must be completed
-  if (!hasCompletedOnboarding) {
+  // 3. Onboarding must be completed (except for superadmins)
+  if (!hasCompletedOnboarding && !isSuperAdmin) {
     // In SaaS mode, redirect to onboarding
     if (isSaasMode()) {
       return <Navigate to="/onboarding/setup" replace />;
     }
-    // In self-hosted mode, first user becomes superadmin automatically
-    // If not superadmin and no onboarding, something is wrong
-    if (!isSuperAdmin) {
-      return <Navigate to="/pending" replace />;
-    }
+    // In self-hosted mode, if not superadmin and no onboarding, something is wrong
+    return <Navigate to="/pending" replace />;
   }
 
   // 4. Must have org access or be superadmin
