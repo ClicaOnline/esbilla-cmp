@@ -746,15 +746,22 @@
   // GTM is now loaded after config is fetched to support Gateway Domain
 
   /**
-   * Carga Google Tag Manager con soporte para Gateway Proxy (v1.8+)
-   * Si config.scriptConfig.gtm.gatewayEnabled está activo,
-   * carga el script desde el proxy de Esbilla API en lugar de googletagmanager.com
-   * Esto ayuda a evitar ad blockers y mejora la privacidad
+   * Carga Google Tag Manager con soporte para Gateway Proxy Multi-Tenant (v1.8+)
+   * Si config.scriptConfig.gtm.gatewayEnabled está activo y gtmGatewayDomain configurado,
+   * carga el script desde el dominio personalizado del cliente (gtm.cliente.com) que apunta a Esbilla API.
+   * Esto ayuda a evitar ad blockers (dominio propio) y mejora performance (cache + compresión).
    *
-   * ARQUITECTURA PROXY (v1.8+):
-   * - Cliente → Esbilla API (/gtm.js) → Google (G-{measurementId}.fps.goog) → Esbilla API → Cliente
-   * - Incluye cache (TTL 5min), compresión Brotli/Gzip, geolocalización
-   * - Alternativa anterior (CNAME directo) eliminada - solo proxy via Esbilla API
+   * ARQUITECTURA MULTI-TENANT DNS-BASED PROXY (v1.8+):
+   * - Cliente configura DNS: gtm.cliente.com → Esbilla API (Cloud Run + Load Balancer + CDN)
+   * - Cliente carga: <script src="https://gtm.cliente.com/gtm.js"></script>
+   * - Flujo: Cliente → gtm.cliente.com → Esbilla API → Google GTM → Cache → Compresión → Cliente
+   * - Escalabilidad: Cloud CDN global + Load Balancer multi-región UE + Cloud Run auto-scaling
+   * - Incluye: cache (TTL 5min), compresión Brotli/Gzip (75%), geolocalización, rate limiting
+   *
+   * Configuración Dashboard:
+   * - gtmGatewayEnabled: true/false
+   * - gtmGatewayDomain: "gtm.cliente.com" (obligatorio para evitar ad blockers)
+   * - gtmContainerId: "GTM-XXXXX" o "G-XXXXX"
    */
   function loadGTM() {
     // Determinar Container ID: config > data-gtm attribute
@@ -767,10 +774,20 @@
     // Determinar origen del script
     let scriptOrigin;
     if (gtmGatewayEnabled) {
-      // Usar proxy de Esbilla API (carga desde mismo dominio o API base)
-      scriptOrigin = apiBase; // ej: https://api.esbilla.com o https://esbilla.com
+      // MODO PROXY DNS-BASED: Usar dominio personalizado del cliente (configurado en Dashboard)
+      const customDomain = config?.scriptConfig?.gtm?.gatewayDomain;
+
+      if (customDomain) {
+        // Cliente configuró DNS (gtm.cliente.com → Esbilla API)
+        scriptOrigin = `https://${customDomain}`;
+        console.log('[Esbilla] Loading GTM via custom gateway domain:', customDomain);
+      } else {
+        // Fallback: usar apiBase (menos efectivo contra ad blockers)
+        scriptOrigin = apiBase;
+        console.warn('[Esbilla] GTM Gateway enabled but no custom domain configured. Using API base as fallback. Configure gtmGatewayDomain in Dashboard for better ad-blocker evasion.');
+      }
     } else {
-      // Fallback: cargar directamente desde Google (sin proxy)
+      // MODO DIRECTO: cargar directamente desde Google (sin proxy)
       scriptOrigin = 'https://www.googletagmanager.com';
     }
 
@@ -778,7 +795,8 @@
       containerId,
       origin: scriptOrigin,
       usingGatewayProxy: gtmGatewayEnabled,
-      mode: gtmGatewayEnabled ? 'Esbilla Proxy (optimized)' : 'Direct Google'
+      customDomain: gtmGatewayEnabled ? (config?.scriptConfig?.gtm?.gatewayDomain || 'apiBase fallback') : 'N/A',
+      mode: gtmGatewayEnabled ? 'Esbilla Proxy (DNS-based multi-tenant)' : 'Direct Google'
     });
 
     // Cargar GTM con el origen determinado

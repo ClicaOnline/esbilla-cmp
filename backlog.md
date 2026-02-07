@@ -42,6 +42,33 @@
 6. ✅ **SDK v1.8+: Google Tag Manager Gateway Proxy** - COMPLETADO: Proxy de GTM via Esbilla API con optimizaciones (cache 5min + compresión Brotli + geolocalización)
 7. ❌ **Implementar GTM Server Side** - Configuración de GTM Server-Side Tagging con Cloud Run
 
+**🏗️ GTM Gateway Proxy - Infraestructura (Post-implementación)**
+1. ❌ **Firestore Index**: Crear índice compuesto para `gtmGatewayDomain` en colección `sites`
+   - Índice: `sites` → `gtmGatewayDomain` (ASC)
+   - Necesario para queries rápidas de multi-tenant routing
+   - Comando: Añadir a `firestore.indexes.json` y deploy
+2. ❌ **Deploy con Load Balancer**: Configurar Cloud Load Balancer multi-región
+   - Crear backend service con Cloud Run en 2-3 regiones UE
+   - Configurar health checks (`/api/health`)
+   - SSL/TLS con managed certificate
+   - Failover automático entre regiones
+3. ❌ **Habilitar Cloud CDN**: Configurar CDN global con backends multi-región
+   - Cache mode: `CACHE_ALL_STATIC`
+   - TTL: 5 minutos (configurable)
+   - PoPs en UE: Frankfurt, London, Paris, Amsterdam, Milán, Madrid
+   - Compresión Brotli/Gzip automática
+   - Reducción esperada: 80-90% egress de Cloud Run
+4. ❌ **Monitoring y Alertas**: Configurar observabilidad completa
+   - Cloud Monitoring: métricas de CPU, memory, requests, latency
+   - Cloud Logging: logs estructurados con filtros por severity
+   - Uptime Checks: monitoreo 24/7 desde múltiples regiones
+   - Alertas configuradas:
+     - Error rate >1% durante 5 min → Email + Slack
+     - Latency p99 >1s durante 5 min → Email
+     - Availability <99% durante 5 min → PagerDuty
+     - Cloud Run instances >80 → Email (escalar)
+   - Dashboard personalizado: cache hit rate, latency, requests/s, errors
+
 **🎉 Completado (2026-02-05 / 2026-02-07)**
 - ✅ **Plugin de WordPress v1.0.0** - Plugin completo con 3 modos (Manual, Simplificado, GTM)
   - Interfaz de administración completa
@@ -53,19 +80,33 @@
   - Google Analytics 4, Hotjar, Facebook Pixel, LinkedIn, TikTok
   - Proxy de scripts con consentimiento previo
   - Integración completa con Dashboard
-- ✅ **SDK v1.8+: GTM Gateway Proxy** - COMPLETADO (2026-02-07)
-  - **Arquitectura de proxy** via Esbilla API (Cliente → Esbilla API → Google → Cliente)
+- ✅ **SDK v1.8+: GTM Gateway Proxy - Multi-Tenant DNS-Based** - COMPLETADO (2026-02-07)
+  - **Arquitectura DNS-based multi-tenant** (Cliente configura gtm.cliente.com → Esbilla API)
+  - **Identificación por Host header**: API identifica site por gtmGatewayDomain, lookup en Firestore
+  - **Infraestructura modular escalable**:
+    - **Cloud CDN**: Cache global en PoPs de UE (Frankfurt, London, Paris, etc.)
+    - **Load Balancer**: Multi-región UE (europe-west4, west1, west3) con failover automático
+    - **Cloud Run**: Auto-scaling 1-100 instancias por región, in-memory cache por instancia
+    - **Firestore**: Lookup gtmGatewayDomain → containerId con query cache 5 min
   - **Cache en memoria**: TTL 5 minutos, reduce latencia 66% y egress 92%
   - **Compresión Brotli/Gzip**: Reduce tamaño 80 KB → 20 KB (75% reducción)
   - **Rate limiting específico**: 10 req/min por IP para protección contra abuse
   - **Geolocalización automática**: Headers X-Forwarded-Country-Region para targeting
-  - **Endpoints implementados**: /gtm.js, /gtm/*, /metrics/* con validación y logging
-  - **Dashboard actualizado**: Checkbox enable + Container ID (GTM-XXXXX o G-XXXXX), sin configuración DNS
-  - **SDK actualizado**: loadGTM() usa apiBase en lugar de CNAME directo
-  - **Documentación reescrita**: GTM-GATEWAY-SETUP.md (316 líneas) con arquitectura de proxy
-  - **Análisis de costos completo**: GTM-GATEWAY-PROXY-COSTS.md (460 líneas) con pricing como add-on
+  - **GDPR compliance**: Todas las regiones en UE (sin transferencia fuera de UE)
+  - **Endpoints implementados**: /gtm.js con multi-tenant routing, /metrics/* con health checks
+  - **Dashboard actualizado**: Checkbox enable + Container ID + GTM Gateway Domain (obligatorio)
+  - **SDK actualizado**: loadGTM() usa gtmGatewayDomain del config (dominio personalizado del cliente)
+  - **Documentación completa**:
+    - GTM-GATEWAY-SETUP.md (reescrito para arquitectura DNS-based)
+    - GTM-GATEWAY-PROXY-COSTS.md (460 líneas) con pricing como add-on
+    - GTM-GATEWAY-INFRASTRUCTURE.md (NUEVO, 600+ líneas) - Infraestructura modular y escalabilidad
   - **Impacto en costos**: +5-15% egress (€1.50/mes adicional por 1M PV con optimizaciones)
   - **Pricing sugerido**: Add-on premium +€10-30/mes según plan
+  - **Capacidad de escalabilidad**:
+    - MVP (100 clientes): 10M req/mes, €30/mes
+    - Growth (1,000 clientes): 100M req/mes, €88/mes
+    - Scale (10,000 clientes): 1B req/mes, €590/mes
+    - Enterprise (10,000+ clientes): >10B req/mes, €5k-15k/mes
 - ✅ **Landing: Nuevas Secciones** - COMPLETADO (2026-02-05)
   - ✅ Traducciones en Español completas (~120 nuevas claves)
   - ✅ Sección "Cómo Empezar" ([lang]/como-empezar.astro) - Página completa con 3 pasos y explicación de modos
