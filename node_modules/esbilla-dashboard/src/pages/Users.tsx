@@ -69,6 +69,12 @@ export function UsersPage() {
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState(false);
 
+  // Role change confirmation modal state
+  const [showRoleChangeModal, setShowRoleChangeModal] = useState(false);
+  const [roleChangeUserId, setRoleChangeUserId] = useState<string | null>(null);
+  const [roleChangeNewRole, setRoleChangeNewRole] = useState<GlobalRole | null>(null);
+  const [roleChangeIsLastSuperadmin, setRoleChangeIsLastSuperadmin] = useState(false);
+
   // Search and pagination state
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(25);
@@ -157,15 +163,66 @@ export function UsersPage() {
     }
   }
 
-  async function updateUserGlobalRole(userId: string, newRole: GlobalRole) {
+  // Count superadmins in the system
+  function countSuperadmins(): number {
+    return users.filter(u => u.globalRole === 'superadmin').length;
+  }
+
+  // Initiate role change with validation
+  function initiateRoleChange(userId: string, newRole: GlobalRole) {
+    if (!isSuperAdmin) return;
+
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    // Check if downgrading the last superadmin
+    const superadminCount = countSuperadmins();
+    const isLastSuperadmin = user.globalRole === 'superadmin' &&
+                             newRole !== 'superadmin' &&
+                             superadminCount === 1;
+
+    if (isLastSuperadmin) {
+      // Show warning modal - cannot proceed
+      setRoleChangeUserId(userId);
+      setRoleChangeNewRole(newRole);
+      setRoleChangeIsLastSuperadmin(true);
+      setShowRoleChangeModal(true);
+      return;
+    }
+
+    // If changing from/to superadmin, show confirmation modal
+    if (user.globalRole === 'superadmin' || newRole === 'superadmin') {
+      setRoleChangeUserId(userId);
+      setRoleChangeNewRole(newRole);
+      setRoleChangeIsLastSuperadmin(false);
+      setShowRoleChangeModal(true);
+    } else {
+      // For non-critical changes, update directly
+      confirmRoleChange(userId, newRole);
+    }
+  }
+
+  async function confirmRoleChange(userId: string, newRole: GlobalRole) {
     if (!isSuperAdmin || !db) return;
 
     try {
       await updateDoc(doc(db, 'users', userId), { globalRole: newRole });
       setUsers(users.map(u => u.id === userId ? { ...u, globalRole: newRole } : u));
+      setShowRoleChangeModal(false);
+      setRoleChangeUserId(null);
+      setRoleChangeNewRole(null);
+      setRoleChangeIsLastSuperadmin(false);
     } catch (err) {
       console.error('Error updating global role:', err);
+      alert('Error al actualizar el rol. Por favor, intenta de nuevo.');
     }
+  }
+
+  function cancelRoleChange() {
+    setShowRoleChangeModal(false);
+    setRoleChangeUserId(null);
+    setRoleChangeNewRole(null);
+    setRoleChangeIsLastSuperadmin(false);
   }
 
   async function deleteUser(userId: string) {
@@ -641,7 +698,18 @@ export function UsersPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <RoleBadge role={getPrimaryRole(user)} labels={t.users.roles} />
+                    {isSuperAdmin && user.id !== currentUser?.uid ? (
+                      <select
+                        value={user.globalRole}
+                        onChange={(e) => initiateRoleChange(user.id, e.target.value as GlobalRole)}
+                        className="px-3 py-1.5 text-xs font-medium border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+                      >
+                        <option value="pending">⏳ {t.users.roles.pending || 'Pendiente'}</option>
+                        <option value="superadmin">👑 {t.users.roles.superadmin || 'Superadmin'}</option>
+                      </select>
+                    ) : (
+                      <RoleBadge role={getPrimaryRole(user)} labels={t.users.roles} />
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {user.globalRole === 'superadmin' ? (
@@ -1295,6 +1363,108 @@ export function UsersPage() {
                         <span>Enviar Invitación</span>
                       </>
                     )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Role Change Confirmation Modal */}
+        {showRoleChangeModal && roleChangeUserId && roleChangeNewRole && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4">
+              <div className="px-6 py-4 border-b border-stone-200">
+                <h2 className="text-xl font-semibold text-stone-800 flex items-center gap-2">
+                  {roleChangeIsLastSuperadmin ? (
+                    <>
+                      <X size={20} className="text-red-600" />
+                      Cambio no permitido
+                    </>
+                  ) : (
+                    <>
+                      <Shield size={20} className="text-amber-600" />
+                      Confirmar cambio de rol
+                    </>
+                  )}
+                </h2>
+              </div>
+
+              <div className="px-6 py-4 space-y-4">
+                {roleChangeIsLastSuperadmin ? (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-700 font-medium">
+                        ⚠️ No puedes degradar al último superadmin
+                      </p>
+                    </div>
+                    <p className="text-sm text-stone-600">
+                      El sistema debe tener al menos 1 superadmin en todo momento. Antes de cambiar este rol,
+                      debes promover a otro usuario a superadmin.
+                    </p>
+                    <div className="p-3 bg-stone-50 border border-stone-200 rounded-lg">
+                      <p className="text-xs text-stone-600">
+                        <strong>Superadmins actuales:</strong> {countSuperadmins()}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-stone-600">
+                      Estás a punto de cambiar el rol global del usuario:
+                    </p>
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-2">
+                      <p className="text-sm font-medium text-stone-800">
+                        {users.find(u => u.id === roleChangeUserId)?.displayName}
+                      </p>
+                      <p className="text-xs text-stone-600">
+                        {users.find(u => u.id === roleChangeUserId)?.email}
+                      </p>
+                      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-amber-300">
+                        <RoleBadge
+                          role={users.find(u => u.id === roleChangeUserId)?.globalRole || 'pending'}
+                          labels={t.users.roles}
+                        />
+                        <span className="text-stone-400">→</span>
+                        <RoleBadge role={roleChangeNewRole} labels={t.users.roles} />
+                      </div>
+                    </div>
+                    {roleChangeNewRole === 'superadmin' && (
+                      <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                        <p className="text-xs text-purple-700">
+                          <strong>Superadmin</strong> tiene acceso completo a todas las organizaciones,
+                          sitios y configuraciones del sistema.
+                        </p>
+                      </div>
+                    )}
+                    {users.find(u => u.id === roleChangeUserId)?.globalRole === 'superadmin' && roleChangeNewRole !== 'superadmin' && (
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-xs text-amber-700">
+                          Al degradar este rol, el usuario perderá acceso administrativo global.
+                        </p>
+                        <p className="text-xs text-stone-600 mt-1">
+                          <strong>Superadmins restantes:</strong> {countSuperadmins() - 1}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 py-4 border-t border-stone-200 flex gap-3">
+                <button
+                  onClick={cancelRoleChange}
+                  className="flex-1 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
+                >
+                  {roleChangeIsLastSuperadmin ? 'Entendido' : t.common.cancel}
+                </button>
+                {!roleChangeIsLastSuperadmin && (
+                  <button
+                    onClick={() => confirmRoleChange(roleChangeUserId, roleChangeNewRole)}
+                    className="flex-1 flex items-center justify-center gap-2 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                  >
+                    <Check size={18} />
+                    <span>Confirmar cambio</span>
                   </button>
                 )}
               </div>

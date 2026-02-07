@@ -15,7 +15,9 @@ service cloud.firestore {
     }
 
     function getUserRole() {
-      return getUserData().role;
+      let userData = getUserData();
+      // Priorizar globalRole (nuevo schema), fallback a role (legacy)
+      return userData.globalRole != null ? userData.globalRole : userData.role;
     }
 
     function isAdmin() {
@@ -61,10 +63,10 @@ service cloud.firestore {
       allow read: if isAdmin();
 
       allow create: if isAuthenticated() && request.auth.uid == userId
-                    && request.resource.data.role == 'pending';
+                    && (request.resource.data.role == 'pending' || request.resource.data.globalRole == 'pending');
 
       allow update: if isAuthenticated() && request.auth.uid == userId
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin']);
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin', 'onboardingCompleted']);
 
       allow update: if isAdmin() && request.auth.uid != userId;
       allow delete: if isSuperAdmin();
@@ -76,6 +78,12 @@ service cloud.firestore {
     match /sites/{siteId} {
       allow read: if isAdmin() || (isAuthorized() && hasSiteAccess(siteId));
       allow create: if isAdmin();
+
+      // Permitir crear sitio durante onboarding
+      // El usuario autenticado puede crear sitios si es createdBy
+      allow create: if isAuthenticated()
+                    && request.resource.data.createdBy == request.auth.uid;
+
       allow update: if isAdmin() || hasSiteAdminAccess(siteId);
       allow delete: if isSuperAdmin();
     }
@@ -157,6 +165,11 @@ service cloud.firestore {
     // ============================================
     match /organizations/{orgId} {
       allow read, write: if isSuperAdmin();
+
+      // Permitir crear organización durante onboarding
+      // El usuario autenticado puede crear su primera organización
+      allow create: if isAuthenticated()
+                    && request.resource.data.createdBy == request.auth.uid;
     }
 
     // ============================================
