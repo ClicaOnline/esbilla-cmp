@@ -826,23 +826,27 @@ export function SitesPage() {
                   </div>
                 </div>
 
-                {/* GTM Gateway */}
+                {/* GTM Gateway Proxy */}
                 <div className="border-t border-stone-200 pt-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Code size={16} className="text-amber-500" />
                     <h3 className="text-sm font-semibold text-stone-700">
-                      Google Tag Manager Gateway
+                      GTM Gateway Proxy (v1.8+)
                     </h3>
+                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                      Add-on Premium
+                    </span>
                   </div>
                   <p className="text-xs text-stone-500 mb-3">
-                    Carga el script GTM desde tu propio dominio para evitar ad blockers y mejorar privacidad.
+                    Proxy de GTM a través de Esbilla API. Evita ad blockers, reduce egress y mejora privacidad.
+                    Incluye cache (5 min), compresión Brotli y geolocalización automática.
                     <a
-                      href="https://developers.google.com/tag-platform/tag-manager/gateway/setup-guide"
+                      href="https://github.com/anthropics/esbilla-cmp/blob/main/docs/GTM-GATEWAY-PROXY-COSTS.md"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="ml-1 text-amber-600 hover:text-amber-700 underline"
                     >
-                      Ver guía oficial
+                      Ver costos
                     </a>
                   </p>
 
@@ -855,58 +859,48 @@ export function SitesPage() {
                         onChange={(e) => setFormData({ ...formData, gtmGatewayEnabled: e.target.checked })}
                         className="w-4 h-4 text-amber-600 border-stone-300 rounded focus:ring-amber-500"
                       />
-                      <span className="text-sm text-stone-700">Habilitar GTM Gateway</span>
+                      <span className="text-sm text-stone-700">Habilitar GTM Gateway Proxy</span>
                     </label>
                   </div>
 
                   {formData.gtmGatewayEnabled && (
                     <div className="space-y-3 pl-6 border-l-2 border-amber-200">
-                      {/* Gateway Domain */}
-                      <div>
-                        <label className="block text-xs text-stone-600 mb-1">
-                          Dominio del Gateway (requerido)
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.gtmGatewayDomain || ''}
-                          onChange={(e) => setFormData({ ...formData, gtmGatewayDomain: e.target.value })}
-                          placeholder="gtm.tudominio.com"
-                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                        />
-                        <p className="mt-1 text-xs text-stone-500">
-                          Subdominio configurado con CNAME a googletagmanager.com
-                        </p>
-                      </div>
-
                       {/* Container ID */}
                       <div>
                         <label className="block text-xs text-stone-600 mb-1">
-                          Container ID (requerido)
+                          Container ID o Measurement ID (requerido)
                         </label>
                         <input
                           type="text"
                           value={formData.gtmContainerId || ''}
                           onChange={(e) => setFormData({ ...formData, gtmContainerId: e.target.value })}
-                          placeholder="GTM-XXXXX"
+                          placeholder="GTM-XXXXX o G-XXXXX"
                           className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                         />
                         <p className="mt-1 text-xs text-stone-500">
-                          Tu ID de contenedor de Google Tag Manager
+                          Tu ID de Google Tag Manager (GTM-XXXXX) o Google Analytics 4 (G-XXXXX)
                         </p>
                       </div>
 
-                      {/* Help text */}
+                      {/* Info Box - Proxy Architecture */}
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                        <p className="text-xs text-stone-700">
-                          <strong>Pasos requeridos:</strong>
+                        <p className="text-xs text-stone-700 font-semibold mb-2">
+                          🚀 Arquitectura de Proxy (v1.8+)
                         </p>
-                        <ol className="text-xs text-stone-600 mt-1 ml-4 list-decimal space-y-1">
-                          <li>Crear CNAME en DNS: <code className="bg-white px-1 rounded">gtm.tudominio.com → googletagmanager.com</code></li>
-                          <li>Crear archivo de verificación: <code className="bg-white px-1 rounded">/.well-known/gateway/gtm-verification.txt</code></li>
-                          <li>Configurar en GTM Console: Admin → Container Settings → Enable custom tagging paths</li>
-                        </ol>
+                        <p className="text-xs text-stone-600 mb-2">
+                          Esbilla API actúa como proxy entre tu sitio y Google GTM:
+                        </p>
+                        <div className="text-xs text-stone-600 bg-white p-2 rounded font-mono">
+                          Cliente → Esbilla API (/gtm.js) → Google → Cliente
+                        </div>
+                        <p className="text-xs text-stone-600 mt-2">
+                          <strong>Beneficios:</strong> Cache (TTL 5min), compresión 75%, headers de geolocalización, rate limiting
+                        </p>
                         <p className="text-xs text-amber-700 mt-2">
-                          📖 Ver guía completa en: <code className="bg-white px-1 rounded">docs/GTM-GATEWAY-SETUP.md</code>
+                          ⚠️ <strong>Importante:</strong> Esta feature tiene un coste adicional del 5-15% en egress bandwidth (ver análisis de costos).
+                        </p>
+                        <p className="text-xs text-stone-600 mt-2">
+                          📖 Documentación: <a href="https://github.com/anthropics/esbilla-cmp/blob/main/docs/GTM-GATEWAY-SETUP.md" target="_blank" className="text-amber-600 underline">GTM-GATEWAY-SETUP.md</a>
                         </p>
                       </div>
                     </div>

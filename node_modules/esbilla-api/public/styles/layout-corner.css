@@ -1,0 +1,69 @@
+/**
+ * ESBILLA CMP - Layout: Esquina Inferior
+ * Importar después de base.css
+ */
+
+#esbilla-wrapper {
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 20px;
+  background: transparent;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+
+#esbilla-banner {
+  max-width: 380px;
+  width: 100%;
+  padding: 24px;
+  pointer-events: auto;
+  animation: esbillaSlideIn 0.3s ease-out;
+}
+
+.esbilla-icon {
+  font-size: 36px;
+}
+
+.esbilla-title {
+  font-size: 18px;
+}
+
+.esbilla-text {
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.esbilla-actions {
+  flex-direction: column;
+}
+
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 12px 20px;
+}
+
+.btn-link {
+  width: 100%;
+}
+
+.esbilla-lang-selector {
+  top: 8px;
+  right: 8px;
+}
+
+@keyframes esbillaSlideIn {
+  from { opacity: 0; transform: translateX(-100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Responsive */
+@media (max-width: 420px) {
+  #esbilla-wrapper {
+    padding: 12px;
+  }
+
+  #esbilla-banner {
+    max-width: 100%;
+  }
+}

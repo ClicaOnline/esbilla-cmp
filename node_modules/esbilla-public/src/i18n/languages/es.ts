@@ -152,18 +152,18 @@ export const es = {
     'modes.gtm.pro3': 'Testing A/B y configuración avanzada',
     'modes.gtm.ideal': 'Ideal para: Empresas con equipos de marketing, sitios con configuración compleja de tracking',
 
-    // GTM Gateway (feature destacada dentro de GTM Mode)
-    'modes.gtm.gateway.badge': 'NUEVO',
-    'modes.gtm.gateway.title': '🚀 GTM Gateway: Mejora tu Tracking hasta un 30%',
-    'modes.gtm.gateway.desc': 'Carga GTM desde tu propio dominio para reducir bloqueos de adblockers y mejorar tasas de tracking. Compatible con todos los modos.',
-    'modes.gtm.gateway.benefit1': 'Reduce bloqueos de adblockers (15-30% más datos)',
-    'modes.gtm.gateway.benefit2': 'Tu propio dominio con CNAME DNS',
-    'modes.gtm.gateway.benefit3': 'Setup en 5 minutos desde Dashboard',
-    'modes.gtm.gateway.benefit4': 'Compatible GDPR/ePrivacy',
-    'modes.gtm.gateway.tech.title': 'Cómo funciona (técnico)',
-    'modes.gtm.gateway.tech.desc': 'Configuras un subdominio CNAME (ej: <code>gtm.tudominio.com → googletagmanager.com</code>) y Esbilla carga el script <code>gtm.js</code> desde tu dominio en lugar del de Google. Verificación automática con endpoint <code>/.well-known/gateway/gtm-verification.txt</code>.',
-    'modes.gtm.gateway.cta': 'Ver Guía Técnica Completa',
-    'modes.gtm.gateway.compatible': 'Compatible con: Modo Manual, Modo Simplificado (con GTM), Modo GTM',
+    // GTM Gateway Proxy (v1.8+ - Add-on Premium)
+    'modes.gtm.gateway.badge': 'PREMIUM',
+    'modes.gtm.gateway.title': '🚀 GTM Gateway Proxy: Mejora tu Tracking hasta un 30%',
+    'modes.gtm.gateway.desc': 'Proxy de GTM a través de Esbilla API. Evita ad blockers, incluye cache (TTL 5min) y compresión Brotli (75% reducción). Sin configuración DNS.',
+    'modes.gtm.gateway.benefit1': 'Evita ad blockers (15-30% más datos capturados)',
+    'modes.gtm.gateway.benefit2': 'Cache inteligente (latencia -66%, egress -92%)',
+    'modes.gtm.gateway.benefit3': 'Setup en 1 click desde Dashboard (sin DNS)',
+    'modes.gtm.gateway.benefit4': 'Compresión Brotli (80 KB → 20 KB)',
+    'modes.gtm.gateway.tech.title': 'Arquitectura de Proxy (v1.8+)',
+    'modes.gtm.gateway.tech.desc': 'Esbilla API actúa como proxy: <code>Cliente → Esbilla API (/gtm.js) → Google → Cliente</code>. Incluye cache en memoria (TTL 5min), compresión Brotli/Gzip automática, y headers de geolocalización. <strong>No requiere configuración DNS ni CNAME</strong>, solo marcar checkbox en Dashboard.',
+    'modes.gtm.gateway.cta': 'Ver Guía Técnica y Costos',
+    'modes.gtm.gateway.compatible': 'Add-on Premium: +€10-30/mes según plan. Ver análisis de costos.',
 
     // GTM Legal - Argumentación Extensa
     'gtm.legal.title': 'Modo GTM y Simplificado: Por Qué Dejar que Esbilla Cargue los Scripts',

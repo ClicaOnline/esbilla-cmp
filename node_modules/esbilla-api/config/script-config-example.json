@@ -1,0 +1,115 @@
+{
+  "// EJEMPLO DE CONFIGURACIÓN COMPLETA": "Esbilla SDK v1.7 - Script Config",
+  "// IMPORTANTE": "Solo incluye los campos de las plataformas que realmente uses. Los campos vacíos/null/undefined NO cargarán el script (optimización automática).",
+
+  "analytics": {
+    "googleAnalytics": "G-XXXXXXXXXX",
+    "hotjar": "1234567",
+    "amplitude": "YOUR_API_KEY_HERE",
+    "crazyEgg": "00112233",
+    "vwo": "654321",
+    "optimizely": "1234567890"
+  },
+
+  "marketing": {
+    "facebookPixel": "123456789012345",
+    "linkedinInsight": "123456",
+    "tiktokPixel": "ABCDEFGHIJKLMNOP",
+    "googleAds": "AW-123456789",
+    "microsoftAds": "12345678",
+    "criteo": "123456",
+    "pinterestTag": "2612345678901",
+    "twitterPixel": "o1234",
+    "taboola": "1234567",
+    "youtube": "dQw4w9WgXcQ",
+    "hubspot": "12345678"
+  },
+
+  "functional": {
+    "intercom": "abcd1234",
+    "zendesk": "your-zendesk-key"
+  },
+
+  "// EJEMPLO MINIMALISTA": "Solo usa lo que necesites",
+  "EJEMPLO_MINIMO": {
+    "analytics": {
+      "googleAnalytics": "G-ABC123XYZ"
+    },
+    "marketing": {
+      "facebookPixel": "987654321098765"
+    }
+  },
+
+  "// EJEMPLO E-COMMERCE": "Típico para tiendas online",
+  "EJEMPLO_ECOMMERCE": {
+    "analytics": {
+      "googleAnalytics": "G-SHOP123XYZ",
+      "hotjar": "3456789"
+    },
+    "marketing": {
+      "facebookPixel": "111222333444555",
+      "googleAds": "AW-111222333",
+      "criteo": "123456",
+      "pinterestTag": "2612345678901"
+    }
+  },
+
+  "// EJEMPLO SAAS": "Típico para aplicaciones SaaS",
+  "EJEMPLO_SAAS": {
+    "analytics": {
+      "googleAnalytics": "G-SAAS123XYZ",
+      "amplitude": "amp_api_key_12345",
+      "hotjar": "7654321"
+    },
+    "marketing": {
+      "googleAds": "AW-777888999",
+      "linkedinInsight": "654321",
+      "hubspot": "99887766"
+    },
+    "functional": {
+      "intercom": "saas5678"
+    }
+  },
+
+  "// EJEMPLO BLOG/CONTENT": "Típico para blogs y sitios de contenido",
+  "EJEMPLO_BLOG": {
+    "analytics": {
+      "googleAnalytics": "G-BLOG123XYZ",
+      "hotjar": "9876543"
+    },
+    "marketing": {
+      "googleAds": "AW-555666777",
+      "taboola": "9876543",
+      "youtube": "dQw4w9WgXcQ"
+    }
+  },
+
+  "// IDs DE EJEMPLO": "Para testing y desarrollo",
+  "TEST_IDS": {
+    "analytics": {
+      "googleAnalytics": "G-TEST123456",
+      "hotjar": "0000000",
+      "amplitude": "test_api_key",
+      "crazyEgg": "00000000",
+      "vwo": "000000",
+      "optimizely": "0000000000"
+    },
+    "marketing": {
+      "facebookPixel": "000000000000000",
+      "linkedinInsight": "000000",
+      "tiktokPixel": "TEST1234567890AB",
+      "googleAds": "AW-000000000",
+      "microsoftAds": "00000000",
+      "criteo": "000000",
+      "pinterestTag": "0000000000000",
+      "twitterPixel": "o0000",
+      "taboola": "0000000",
+      "youtube": "test_video_id",
+      "hubspot": "00000000"
+    },
+    "functional": {
+      "intercom": "test1234",
+      "zendesk": "test-key"
+    }
+  }
+}
