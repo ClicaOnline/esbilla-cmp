@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import { WaitingListEntry } from '../types';
+import type { WaitingListEntry } from '../types';
 import { Navigate } from 'react-router-dom';
 import { Download, Search, Filter, Mail, CheckCircle2, XCircle, Clock, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -26,6 +26,7 @@ export function WaitingListPage() {
   const { data: waitingList = [], isLoading, error } = useQuery({
     queryKey: ['waitingList'],
     queryFn: async () => {
+      if (!db) throw new Error('Firestore not initialized');
       const q = query(
         collection(db, 'waitingList'),
         orderBy('createdAt', 'desc')
@@ -49,7 +50,7 @@ export function WaitingListPage() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        entry =>
+        (entry: WaitingListEntry) =>
           entry.email.toLowerCase().includes(query) ||
           entry.name?.toLowerCase().includes(query) ||
           entry.company?.toLowerCase().includes(query)
@@ -58,12 +59,12 @@ export function WaitingListPage() {
 
     // Filtro de estado
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(entry => entry.status === statusFilter);
+      filtered = filtered.filter((entry: WaitingListEntry) => entry.status === statusFilter);
     }
 
     // Filtro de plan
     if (planFilter !== 'all') {
-      filtered = filtered.filter(entry => entry.plan === planFilter);
+      filtered = filtered.filter((entry: WaitingListEntry) => entry.plan === planFilter);
     }
 
     return filtered;
@@ -79,16 +80,16 @@ export function WaitingListPage() {
     goToPage,
     pageSize,
     setPageSize,
-  } = usePagination(filteredData, 20);
+  } = usePagination<WaitingListEntry>({ data: filteredData, pageSize: 20 });
 
   // Estadísticas
   const stats = useMemo(() => {
     return {
       total: waitingList.length,
-      pending: waitingList.filter(e => e.status === 'pending').length,
-      contacted: waitingList.filter(e => e.status === 'contacted').length,
-      converted: waitingList.filter(e => e.status === 'converted').length,
-      rejected: waitingList.filter(e => e.status === 'rejected').length,
+      pending: waitingList.filter((e: WaitingListEntry) => e.status === 'pending').length,
+      contacted: waitingList.filter((e: WaitingListEntry) => e.status === 'contacted').length,
+      converted: waitingList.filter((e: WaitingListEntry) => e.status === 'converted').length,
+      rejected: waitingList.filter((e: WaitingListEntry) => e.status === 'rejected').length,
     };
   }, [waitingList]);
 
@@ -108,7 +109,7 @@ export function WaitingListPage() {
       'Fecha Conversión',
     ];
 
-    const rows = filteredData.map(entry => [
+    const rows = filteredData.map((entry: WaitingListEntry) => [
       entry.email,
       entry.name || '',
       entry.company || '',
@@ -344,7 +345,7 @@ export function WaitingListPage() {
                     </td>
                   </tr>
                 ) : (
-                  pageData.map(entry => (
+                  pageData.map((entry: WaitingListEntry) => (
                     <tr key={entry.id} className="hover:bg-stone-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-stone-900">{entry.email}</div>

@@ -37,11 +37,12 @@
 1. ❌ **Crear LICENSE** - Definir modelo de licencia (MIT/Apache/comercial) en raíz del proyecto
 2. ✅ **Crear CONTRIBUTING.md** - COMPLETADO: Guía de contribución para la comunidad open-source
 3. ✅ **SDK: Implementar script blocking** - COMPLETADO: MutationObserver implementado en SDK v1.5 con documentación completa
-4. 🔥 **SDK v1.6: Carga Dinámica de Scripts (modo GTM)** - Sistema de carga automática de scripts desde configuración del Dashboard, sin modificar HTML. Actúa como Tag Manager simplificado para cumplimiento GDPR automático
+4. ✅ **SDK v1.6: Carga Dinámica de Scripts (modo GTM)** - COMPLETADO: Sistema de carga automática de scripts desde configuración del Dashboard, sin modificar HTML. Actúa como Tag Manager simplificado para cumplimiento GDPR automático
 5. ⚠️ **Dashboard: Editor visual de banner** - UI para personalizar colores, posición, textos, logo del banner
-6. ❌ Implementar GTM Server Side
+6. ✅ **SDK v1.8: Google Tag Manager Gateway** - COMPLETADO: Configuración de GTM Gateway para proxy de scripts con CNAME personalizado, integración Dashboard + API
+7. ❌ **Implementar GTM Server Side** - Configuración de GTM Server-Side Tagging con Cloud Run
 
-**🎉 Completado (2026-02-05)**
+**🎉 Completado (2026-02-05 / 2026-02-07)**
 - ✅ **Plugin de WordPress v1.0.0** - Plugin completo con 3 modos (Manual, Simplificado, GTM)
   - Interfaz de administración completa
   - Validación de campos en tiempo real
@@ -52,6 +53,15 @@
   - Google Analytics 4, Hotjar, Facebook Pixel, LinkedIn, TikTok
   - Proxy de scripts con consentimiento previo
   - Integración completa con Dashboard
+- ✅ **SDK v1.8: Google Tag Manager Gateway** - COMPLETADO (2026-02-07)
+  - Configuración de GTM Gateway en Dashboard (dominio CNAME + Container ID)
+  - Función loadGTM() en SDK con soporte para dominios personalizados
+  - Endpoint de verificación `.well-known/gateway/gtm-verification.txt`
+  - Documentación completa en docs/GTM-GATEWAY-SETUP.md (489 líneas)
+  - Guía de configuración DNS CNAME paso a paso
+  - **Landing actualizada:** Sección destacada en como-empezar.astro con badge "NUEVO"
+  - **Explicación técnica:** CNAME setup + verificación automática
+  - **Compatible con:** Modo Manual, Modo Simplificado (con GTM), Modo GTM
 - ✅ **Landing: Nuevas Secciones** - COMPLETADO (2026-02-05)
   - ✅ Traducciones en Español completas (~120 nuevas claves)
   - ✅ Sección "Cómo Empezar" ([lang]/como-empezar.astro) - Página completa con 3 pasos y explicación de modos
