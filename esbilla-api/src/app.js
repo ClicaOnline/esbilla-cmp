@@ -1234,44 +1234,9 @@ app.get('/gtm.js', gtmRateLimitMiddleware, async (req, res) => {
   }
 });
 
-/**
- * ENDPOINT: Proxy de /gtm/* (recursos adicionales de GTM)
- * GTM puede solicitar recursos adicionales desde /gtm/...
- */
-app.get('/gtm/*', gtmRateLimitMiddleware, async (req, res) => {
-  try {
-    const resourcePath = req.path.replace('/gtm/', '');
-    const targetUrl = `https://www.googletagmanager.com/gtm/${resourcePath}${req.url.includes('?') ? '?' + req.url.split('?')[1] : ''}`;
-
-    console.log(`[GTM Proxy] Proxying resource: ${targetUrl}`);
-
-    const response = await fetch(targetUrl, {
-      headers: {
-        'User-Agent': req.headers['user-agent'] || 'Esbilla-GTM-Proxy/1.0',
-        'Accept': req.headers['accept'] || '*/*',
-        'Referer': req.headers['referer'] || 'https://esbilla.com'
-      }
-    });
-
-    if (!response.ok) {
-      return res.status(response.status).send('Resource not found');
-    }
-
-    const content = await response.text();
-    const contentType = response.headers.get('content-type') || 'text/plain';
-
-    res.set({
-      'Content-Type': contentType,
-      'Cache-Control': 'public, max-age=300'
-    });
-
-    res.send(content);
-
-  } catch (err) {
-    console.error('[GTM Proxy] Error proxying resource:', err);
-    res.status(500).send('Proxy error');
-  }
-});
+// NOTA: Endpoint /gtm/* comentado temporalmente debido a incompatibilidad con Express 5
+// GTM generalmente solo necesita /gtm.js, los recursos adicionales son raros
+// Si se necesita en el futuro, implementar con middleware personalizado que capture todo el path
 
 /**
  * ENDPOINT: Health check de GTM Gateway

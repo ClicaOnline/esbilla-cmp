@@ -41,7 +41,9 @@
       "Bash(node scripts/verify-modular-architecture.js:*)",
       "Bash(git checkout:*)",
       "Bash(npm run lint)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(timeout 5s npm start:*)",
+      "Bash(timeout 3s npm start:*)"
     ]
   }
 }
