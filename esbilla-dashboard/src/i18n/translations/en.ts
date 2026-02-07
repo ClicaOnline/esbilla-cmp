@@ -26,6 +26,7 @@ export const en: Translations = {
     users: 'Users',
     footprint: 'Search Footprint',
     urlStats: 'URLs',
+    waitingList: 'Waiting List',
     settings: 'Settings',
     logout: 'Log out',
     controlPanel: 'Control Panel',
@@ -439,5 +440,10 @@ export const en: Translations = {
     saveChanges: 'Save Changes',
     resetDefaults: 'Reset to Defaults',
     saved: 'Changes saved',
+  },
+
+  waitingList: {
+    title: 'Waiting List',
+    subtitle: 'Manage interested prospects for Esbilla CMP',
   },
 };

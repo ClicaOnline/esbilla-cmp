@@ -445,6 +445,7 @@ export const es = {
     'waitlist.form.email.placeholder': 'email@ejemplo.com',
     'waitlist.form.company.label': 'Empresa / Proyecto',
     'waitlist.form.company.placeholder': 'Nombre de la empresa o proyecto',
+    'waitlist.form.plan.label': 'Plan de Interés',
     'waitlist.form.domain.label': 'Dominio / Sitio Web',
     'waitlist.form.domain.placeholder': 'https://www.ejemplo.com',
     'waitlist.form.details.label': '¿Cómo piensas usar Esbilla CMP?',

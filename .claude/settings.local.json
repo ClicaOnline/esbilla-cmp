@@ -40,7 +40,8 @@
       "Bash(msgfmt:*)",
       "Bash(node scripts/verify-modular-architecture.js:*)",
       "Bash(git checkout:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(grep:*)"
     ]
   }
 }

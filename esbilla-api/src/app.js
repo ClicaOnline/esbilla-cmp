@@ -375,6 +375,52 @@ try {
   console.warn('⚠️ Non se pudo cargar config/default.json');
 }
 
+// ============================================
+// RUTA: GTM Gateway Verification File
+// ============================================
+/**
+ * Endpoint para verificación de GTM Gateway
+ * Google requiere un archivo /.well-known/gateway/gtm-verification.txt
+ * que contenga el Container ID (GTM-XXXXX)
+ *
+ * NOTA: Este endpoint está en la API de Esbilla como referencia,
+ * pero el cliente debe servir este archivo desde SU dominio principal.
+ *
+ * Uso: /.well-known/gateway/gtm-verification.txt?domain=tudominio.com
+ */
+app.get('/.well-known/gateway/gtm-verification.txt', async (req, res) => {
+  const domain = req.query.domain || req.get('host');
+
+  if (!db) {
+    return res.status(503).type('text/plain').send('Service temporarily unavailable');
+  }
+
+  try {
+    // Buscar sitio por dominio
+    const sitesSnapshot = await db.collection('sites')
+      .where('domains', 'array-contains', domain)
+      .limit(1)
+      .get();
+
+    if (sitesSnapshot.empty) {
+      return res.status(404).type('text/plain').send('Site not found');
+    }
+
+    const siteData = sitesSnapshot.docs[0].data();
+    const containerId = siteData.scriptConfig?.gtm?.containerId;
+
+    if (!containerId) {
+      return res.status(404).type('text/plain').send('GTM Container ID not configured');
+    }
+
+    // Devolver solo el Container ID (formato requerido por Google)
+    res.type('text/plain').send(containerId);
+  } catch (err) {
+    console.error('[GTM Gateway] Error:', err);
+    res.status(500).type('text/plain').send('Internal server error');
+  }
+});
+
 // Ruta: Configuración del sitiu por ID
 app.get('/api/config/:id', async (req, res) => {
   const { id } = req.params;

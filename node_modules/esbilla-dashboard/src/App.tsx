@@ -20,6 +20,7 @@ import { UsersPage } from './pages/Users';
 import { SettingsPage } from './pages/Settings';
 import { UrlStatsPage } from './pages/UrlStats';
 import { OrganizationsPage } from './pages/Organizations';
+import { WaitingListPage } from './pages/WaitingList';
 
 function AppRoutes() {
   return (
@@ -146,6 +147,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <OrganizationsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/waiting-list"
+        element={
+          <ProtectedRoute adminOnly>
+            <WaitingListPage />
           </ProtectedRoute>
         }
       />
