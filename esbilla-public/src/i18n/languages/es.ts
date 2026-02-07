@@ -152,6 +152,19 @@ export const es = {
     'modes.gtm.pro3': 'Testing A/B y configuración avanzada',
     'modes.gtm.ideal': 'Ideal para: Empresas con equipos de marketing, sitios con configuración compleja de tracking',
 
+    // GTM Gateway (feature destacada dentro de GTM Mode)
+    'modes.gtm.gateway.badge': 'NUEVO',
+    'modes.gtm.gateway.title': '🚀 GTM Gateway: Mejora tu Tracking hasta un 30%',
+    'modes.gtm.gateway.desc': 'Carga GTM desde tu propio dominio para reducir bloqueos de adblockers y mejorar tasas de tracking. Compatible con todos los modos.',
+    'modes.gtm.gateway.benefit1': 'Reduce bloqueos de adblockers (15-30% más datos)',
+    'modes.gtm.gateway.benefit2': 'Tu propio dominio con CNAME DNS',
+    'modes.gtm.gateway.benefit3': 'Setup en 5 minutos desde Dashboard',
+    'modes.gtm.gateway.benefit4': 'Compatible GDPR/ePrivacy',
+    'modes.gtm.gateway.tech.title': 'Cómo funciona (técnico)',
+    'modes.gtm.gateway.tech.desc': 'Configuras un subdominio CNAME (ej: <code>gtm.tudominio.com → googletagmanager.com</code>) y Esbilla carga el script <code>gtm.js</code> desde tu dominio en lugar del de Google. Verificación automática con endpoint <code>/.well-known/gateway/gtm-verification.txt</code>.',
+    'modes.gtm.gateway.cta': 'Ver Guía Técnica Completa',
+    'modes.gtm.gateway.compatible': 'Compatible con: Modo Manual, Modo Simplificado (con GTM), Modo GTM',
+
     // GTM Legal - Argumentación Extensa
     'gtm.legal.title': 'Modo GTM y Simplificado: Por Qué Dejar que Esbilla Cargue los Scripts',
     'gtm.legal.subtitle': 'Argumentación legal y técnica sobre la gestión ética del consentimiento',

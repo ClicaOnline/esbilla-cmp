@@ -1,30 +1,39 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { PublicRoute, OnboardingRoute, ProtectedRoute } from './components/ProtectedRoute';
 
-// Auth pages
-import { LoginPage } from './pages/Login';
-import { RegisterPage } from './pages/Register';
-import { VerifyEmailPage } from './pages/VerifyEmail';
-import { ForgotPasswordPage } from './pages/ForgotPassword';
-import { AuthActionPage } from './pages/AuthAction';
-import { PendingApprovalPage } from './pages/PendingApproval';
-import { OnboardingSetupPage } from './pages/OnboardingSetup';
-import { AcceptInvitePage } from './pages/AcceptInvite';
+// Loading fallback
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="text-stone-600">Cargando...</div>
+  </div>
+);
 
-// Dashboard pages
-import { DashboardPage } from './pages/Dashboard';
-import { SitesPage } from './pages/Sites';
-import { FootprintPage } from './pages/Footprint';
-import { UsersPage } from './pages/Users';
-import { SettingsPage } from './pages/Settings';
-import { UrlStatsPage } from './pages/UrlStats';
-import { OrganizationsPage } from './pages/Organizations';
-import { WaitingListPage } from './pages/WaitingList';
+// Auth pages - Solo LoginPage cargado inmediatamente (es la entrada principal)
+import { LoginPage } from './pages/Login';
+const RegisterPage = lazy(() => import('./pages/Register').then(m => ({ default: m.RegisterPage })));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmail').then(m => ({ default: m.VerifyEmailPage })));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPassword').then(m => ({ default: m.ForgotPasswordPage })));
+const AuthActionPage = lazy(() => import('./pages/AuthAction').then(m => ({ default: m.AuthActionPage })));
+const PendingApprovalPage = lazy(() => import('./pages/PendingApproval').then(m => ({ default: m.PendingApprovalPage })));
+const OnboardingSetupPage = lazy(() => import('./pages/OnboardingSetup').then(m => ({ default: m.OnboardingSetupPage })));
+const AcceptInvitePage = lazy(() => import('./pages/AcceptInvite').then(m => ({ default: m.AcceptInvitePage })));
+
+// Dashboard pages - Todos lazy loaded
+const DashboardPage = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.DashboardPage })));
+const SitesPage = lazy(() => import('./pages/Sites').then(m => ({ default: m.SitesPage })));
+const FootprintPage = lazy(() => import('./pages/Footprint').then(m => ({ default: m.FootprintPage })));
+const UsersPage = lazy(() => import('./pages/Users').then(m => ({ default: m.UsersPage })));
+const SettingsPage = lazy(() => import('./pages/Settings').then(m => ({ default: m.SettingsPage })));
+const UrlStatsPage = lazy(() => import('./pages/UrlStats').then(m => ({ default: m.UrlStatsPage })));
+const OrganizationsPage = lazy(() => import('./pages/Organizations').then(m => ({ default: m.OrganizationsPage })));
+const WaitingListPage = lazy(() => import('./pages/WaitingList').then(m => ({ default: m.WaitingListPage })));
 
 function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
       {/* Public routes (auth pages) */}
       <Route
         path="/login"
@@ -159,6 +168,7 @@ function AppRoutes() {
         }
       />
     </Routes>
+    </Suspense>
   );
 }
 
