@@ -1,0 +1,101 @@
+/**
+ * ESBILLA CMP - Layout: Barra Inferior
+ * Importar después de base.css
+ */
+
+#esbilla-wrapper {
+  align-items: flex-end;
+  background: transparent;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+
+#esbilla-banner {
+  max-width: 100%;
+  width: 100%;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  padding: 20px 24px;
+  pointer-events: auto;
+  animation: esbillaSlideUp 0.3s ease-out;
+}
+
+.esbilla-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  text-align: left;
+}
+
+.esbilla-icon {
+  font-size: 32px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.esbilla-content {
+  flex: 1;
+}
+
+.esbilla-title {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.esbilla-text {
+  font-size: 14px;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.esbilla-actions {
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.esbilla-lang-selector {
+  top: 50%;
+  transform: translateY(-50%);
+  right: 24px;
+}
+
+/* Panel de settings en bottom bar */
+.esbilla-settings {
+  margin-top: 16px;
+  padding-top: 16px;
+  max-width: 600px;
+}
+
+@keyframes esbillaSlideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .esbilla-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .esbilla-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .esbilla-lang-selector {
+    position: static;
+    transform: none;
+    margin-bottom: 12px;
+  }
+}

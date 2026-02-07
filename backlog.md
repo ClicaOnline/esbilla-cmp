@@ -39,7 +39,7 @@
 3. ✅ **SDK: Implementar script blocking** - COMPLETADO: MutationObserver implementado en SDK v1.5 con documentación completa
 4. ✅ **SDK v1.6: Carga Dinámica de Scripts (modo GTM)** - COMPLETADO: Sistema de carga automática de scripts desde configuración del Dashboard, sin modificar HTML. Actúa como Tag Manager simplificado para cumplimiento GDPR automático
 5. ⚠️ **Dashboard: Editor visual de banner** - UI para personalizar colores, posición, textos, logo del banner
-6. ✅ **SDK v1.8: Google Tag Manager Gateway** - COMPLETADO: Configuración de GTM Gateway para proxy de scripts con CNAME personalizado, integración Dashboard + API
+6. ✅ **SDK v1.8+: Google Tag Manager Gateway Proxy** - COMPLETADO: Proxy de GTM via Esbilla API con optimizaciones (cache 5min + compresión Brotli + geolocalización)
 7. ❌ **Implementar GTM Server Side** - Configuración de GTM Server-Side Tagging con Cloud Run
 
 **🎉 Completado (2026-02-05 / 2026-02-07)**
@@ -53,15 +53,19 @@
   - Google Analytics 4, Hotjar, Facebook Pixel, LinkedIn, TikTok
   - Proxy de scripts con consentimiento previo
   - Integración completa con Dashboard
-- ✅ **SDK v1.8: Google Tag Manager Gateway** - COMPLETADO (2026-02-07)
-  - Configuración de GTM Gateway en Dashboard (dominio CNAME + Container ID)
-  - Función loadGTM() en SDK con soporte para dominios personalizados
-  - Endpoint de verificación `.well-known/gateway/gtm-verification.txt`
-  - Documentación completa en docs/GTM-GATEWAY-SETUP.md (489 líneas)
-  - Guía de configuración DNS CNAME paso a paso
-  - **Landing actualizada:** Sección destacada en como-empezar.astro con badge "NUEVO"
-  - **Explicación técnica:** CNAME setup + verificación automática
-  - **Compatible con:** Modo Manual, Modo Simplificado (con GTM), Modo GTM
+- ✅ **SDK v1.8+: GTM Gateway Proxy** - COMPLETADO (2026-02-07)
+  - **Arquitectura de proxy** via Esbilla API (Cliente → Esbilla API → Google → Cliente)
+  - **Cache en memoria**: TTL 5 minutos, reduce latencia 66% y egress 92%
+  - **Compresión Brotli/Gzip**: Reduce tamaño 80 KB → 20 KB (75% reducción)
+  - **Rate limiting específico**: 10 req/min por IP para protección contra abuse
+  - **Geolocalización automática**: Headers X-Forwarded-Country-Region para targeting
+  - **Endpoints implementados**: /gtm.js, /gtm/*, /metrics/* con validación y logging
+  - **Dashboard actualizado**: Checkbox enable + Container ID (GTM-XXXXX o G-XXXXX), sin configuración DNS
+  - **SDK actualizado**: loadGTM() usa apiBase en lugar de CNAME directo
+  - **Documentación reescrita**: GTM-GATEWAY-SETUP.md (316 líneas) con arquitectura de proxy
+  - **Análisis de costos completo**: GTM-GATEWAY-PROXY-COSTS.md (460 líneas) con pricing como add-on
+  - **Impacto en costos**: +5-15% egress (€1.50/mes adicional por 1M PV con optimizaciones)
+  - **Pricing sugerido**: Add-on premium +€10-30/mes según plan
 - ✅ **Landing: Nuevas Secciones** - COMPLETADO (2026-02-05)
   - ✅ Traducciones en Español completas (~120 nuevas claves)
   - ✅ Sección "Cómo Empezar" ([lang]/como-empezar.astro) - Página completa con 3 pasos y explicación de modos

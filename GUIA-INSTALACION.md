@@ -77,6 +77,36 @@ Si usas GTM, añade tu Container ID:
 ></script>
 ```
 
+### 🚀 GTM Gateway Proxy (v1.8+ - Add-on Premium)
+
+**¿Qué es?** El GTM Gateway Proxy carga los scripts de Google Tag Manager **a través de Esbilla API** en lugar de directamente desde Google. Esto mejora hasta un **30% las tasas de tracking** al evitar ad blockers.
+
+**Arquitectura:**
+```
+Cliente → Esbilla API → Google GTM → Esbilla API → Cliente
+           ↓
+    Cache (5 min) + Compresión Brotli (75%)
+```
+
+**Ventajas:**
+- 🚫 **Evita ad blockers** - Los bloqueadores no bloquean Esbilla API
+- ⚡ **Más rápido** - Cache reduce latencia 66% (150ms → 50ms)
+- 📦 **Menos egress** - Compresión Brotli reduce tamaño 75% (80 KB → 20 KB)
+- 🌍 **Geolocalización** - Headers automáticos para mejor targeting
+
+**Cómo activar:**
+1. Ir al **Dashboard → Sitios → Editar tu sitio**
+2. Scroll a **"GTM Gateway Proxy (v1.8+)"**
+3. Marcar checkbox **"Habilitar GTM Gateway Proxy"**
+4. Introducir tu **Container ID** (GTM-XXXXX o G-XXXXX para GA4)
+5. Guardar
+
+**¡Eso es todo!** No necesitas configurar DNS ni CNAME. Esbilla API actúa como proxy automáticamente.
+
+**Pricing:** Esta feature es un add-on premium. Ver [análisis de costos](https://github.com/ClicaOnline/esbilla-cmp/blob/main/docs/GTM-GATEWAY-PROXY-COSTS.md).
+
+**Documentación completa:** [GTM-GATEWAY-SETUP.md](https://github.com/ClicaOnline/esbilla-cmp/blob/main/docs/GTM-GATEWAY-SETUP.md)
+
 ### Modo Simplificado (Dashboard gestiona todo)
 
 El Dashboard puede configurar el Pegoyu automáticamente con Google Analytics, Facebook Pixel, etc.:
