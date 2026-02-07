@@ -43,31 +43,40 @@
 7. ❌ **Implementar GTM Server Side** - Configuración de GTM Server-Side Tagging con Cloud Run
 
 **🏗️ GTM Gateway Proxy - Infraestructura (Post-implementación)**
-1. ❌ **Firestore Index**: Crear índice compuesto para `gtmGatewayDomain` en colección `sites`
-   - Índice: `sites` → `gtmGatewayDomain` (ASC)
-   - Necesario para queries rápidas de multi-tenant routing
-   - Comando: Añadir a `firestore.indexes.json` y deploy
-2. ❌ **Deploy con Load Balancer**: Configurar Cloud Load Balancer multi-región
-   - Crear backend service con Cloud Run en 2-3 regiones UE
-   - Configurar health checks (`/api/health`)
-   - SSL/TLS con managed certificate
-   - Failover automático entre regiones
-3. ❌ **Habilitar Cloud CDN**: Configurar CDN global con backends multi-región
-   - Cache mode: `CACHE_ALL_STATIC`
-   - TTL: 5 minutos (configurable)
-   - PoPs en UE: Frankfurt, London, Paris, Amsterdam, Milán, Madrid
-   - Compresión Brotli/Gzip automática
-   - Reducción esperada: 80-90% egress de Cloud Run
-4. ❌ **Monitoring y Alertas**: Configurar observabilidad completa
-   - Cloud Monitoring: métricas de CPU, memory, requests, latency
-   - Cloud Logging: logs estructurados con filtros por severity
-   - Uptime Checks: monitoreo 24/7 desde múltiples regiones
-   - Alertas configuradas:
-     - Error rate >1% durante 5 min → Email + Slack
+1. ✅ **Firestore Index**: Crear índice compuesto para `gtmGatewayDomain` en colección `sites`
+   - ✅ Índice añadido a `firestore.indexes.json`
+   - ✅ Query: `sites.gtmGatewayDomain == 'gtm.cliente.com'`
+   - Pendiente: Deploy del índice a Firestore
+2. ✅ **Deploy con Load Balancer**: Configurar Cloud Load Balancer multi-región
+   - ✅ Script `infrastructure/setup-load-balancer.sh` creado
+   - ✅ Backend service con Cloud Run en 3 regiones UE (west4, west1, west3)
+   - ✅ Health checks configurados (`/api/health`)
+   - ✅ SSL/TLS con managed certificate
+   - ✅ Distribución de tráfico: 70% primary, 30% secondary, 0% standby
+   - Pendiente: Ejecutar script en GCP
+3. ✅ **Habilitar Cloud CDN**: Configurar CDN global con backends multi-región
+   - ✅ Script `infrastructure/setup-cdn.sh` creado
+   - ✅ Cache mode: `CACHE_ALL_STATIC`
+   - ✅ TTL: 5 minutos (default), 1 hora (max)
+   - ✅ PoPs en UE: Frankfurt, London, Paris, Amsterdam, Milán, Madrid
+   - ✅ Compresión Brotli/Gzip automática
+   - ✅ Cache key policy: protocol + host + query string
+   - Pendiente: Ejecutar script en GCP (requiere Load Balancer primero)
+4. ✅ **Monitoring y Alertas**: Configurar observabilidad completa
+   - ✅ Script `infrastructure/setup-monitoring.sh` creado
+   - ✅ Notification channel configurado (email)
+   - ✅ Uptime Check: `/api/health` cada 60s desde Europa y USA
+   - ✅ 4 Alertas configuradas:
+     - Error rate >1% durante 5 min → Email
      - Latency p99 >1s durante 5 min → Email
-     - Availability <99% durante 5 min → PagerDuty
+     - Availability <99% durante 5 min → Email
      - Cloud Run instances >80 → Email (escalar)
-   - Dashboard personalizado: cache hit rate, latency, requests/s, errors
+   - ✅ Dashboard personalizado: requests/s, latency, errors, instances, cache hit rate
+   - Pendiente: Ejecutar script en GCP
+5. ✅ **Documentación**: README completo con guías de uso
+   - ✅ `infrastructure/README.md` creado con orden de ejecución
+   - ✅ Comandos de verificación y troubleshooting
+   - ✅ Estimación de costos por fase
 
 **🎉 Completado (2026-02-05 / 2026-02-07)**
 - ✅ **Plugin de WordPress v1.0.0** - Plugin completo con 3 modos (Manual, Simplificado, GTM)
