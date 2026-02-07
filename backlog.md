@@ -81,7 +81,7 @@
    - ✅ Opción A (Deploy Automático) y Opción B (Deploy Manual) documentadas
    - ✅ Guía de verificación post-deploy con comandos útiles
 
-**🎉 Completado (2026-02-05 / 2026-02-07)**
+**🎉 Completado (2026-02-05 / 2026-02-07 / 2026-02-08)**
 - ✅ **Plugin de WordPress v1.0.0** - Plugin completo con 3 modos (Manual, Simplificado, GTM)
   - Interfaz de administración completa
   - Validación de campos en tiempo real
@@ -130,6 +130,15 @@
   - ✅ WordPress Plugin: Sección "Personalización" con textarea y enlace a documentación
   - ✅ Templates: IDs añadidos a todos los elementos del banner (modal.html, bottom-bar.html, maiz.html)
   - ✅ Documentación: docs/PERSONALIZACION-BANNER.md (498 líneas) con 5 ejemplos completos y guía de mejores prácticas
+- ✅ **Dashboard: Editor de Permisos y Fixes Críticos** - COMPLETADO (2026-02-08)
+  - ✅ Editor de permisos con dropdown selector de roles (superadmin, pending)
+  - ✅ Validación de último superadmin (no permite degradar si es el único)
+  - ✅ Modal de confirmación para cambios críticos de rol
+  - ✅ Fix Firestore Rules: Priorizar globalRole sobre role (backward compatibility)
+  - ✅ Fix Onboarding: Permitir crear organizations/sites durante onboarding
+  - ✅ Fix WaitingList: QueryClientProvider añadido a App.tsx
+  - ✅ Fix Landing: Usar named database 'esbilla-cmp' en firebase.ts
+  - ✅ Fix Landing: Colección 'waitingList' (camelCase) con validación de campos
 
 **🔥 Tareas Inmediatas (Semana actual)**
 - ✅ **Landing: Crear páginas nuevas en Astro** - COMPLETADO: como-empezar.astro, gtm-legal.astro, saas.astro
@@ -139,13 +148,14 @@
   - Nota: Solo español (es) completado en este sprint
 - ⏳ **Plugin WordPress: Traducciones** - EN PROGRESO: Archivos base .po creados (ast, en_US), faltan traducciones restantes
 - ❌ **Plugin WordPress: Assets gráficos** - Iconos y banners para WordPress.org
-- ❌ **Dashboard: Editor de permisos de usuario** - UI intuitiva para cambiar roles fácilmente
-  - Poder cambiar un superadmin a org_admin desde el panel
-  - Restricción crítica: SIEMPRE debe haber al menos 1 superadmin en el sistema
-  - Validación: Antes de cambiar el rol de un superadmin, verificar que existe otro superadmin activo
-  - UI sugerida: Select dropdown con roles disponibles en la tabla de usuarios (Users.tsx)
-  - Mostrar warning modal si intenta eliminar el último superadmin
-  - Permisos necesarios: Solo superadmin puede cambiar roles de otros usuarios
+- ✅ **Dashboard: Editor de permisos de usuario** - COMPLETADO: UI intuitiva para cambiar roles desde Users.tsx
+  - ✅ Dropdown selector editable de roles globales (superadmin, pending)
+  - ✅ Restricción crítica implementada: SIEMPRE debe haber al menos 1 superadmin
+  - ✅ Validación automática: Bloquea degradación del último superadmin
+  - ✅ Modal de confirmación para cambios críticos de rol
+  - ✅ Warning visual si intenta eliminar el último superadmin (con contador)
+  - ✅ Solo superadmin puede cambiar roles de otros usuarios
+  - ✅ El usuario no puede cambiar su propio rol (seguridad)
 
 **📊 Prioridad Media (Semana 3-4)**
 5. ❌ **Tests automatizados completos** - Unit tests para componentes críticos, E2E tests para flujos principales

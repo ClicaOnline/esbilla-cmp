@@ -623,7 +623,7 @@ export function UsersPage() {
                     </button>
                     {isSuperAdmin && (
                       <button
-                        onClick={() => updateUserGlobalRole(user.id, 'superadmin')}
+                        onClick={() => initiateRoleChange(user.id, 'superadmin')}
                         className="flex items-center gap-1 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
                       >
                         <Crown size={16} />
@@ -739,7 +739,7 @@ export function UsersPage() {
                       <div className="flex items-center justify-end gap-2">
                         {user.globalRole !== 'superadmin' && (
                           <button
-                            onClick={() => updateUserGlobalRole(user.id, 'superadmin')}
+                            onClick={() => initiateRoleChange(user.id, 'superadmin')}
                             className="p-2 text-purple-500 hover:bg-purple-50 rounded-lg transition-colors"
                             title={t.users.roles.superadmin}
                           >
