@@ -76,7 +76,13 @@ jobs:
             --platform managed \
             --region europe-west4 \
             --allow-unauthenticated \
-            --set-env-vars NODE_ENV=production \
+            --update-env-vars NODE_ENV=production \
+            --update-env-vars SMTP_HOST=${{ secrets.SMTP_HOST_PROD }} \
+            --update-env-vars SMTP_PORT=${{ secrets.SMTP_PORT_PROD }} \
+            --update-env-vars SMTP_USER=${{ secrets.SMTP_USER_PROD }} \
+            --update-env-vars SMTP_PASS=${{ secrets.SMTP_PASS_PROD }} \
+            --update-env-vars FROM_EMAIL="${{ secrets.FROM_EMAIL_PROD }}" \
+            --update-env-vars FRONTEND_URL=${{ secrets.FRONTEND_URL_PROD }} \
             --memory 1Gi \
             --cpu 2 \
             --min-instances 1 \
