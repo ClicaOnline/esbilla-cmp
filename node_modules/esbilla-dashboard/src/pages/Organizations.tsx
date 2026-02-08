@@ -435,6 +435,15 @@ export function OrganizationsPage() {
     ).length;
   }
 
+  function isOrphanOrg(orgId: string): boolean {
+    // Una organización es huérfana si no tiene ningún usuario con rol de owner o admin (excluyendo superadmins)
+    return !users.some(u =>
+      u.globalRole !== 'superadmin' &&
+      orgId in (u.orgAccess || {}) &&
+      (u.orgAccess[orgId].role === 'org_owner' || u.orgAccess[orgId].role === 'org_admin')
+    );
+  }
+
   function openUsersModal(orgId: string) {
     setSelectedOrgId(orgId);
     setShowUsersModal(true);
@@ -613,6 +622,7 @@ export function OrganizationsPage() {
             {paginatedOrgs.map((org) => {
               const sitesCount = getSitesCount(org.id);
               const isAtLimit = sitesCount >= org.maxSites;
+              const isOrphan = isOrphanOrg(org.id);
 
               return (
                 <div
@@ -633,6 +643,12 @@ export function OrganizationsPage() {
                           <BadgeEstado name={`plan-${org.plan}` as any} />
                           {org.smtp?.enabled && (
                             <BadgeEstado name="smtp-configured" label="SMTP Propio" />
+                          )}
+                          {isOrphan && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                              <AlertTriangle size={12} />
+                              Sin admins
+                            </span>
                           )}
                           {org.taxId && (
                             <span className="text-xs text-stone-400">
