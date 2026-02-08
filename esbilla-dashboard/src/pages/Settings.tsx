@@ -20,7 +20,6 @@ import {
   AlertCircle,
   Loader2,
   Building2,
-  Mail,
   Link2,
   Shield,
   Globe
