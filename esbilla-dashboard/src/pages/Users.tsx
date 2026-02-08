@@ -31,6 +31,7 @@ interface UserRecord {
   globalRole: GlobalRole;
   orgAccess: Record<string, OrganizationAccess>;
   siteAccess: Record<string, SiteAccess>;
+  distributorAccess?: Record<string, any>;
   createdAt: Date;
   lastLogin: Date;
 }
@@ -106,6 +107,7 @@ export function UsersPage() {
           globalRole: data.globalRole || data.role || 'pending', // Legacy support
           orgAccess: data.orgAccess || {},
           siteAccess: data.siteAccess || {},
+          distributorAccess: data.distributorAccess || {},
           createdAt: data.createdAt?.toDate?.() || new Date(),
           lastLogin: data.lastLogin?.toDate?.() || new Date()
         });
@@ -315,6 +317,7 @@ export function UsersPage() {
         globalRole,
         orgAccess: orgAccessRecords,
         siteAccess: siteAccessRecords,
+        distributorAccess: {},
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
         createdBy: currentUser?.uid || '',
@@ -333,6 +336,7 @@ export function UsersPage() {
         globalRole: newUser.globalRole,
         orgAccess: orgAccessRecords,
         siteAccess: siteAccessRecords,
+        distributorAccess: {},
         createdAt: new Date(),
         lastLogin: new Date()
       }]);
