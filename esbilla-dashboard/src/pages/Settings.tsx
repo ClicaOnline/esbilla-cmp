@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import type { Site } from '../types';
+import type { Site, LegalInfo } from '../types';
 import {
   Palette,
   Layout as LayoutIcon,
@@ -18,7 +18,12 @@ import {
   Eye,
   Globe2,
   AlertCircle,
-  Loader2
+  Loader2,
+  Building2,
+  Mail,
+  Link2,
+  Shield,
+  Globe
 } from 'lucide-react';
 
 type BannerLayout = 'modal' | 'bar' | 'corner';
@@ -41,10 +46,7 @@ interface BannerConfig {
     customize: string;
     acceptEssential: string;
   };
-  legal: {
-    title: string;
-    content: string;
-  };
+  legal: LegalInfo;
   customCSS?: string;
 }
 
@@ -65,8 +67,25 @@ const defaultConfig: BannerConfig = {
     acceptEssential: 'Solo esenciales',
   },
   legal: {
-    title: 'Aviso Legal',
+    // Legacy fields
+    title: 'Política de Privacidad',
     content: '',
+    // GDPR fields
+    companyName: '',
+    taxId: '',
+    address: '',
+    contactEmail: '',
+    dpoName: '',
+    dpoEmail: '',
+    privacyPolicyUrl: '',
+    cookiePolicyUrl: '',
+    bannerText: '',
+    fullPolicyText: '',
+    crossDomainEnabled: false,
+    relatedDomains: [],
+    consentRetentionDays: 1095, // 3 años GDPR
+    supervisoryAuthority: '',
+    supervisoryAuthorityUrl: '',
   },
   customCSS: '',
 };
@@ -181,7 +200,7 @@ export function SettingsPage() {
     setSaved(false);
   };
 
-  const updateLegal = (key: keyof BannerConfig['legal'], value: string) => {
+  const updateLegal = (key: keyof LegalInfo, value: string | boolean | string[] | number) => {
     setConfig((prev) => ({
       ...prev,
       legal: { ...prev.legal, [key]: value },
@@ -545,49 +564,346 @@ export function SettingsPage() {
           </div>
         </section>
 
-        {/* Legal Notice Section */}
+        {/* Legal Notice Section - GDPR Compliance */}
         <section className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-red-100 rounded-lg">
               <FileText className="text-red-600" size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-stone-800">{t.settings.legalSection}</h2>
-              <p className="text-sm text-stone-500">{t.settings.legalDescription}</p>
+              <h2 className="text-lg font-semibold text-stone-800">Información Legal (GDPR Art. 13)</h2>
+              <p className="text-sm text-stone-500">Configura la información legal obligatoria según GDPR</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                {t.settings.legalTitle}
-              </label>
-              <input
-                type="text"
-                value={config.legal.title}
-                onChange={(e) => updateLegal('title', e.target.value)}
-                className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
+          {/* Warning banner */}
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={18} />
+              <div className="text-sm text-amber-800">
+                <p className="font-medium mb-1">⚖️ Responsabilidad Legal</p>
+                <p>
+                  El cumplimiento legal es responsabilidad exclusiva de tu organización. Consulta con un abogado
+                  especializado en protección de datos. Ver <a href="https://github.com/ClicaOnline/esbilla-cmp/blob/main/LICENSE" target="_blank" rel="noopener" className="underline">LICENSE</a> para más información.
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                {t.settings.legalContent}
-              </label>
-              <textarea
-                value={config.legal.content}
-                onChange={(e) => updateLegal('content', e.target.value)}
-                placeholder={t.settings.legalPlaceholder}
-                rows={8}
-                className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
-              />
+          </div>
+
+          <div className="space-y-6">
+            {/* 1. Responsable del Tratamiento */}
+            <div className="border-l-4 border-blue-500 pl-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 size={18} className="text-blue-600" />
+                <h3 className="font-semibold text-stone-800">1. Responsable del Tratamiento</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Nombre de la empresa *
+                  </label>
+                  <input
+                    type="text"
+                    value={config.legal.companyName || ''}
+                    onChange={(e) => updateLegal('companyName', e.target.value)}
+                    placeholder="Ej: Acme Corp S.L."
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    CIF/NIF
+                  </label>
+                  <input
+                    type="text"
+                    value={config.legal.taxId || ''}
+                    onChange={(e) => updateLegal('taxId', e.target.value)}
+                    placeholder="Ej: B12345678"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Dirección postal
+                  </label>
+                  <input
+                    type="text"
+                    value={config.legal.address || ''}
+                    onChange={(e) => updateLegal('address', e.target.value)}
+                    placeholder="Ej: C/ Mayor 1, 28001 Madrid"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Email de contacto *
+                  </label>
+                  <input
+                    type="email"
+                    value={config.legal.contactEmail || ''}
+                    onChange={(e) => updateLegal('contactEmail', e.target.value)}
+                    placeholder="Ej: legal@acme.com"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setShowLegalPreview(true)}
-              className="flex items-center gap-2 px-4 py-2 text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 transition-colors"
-            >
-              <Eye size={18} />
-              {t.settings.previewModal}
-            </button>
+
+            {/* 2. Delegado de Protección de Datos (DPO) */}
+            <div className="border-l-4 border-purple-500 pl-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield size={18} className="text-purple-600" />
+                <h3 className="font-semibold text-stone-800">2. Delegado de Protección de Datos (DPO)</h3>
+              </div>
+              <p className="text-xs text-stone-500 mb-3">Opcional. Solo si tu organización está obligada a designar DPO.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Nombre del DPO
+                  </label>
+                  <input
+                    type="text"
+                    value={config.legal.dpoName || ''}
+                    onChange={(e) => updateLegal('dpoName', e.target.value)}
+                    placeholder="Ej: María García"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Email del DPO
+                  </label>
+                  <input
+                    type="email"
+                    value={config.legal.dpoEmail || ''}
+                    onChange={(e) => updateLegal('dpoEmail', e.target.value)}
+                    placeholder="Ej: dpo@acme.com"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Enlaces Externos */}
+            <div className="border-l-4 border-green-500 pl-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Link2 size={18} className="text-green-600" />
+                <h3 className="font-semibold text-stone-800">3. Enlaces a Políticas</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    URL Política de Privacidad
+                  </label>
+                  <input
+                    type="url"
+                    value={config.legal.privacyPolicyUrl || ''}
+                    onChange={(e) => updateLegal('privacyPolicyUrl', e.target.value)}
+                    placeholder="https://tudominio.com/privacidad"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    URL Política de Cookies
+                  </label>
+                  <input
+                    type="url"
+                    value={config.legal.cookiePolicyUrl || ''}
+                    onChange={(e) => updateLegal('cookiePolicyUrl', e.target.value)}
+                    placeholder="https://tudominio.com/cookies"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Textos Personalizados */}
+            <div className="border-l-4 border-amber-500 pl-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText size={18} className="text-amber-600" />
+                <h3 className="font-semibold text-stone-800">4. Textos Legales</h3>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Texto corto para el banner
+                  </label>
+                  <p className="text-xs text-stone-500 mb-2">
+                    Texto breve que aparece en el banner de cookies (opcional, se usa el estándar si está vacío)
+                  </p>
+                  <textarea
+                    value={config.legal.bannerText || ''}
+                    onChange={(e) => updateLegal('bannerText', e.target.value)}
+                    placeholder="Ej: Usamos cookies propias y de terceros para personalizar tu experiencia..."
+                    rows={3}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Texto completo del modal "Más información"
+                  </label>
+                  <p className="text-xs text-stone-500 mb-2">
+                    Información detallada según GDPR Art. 13. Incluye: qué datos recoges, para qué, base legal,
+                    periodo de conservación, derechos del usuario, etc.
+                  </p>
+                  <textarea
+                    value={config.legal.fullPolicyText || ''}
+                    onChange={(e) => updateLegal('fullPolicyText', e.target.value)}
+                    placeholder={`Ejemplo:
+
+Responsable: ${config.legal.companyName || '[Tu empresa]'}
+Finalidad: Personalización de contenido, analítica web, publicidad comportamental
+Base legal: Consentimiento (Art. 6.1.a GDPR)
+Destinatarios: Google Analytics, Facebook Pixel, [otros]
+Plazo: ${config.legal.consentRetentionDays || 1095} días
+Derechos: Acceso, rectificación, supresión, portabilidad en ${config.legal.contactEmail || '[email]'}
+
+Más información: ${config.legal.privacyPolicyUrl || '[URL política]'}`}
+                    rows={12}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y font-mono text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 5. Cross-Domain */}
+            <div className="border-l-4 border-indigo-500 pl-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Globe size={18} className="text-indigo-600" />
+                <h3 className="font-semibold text-stone-800">5. Configuración Cross-Domain</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="crossDomainEnabled"
+                    checked={config.legal.crossDomainEnabled || false}
+                    onChange={(e) => updateLegal('crossDomainEnabled', e.target.checked)}
+                    className="mt-1 h-5 w-5 rounded border-stone-300 text-amber-500 focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="crossDomainEnabled" className="font-medium text-stone-800 cursor-pointer">
+                      Habilitar consentimiento compartido entre dominios
+                    </label>
+                    <p className="text-xs text-stone-500 mt-1">
+                      Si tu organización opera múltiples dominios y quieres compartir el consentimiento entre ellos
+                    </p>
+                  </div>
+                </div>
+
+                {config.legal.crossDomainEnabled && (
+                  <div>
+                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                      Dominios relacionados (uno por línea)
+                    </label>
+                    <p className="text-xs text-stone-500 mb-2">
+                      ⚠️ <strong>Importante GDPR:</strong> Debes informar al usuario que su consentimiento se comparte entre estos dominios
+                    </p>
+                    <textarea
+                      value={(config.legal.relatedDomains || []).join('\n')}
+                      onChange={(e) => updateLegal('relatedDomains', e.target.value.split('\n').filter(d => d.trim()))}
+                      placeholder="ejemplo.com&#10;shop.ejemplo.com&#10;blog.ejemplo.com"
+                      rows={4}
+                      className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y font-mono text-sm"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 6. Configuración Avanzada */}
+            <div className="border-l-4 border-stone-500 pl-4">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertCircle size={18} className="text-stone-600" />
+                <h3 className="font-semibold text-stone-800">6. Configuración Avanzada</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Periodo de conservación (días)
+                  </label>
+                  <p className="text-xs text-stone-500 mb-2">GDPR recomienda 1095 días (3 años)</p>
+                  <input
+                    type="number"
+                    value={config.legal.consentRetentionDays || 1095}
+                    onChange={(e) => updateLegal('consentRetentionDays', parseInt(e.target.value))}
+                    min="365"
+                    max="3650"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Autoridad de Control
+                  </label>
+                  <input
+                    type="text"
+                    value={config.legal.supervisoryAuthority || ''}
+                    onChange={(e) => updateLegal('supervisoryAuthority', e.target.value)}
+                    placeholder="Ej: AEPD (España), CNIL (Francia)"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    URL Autoridad de Control
+                  </label>
+                  <input
+                    type="url"
+                    value={config.legal.supervisoryAuthorityUrl || ''}
+                    onChange={(e) => updateLegal('supervisoryAuthorityUrl', e.target.value)}
+                    placeholder="Ej: https://www.aepd.es"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Legacy fields (backward compatibility) */}
+            <details className="border-l-4 border-stone-300 pl-4">
+              <summary className="cursor-pointer font-medium text-stone-600 hover:text-stone-800 text-sm">
+                ⚙️ Campos Legacy (backward compatibility)
+              </summary>
+              <div className="mt-3 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Título del modal (legacy)
+                  </label>
+                  <input
+                    type="text"
+                    value={config.legal.title || ''}
+                    onChange={(e) => updateLegal('title', e.target.value)}
+                    placeholder="Política de Privacidad"
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                    Contenido (legacy)
+                  </label>
+                  <textarea
+                    value={config.legal.content || ''}
+                    onChange={(e) => updateLegal('content', e.target.value)}
+                    placeholder="Este campo se mantiene para compatibilidad. Usa 'Texto completo del modal' arriba."
+                    rows={4}
+                    className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
+                  />
+                </div>
+              </div>
+            </details>
+
+            {/* Preview button */}
+            <div className="flex justify-end pt-4 border-t border-stone-200">
+              <button
+                onClick={() => setShowLegalPreview(true)}
+                className="flex items-center gap-2 px-4 py-2 text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 transition-colors"
+              >
+                <Eye size={18} />
+                Vista previa del modal legal
+              </button>
+            </div>
           </div>
         </section>
 
@@ -725,8 +1041,8 @@ export function SettingsPage() {
       {/* Legal Notice Modal Preview */}
       {showLegalPreview && (
         <LegalModal
-          title={config.legal.title}
-          content={config.legal.content}
+          title={config.legal.title || 'Política de Privacidad'}
+          content={config.legal.fullPolicyText || config.legal.content || ''}
           onClose={() => setShowLegalPreview(false)}
         />
       )}
