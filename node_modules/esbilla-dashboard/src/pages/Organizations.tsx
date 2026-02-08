@@ -8,7 +8,7 @@ import type { Organization, Site, DashboardUser } from '../types';
 import { generateOrgId } from '../types';
 import {
   Building2, Plus, Edit2, Trash2, X, Copy, Check,
-  CreditCard, Globe2, Users, AlertTriangle
+  CreditCard, Globe2, Users, AlertTriangle, Mail, Eye, EyeOff
 } from 'lucide-react';
 import { usePagination } from '../hooks/usePagination';
 import { useSearch } from '../hooks/useSearch';
@@ -16,6 +16,7 @@ import { Pagination } from '../components/shared/Pagination';
 import { SearchInput } from '../components/shared/SearchInput';
 import { PageSizeSelector } from '../components/shared/PageSizeSelector';
 import { UserSearchSelector } from '../components/shared/UserSearchSelector';
+import { BadgeEstado } from '../components/BadgeEstado';
 
 // Generate a UUID tracking ID for the organization
 function generateTrackingId(): string {
@@ -39,6 +40,18 @@ interface BillingAddress {
   country: string;
 }
 
+interface SmtpFormData {
+  enabled: boolean;
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+  fromName: string;
+  fromEmail: string;
+  replyTo: string;
+}
+
 interface OrganizationFormData {
   name: string;
   legalName: string;
@@ -46,6 +59,7 @@ interface OrganizationFormData {
   billingEmail: string;
   billingAddress: BillingAddress;
   plan: 'free' | 'pro' | 'enterprise';
+  smtp: SmtpFormData;
 }
 
 const EMPTY_ADDRESS: BillingAddress = {
@@ -54,6 +68,18 @@ const EMPTY_ADDRESS: BillingAddress = {
   postalCode: '',
   province: '',
   country: 'ES'
+};
+
+const EMPTY_SMTP: SmtpFormData = {
+  enabled: false,
+  host: '',
+  port: 587,
+  secure: false,
+  user: '',
+  pass: '',
+  fromName: '',
+  fromEmail: '',
+  replyTo: ''
 };
 
 const COUNTRIES = [
@@ -92,13 +118,15 @@ export function OrganizationsPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<OrganizationFormData>({
     name: '',
     legalName: '',
     taxId: '',
     billingEmail: '',
     billingAddress: { ...EMPTY_ADDRESS },
-    plan: 'free'
+    plan: 'free',
+    smtp: { ...EMPTY_SMTP }
   });
 
   // Search and pagination state
@@ -217,13 +245,15 @@ export function OrganizationsPage() {
   function openCreateModal() {
     setEditingOrg(null);
     setSaveError(null);
+    setShowPassword(false);
     setFormData({
       name: '',
       legalName: '',
       taxId: '',
       billingEmail: '',
       billingAddress: { ...EMPTY_ADDRESS },
-      plan: 'free'
+      plan: 'free',
+      smtp: { ...EMPTY_SMTP }
     });
     setShowModal(true);
   }
@@ -231,6 +261,7 @@ export function OrganizationsPage() {
   function openEditModal(org: Organization) {
     setEditingOrg(org);
     setSaveError(null);
+    setShowPassword(false);
     setFormData({
       name: org.name,
       legalName: org.legalName || '',
@@ -243,7 +274,18 @@ export function OrganizationsPage() {
         province: org.billingAddress.province || '',
         country: org.billingAddress.country || 'ES'
       } : { ...EMPTY_ADDRESS },
-      plan: org.plan
+      plan: org.plan,
+      smtp: org.smtp ? {
+        enabled: org.smtp.enabled,
+        host: org.smtp.host,
+        port: org.smtp.port,
+        secure: org.smtp.secure,
+        user: org.smtp.user,
+        pass: org.smtp.pass,
+        fromName: org.smtp.fromName,
+        fromEmail: org.smtp.fromEmail,
+        replyTo: org.smtp.replyTo || ''
+      } : { ...EMPTY_SMTP }
     });
     setShowModal(true);
   }
@@ -268,6 +310,20 @@ export function OrganizationsPage() {
         country: formData.billingAddress.country
       } : null;
 
+      // Preparar configuración SMTP (solo si está habilitada y tiene datos)
+      const hasSmtp = formData.smtp.enabled && formData.smtp.host && formData.smtp.user;
+      const smtpConfig = hasSmtp ? {
+        enabled: formData.smtp.enabled,
+        host: formData.smtp.host,
+        port: formData.smtp.port,
+        secure: formData.smtp.secure,
+        user: formData.smtp.user,
+        pass: formData.smtp.pass, // TODO: encriptar en el backend
+        fromName: formData.smtp.fromName,
+        fromEmail: formData.smtp.fromEmail,
+        replyTo: formData.smtp.replyTo || null
+      } : null;
+
       if (editingOrg) {
         // Update existing organization
         await updateDoc(doc(db, 'organizations', editingOrg.id), {
@@ -279,6 +335,7 @@ export function OrganizationsPage() {
           plan: formData.plan,
           maxSites: planLimits.maxSites,
           maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
+          smtp: smtpConfig,
           updatedAt: new Date()
         });
 
@@ -294,6 +351,7 @@ export function OrganizationsPage() {
                 plan: formData.plan,
                 maxSites: planLimits.maxSites,
                 maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
+                smtp: smtpConfig || undefined,
                 updatedAt: new Date()
               }
             : org
@@ -313,6 +371,7 @@ export function OrganizationsPage() {
           maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
           billingEmail: formData.billingEmail,
           billingAddress,
+          smtp: smtpConfig,
           trackingId,
           createdAt: new Date(),
           createdBy: user.uid
@@ -325,6 +384,7 @@ export function OrganizationsPage() {
           legalName: formData.legalName || undefined,
           taxId: formData.taxId || undefined,
           billingAddress: billingAddress || undefined,
+          smtp: smtpConfig || undefined,
         };
 
         setOrganizations(prev => [...prev, newOrg]);
@@ -568,14 +628,11 @@ export function OrganizationsPage() {
                         {org.legalName && (
                           <p className="text-sm text-stone-500">{org.legalName}</p>
                         )}
-                        <div className="flex items-center gap-4 mt-2">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            org.plan === 'enterprise' ? 'bg-purple-100 text-purple-700' :
-                            org.plan === 'pro' ? 'bg-blue-100 text-blue-700' :
-                            'bg-stone-100 text-stone-700'
-                          }`}>
-                            {org.plan.toUpperCase()}
-                          </span>
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          <BadgeEstado name={`plan-${org.plan}` as any} />
+                          {org.smtp?.enabled && (
+                            <BadgeEstado name="smtp-configured" label="SMTP Propio" />
+                          )}
                           {org.taxId && (
                             <span className="text-xs text-stone-400">
                               {org.taxId}
@@ -921,6 +978,217 @@ export function OrganizationsPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* === CONFIGURACIÓN SMTP === */}
+                <div className="space-y-4 pt-4 border-t border-stone-100">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-sm font-semibold text-stone-700 flex items-center gap-2">
+                        <Mail size={16} />
+                        Configuración SMTP Personalizada
+                      </h3>
+                      <p className="text-xs text-stone-500 mt-1">
+                        {formData.smtp.enabled
+                          ? 'Los emails se enviarán desde tu servidor SMTP'
+                          : 'Los emails se enviarán desde el servidor SMTP de Esbilla'
+                        }
+                      </p>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.smtp.enabled}
+                        onChange={(e) => setFormData({
+                          ...formData,
+                          smtp: { ...formData.smtp, enabled: e.target.checked }
+                        })}
+                        disabled={saving}
+                        className="w-4 h-4 text-amber-500 border-stone-300 rounded focus:ring-amber-500"
+                      />
+                      <span className="text-sm text-stone-600">Habilitar</span>
+                    </label>
+                  </div>
+
+                  {formData.smtp.enabled && (
+                    <div className="space-y-4 pl-6 border-l-2 border-amber-200">
+                      {/* Servidor SMTP */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium text-stone-700 mb-1">
+                            Servidor SMTP *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.smtp.host}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              smtp: { ...formData.smtp, host: e.target.value }
+                            })}
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            placeholder="smtp.acumbamail.com"
+                            disabled={saving}
+                            required={formData.smtp.enabled}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-stone-700 mb-1">
+                            Puerto *
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.smtp.port}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              smtp: { ...formData.smtp, port: parseInt(e.target.value) || 587 }
+                            })}
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            placeholder="587"
+                            disabled={saving}
+                            required={formData.smtp.enabled}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Seguridad */}
+                      <div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.smtp.secure}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              smtp: {
+                                ...formData.smtp,
+                                secure: e.target.checked,
+                                port: e.target.checked ? 465 : 587
+                              }
+                            })}
+                            disabled={saving}
+                            className="w-4 h-4 text-amber-500 border-stone-300 rounded focus:ring-amber-500"
+                          />
+                          <span className="text-sm text-stone-600">
+                            SSL/TLS (puerto 465) - Desmarcar para STARTTLS (puerto 587)
+                          </span>
+                        </label>
+                      </div>
+
+                      {/* Usuario y Contraseña */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-stone-700 mb-1">
+                            Usuario SMTP *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.smtp.user}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              smtp: { ...formData.smtp, user: e.target.value }
+                            })}
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            placeholder="usuario@ejemplo.com"
+                            disabled={saving}
+                            required={formData.smtp.enabled}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-stone-700 mb-1">
+                            Contraseña SMTP *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? 'text' : 'password'}
+                              value={formData.smtp.pass}
+                              onChange={(e) => setFormData({
+                                ...formData,
+                                smtp: { ...formData.smtp, pass: e.target.value }
+                              })}
+                              className="w-full px-3 py-2 pr-10 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                              placeholder="••••••••"
+                              disabled={saving}
+                              required={formData.smtp.enabled}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600"
+                              disabled={saving}
+                            >
+                              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Remitente */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-stone-700 mb-1">
+                            Nombre del Remitente *
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.smtp.fromName}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              smtp: { ...formData.smtp, fromName: e.target.value }
+                            })}
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            placeholder="Mi Empresa"
+                            disabled={saving}
+                            required={formData.smtp.enabled}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-stone-700 mb-1">
+                            Email del Remitente *
+                          </label>
+                          <input
+                            type="email"
+                            value={formData.smtp.fromEmail}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              smtp: { ...formData.smtp, fromEmail: e.target.value }
+                            })}
+                            className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                            placeholder="noreply@ejemplo.com"
+                            disabled={saving}
+                            required={formData.smtp.enabled}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Reply-To */}
+                      <div>
+                        <label className="block text-sm font-medium text-stone-700 mb-1">
+                          Email de Respuesta (opcional)
+                        </label>
+                        <input
+                          type="email"
+                          value={formData.smtp.replyTo}
+                          onChange={(e) => setFormData({
+                            ...formData,
+                            smtp: { ...formData.smtp, replyTo: e.target.value }
+                          })}
+                          className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                          placeholder="soporte@ejemplo.com"
+                          disabled={saving}
+                        />
+                      </div>
+
+                      {/* Info Box */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="text-xs text-blue-800">
+                          <strong>💡 Proveedores SMTP recomendados:</strong><br />
+                          • Acumbamail (smtp.acumbamail.com:587)<br />
+                          • SendGrid (smtp.sendgrid.net:587)<br />
+                          • Mailgun (smtp.mailgun.org:587)<br />
+                          • Gmail (smtp.gmail.com:587) - requiere contraseña de aplicación
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}

@@ -14,6 +14,22 @@
 // ============================================
 
 /**
+ * Configuración SMTP por organización
+ * Para envío de emails de invitaciones y notificaciones
+ */
+export interface SmtpConfig {
+  enabled: boolean;                   // Si false, usa el SMTP global de Esbilla
+  host: string;                       // ej: smtp.acumbamail.com, smtp.gmail.com
+  port: number;                       // 587 (STARTTLS) o 465 (SSL)
+  secure: boolean;                    // true para 465, false para 587
+  user: string;                       // usuario SMTP (normalmente un email)
+  pass: string;                       // contraseña SMTP (almacenada encriptada)
+  fromName: string;                   // Nombre del remitente (ej: "Acme Corp")
+  fromEmail: string;                  // Email del remitente (ej: noreply@acme.com)
+  replyTo?: string;                   // Email de respuesta (opcional)
+}
+
+/**
  * Organización (entidad fiscal con múltiples dominios)
  * Equivalente a "Cuenta" en Google Analytics
  */
@@ -40,6 +56,9 @@ export interface Organization {
     province: string;
     country: string;
   };
+
+  // Configuración SMTP personalizada (opcional)
+  smtp?: SmtpConfig;
 
   // Metadatos
   createdAt: Date;
@@ -224,6 +243,15 @@ export interface ScriptConfig {
 }
 
 /**
+ * Colores personalizables para la Panoya
+ */
+export interface PanoyaColors {
+  primary: string;      // Color primario (#FFBF00 por defecto)
+  secondary: string;    // Color secundario (#C2A561 por defecto)
+  accent: string;       // Color de acento (#2F6E8D por defecto)
+}
+
+/**
  * Sitio/Dominio
  */
 export interface Site {
@@ -242,6 +270,10 @@ export interface Site {
   // Si true, envía pings anónimos a GA4 antes del consentimiento
   // Si false, solo envía datos a GA4 después del consentimiento del usuario
   enableG100?: boolean;
+
+  // Personalización del icono de la panoya en el banner
+  panoyaVariant?: 'realista' | 'minimalista' | 'geometrica';  // Estilo del icono (default: 'realista')
+  panoyaColors?: PanoyaColors;    // Colores personalizados (opcional)
 
   // Autenticación del SDK
   apiKey: string;

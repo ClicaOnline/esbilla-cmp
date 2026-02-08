@@ -51,6 +51,27 @@
 - ✅ **base.css**: Estilos completos para modal responsive con animaciones
 - ✅ **Type definitions**: Nuevo interface `LegalInfo` con campos GDPR completos (companyName, taxId, DPO, cross-domain, etc.)
 
+**Formulario GDPR Completo (FASE 2):**
+- ✅ **Settings.tsx**: Formulario exhaustivo organizado en 6 secciones GDPR Art. 13:
+  - Responsable del Tratamiento (companyName*, taxId, address, contactEmail*)
+  - Delegado de Protección de Datos/DPO (dpoName, dpoEmail) - opcional
+  - Enlaces a Políticas (privacyPolicyUrl, cookiePolicyUrl)
+  - Textos Legales (bannerText corto, fullPolicyText completo)
+  - Configuración Cross-Domain (crossDomainEnabled, relatedDomains con advertencia GDPR)
+  - Configuración Avanzada (consentRetentionDays default 1095, supervisoryAuthority, supervisoryAuthorityUrl)
+  - Campos legacy colapsables (title, content) para backward compatibility
+  - Warning banner con link a LICENSE sobre responsabilidad legal
+- ✅ **SDK v2.1: generateLegalText()**: Generación automática de texto legal desde campos estructurados
+  - Prioridad: fullPolicyText > content > auto-generado > fallback
+  - Respeta GDPR Art. 13 con información obligatoria (responsable, finalidad, base legal, derechos, etc.)
+  - Soporta cross-domain warnings y enlaces a autoridad de control
+  - Multi-idioma con fallbacks traducidos
+- ✅ **i18n ampliado (ast/es/en/fr/pt)**: Nuevas traducciones para términos legales GDPR:
+  - dataController, dpo, purpose, legalBasis, retention
+  - rights, complaint, crossDomain, moreInfo, privacyPolicy, cookiePolicy
+- ✅ **BannerConfig interface**: Actualizado para usar `legal: LegalInfo` completo en lugar de solo title/content
+- ✅ **Modal preview**: Usa fullPolicyText prioritariamente sobre content legacy
+
 **🔥 Backlog Prioritario (Próximos Sprints)**
 
 **🎯 Alta Prioridad (Semana 1-2)**
@@ -61,6 +82,30 @@
 5. ⚠️ **Dashboard: Editor visual de banner** - UI para personalizar colores, posición, textos, logo del banner
 6. ✅ **SDK v1.8+: Google Tag Manager Gateway Proxy** - COMPLETADO: Proxy de GTM via Esbilla API con optimizaciones (cache 5min + compresión Brotli + geolocalización)
 7. ❌ **Implementar GTM Server Side** - Configuración de GTM Server-Side Tagging con Cloud Run
+
+**🎨 Recursos Gráficos (Sprint Actual - Ver docs/GRAPHIC-RESOURCES.md)**
+1. ⚡ **URGENTE: Icono de la Panoya - 3 Variantes**
+   - Panoya Realista (optimizar actual)
+   - Panoya Minimalista (nuevo - flat design)
+   - Panoya Geométrica (nuevo - estilo tech)
+   - Componente selector en Dashboard con preview
+   - Sistema de personalización de colores (CSS variables)
+2. 🔥 **Iconos del Sistema** (18 iconos)
+   - 12 iconos de características para Landing (CMP, Open Source, GDPR, etc.)
+   - 6 badges de estado para Dashboard (plan free/pro/enterprise, email verified, SMTP)
+3. 🖼️ **Imágenes de Fondo** (3 imágenes)
+   - Hero alternativo: Campo de maíz asturiano
+   - Features: Textura de maíz abstracta
+   - Comunidad: Colaboración rural
+4. 📸 **Ilustraciones** (4 flat design)
+   - Instalación del script
+   - Usuario dando consentimiento
+   - Dashboard con estadísticas
+   - Cumplimiento GDPR
+5. 🎯 **Iconos de Integraciones** (20 logos de terceros: GA4, Hotjar, Facebook Pixel, etc.)
+
+**🔮 Backlog Fase 2 - Personalización Avanzada**
+- 📌 **Banner: Icono del Cliente Personalizado** - Permitir que cada organización suba su propio logo para mostrar en el banner de cookies (en lugar de la panoya). Upload a Firebase Storage, fallback a panoya por defecto. Campo `Organization.bannerLogoUrl` en Firestore.
 
 **🏗️ GTM Gateway Proxy - Infraestructura (Post-implementación)**
 1. ✅ **Firestore Index**: Crear índice compuesto para `gtmGatewayDomain` en colección `sites`

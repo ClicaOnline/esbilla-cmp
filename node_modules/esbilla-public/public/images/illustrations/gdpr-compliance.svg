@@ -1,0 +1,38 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#F5F5F4"/>
+
+  <!-- Shield background -->
+  <path d="M 200 50 L 290 85 V 170 C 290 220 200 250 200 250 C 200 250 110 220 110 170 V 85 L 200 50" fill="#2F6E8D"/>
+
+  <!-- EU Stars circle (simplified) -->
+  <g transform="translate(200, 140)">
+    <!-- Stars in circle (12 stars) -->
+    <circle cx="0" cy="-35" r="4" fill="#FFBF00"/>
+    <circle cx="17" cy="-31" r="4" fill="#FFBF00"/>
+    <circle cx="30" cy="-17" r="4" fill="#FFBF00"/>
+    <circle cx="34" cy="0" r="4" fill="#FFBF00"/>
+    <circle cx="30" cy="17" r="4" fill="#FFBF00"/>
+    <circle cx="17" cy="31" r="4" fill="#FFBF00"/>
+    <circle cx="0" cy="35" r="4" fill="#FFBF00"/>
+    <circle cx="-17" cy="31" r="4" fill="#FFBF00"/>
+    <circle cx="-30" cy="17" r="4" fill="#FFBF00"/>
+    <circle cx="-34" cy="0" r="4" fill="#FFBF00"/>
+    <circle cx="-30" cy="-17" r="4" fill="#FFBF00"/>
+    <circle cx="-17" cy="-31" r="4" fill="#FFBF00"/>
+  </g>
+
+  <!-- Lock -->
+  <rect x="180" y="155" width="40" height="35" rx="4" fill="#FFBF00"/>
+
+  <!-- Lock shackle -->
+  <path d="M 185 155 V 145 A 15 15 0 0 1 215 145 V 155" stroke="#FFBF00" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+  <!-- Lock keyhole -->
+  <circle cx="200" cy="167" r="4" fill="#3D2B1F"/>
+  <rect x="198" y="167" width="4" height="12" rx="1" fill="#3D2B1F"/>
+
+  <!-- Checkmark badge (bottom right) -->
+  <circle cx="250" cy="205" r="20" fill="#10B981"/>
+  <polyline points="242 205 247 210 258 199" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

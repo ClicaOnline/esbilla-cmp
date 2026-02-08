@@ -309,5 +309,22 @@ export const en = {
   'waitlist.legal.retention.text': 'Data will be kept until the platform launch or until you request deletion.',
   'waitlist.legal.rights.title': '✅ Your Rights',
   'waitlist.legal.rights.text': 'You have the right of access, rectification, deletion, limitation, portability and opposition. To exercise them, contact: hola@esbilla.com',
-  'waitlist.legal.close': 'Close'
+  'waitlist.legal.close': 'Close',
+
+  // How It Works Section
+  'howItWorks.title': 'How It Works',
+  'howItWorks.subtitle': 'Implement Esbilla CMP in 4 simple steps and start complying with GDPR today',
+  'howItWorks.step1.title': 'Install the Script',
+  'howItWorks.step1.desc': 'Add one line of code to your website. It\'s as simple as copy and paste.',
+  'howItWorks.step1.alt': 'Installing the Esbilla script',
+  'howItWorks.step2.title': 'User Chooses',
+  'howItWorks.step2.desc': 'A clear and customizable banner appears where the user decides what to accept.',
+  'howItWorks.step2.alt': 'User giving consent',
+  'howItWorks.step3.title': 'View Statistics',
+  'howItWorks.step3.desc': 'Access a dashboard with real-time acceptance and rejection metrics.',
+  'howItWorks.step3.alt': 'Dashboard with statistics',
+  'howItWorks.step4.title': 'GDPR Compliant',
+  'howItWorks.step4.desc': '3-year immutable log, hashed IPs, and complete audit trail.',
+  'howItWorks.step4.alt': 'GDPR compliance guaranteed',
+  'howItWorks.cta': 'Get Started Now'
 } as const;

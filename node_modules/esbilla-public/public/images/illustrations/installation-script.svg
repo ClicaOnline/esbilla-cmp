@@ -1,0 +1,23 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" rx="20" fill="#F5F5F4"/>
+
+  <!-- Editor window -->
+  <rect x="50" y="50" width="300" height="200" rx="10" fill="#3D2B1F"/>
+
+  <!-- Code lines (decorative) -->
+  <rect x="70" y="80" width="150" height="10" rx="5" fill="#78716C"/>
+  <rect x="70" y="100" width="200" height="10" rx="5" fill="#78716C"/>
+
+  <!-- Highlighted script line -->
+  <rect x="70" y="120" width="260" height="30" rx="5" fill="#FFBF00"/>
+  <text x="85" y="138" fill="#3D2B1F" font-family="monospace" font-size="14" font-weight="600">&lt;script src="pegoyu.js"&gt;</text>
+
+  <!-- More code lines -->
+  <rect x="70" y="160" width="180" height="10" rx="5" fill="#78716C"/>
+  <rect x="70" y="180" width="220" height="10" rx="5" fill="#78716C"/>
+
+  <!-- Success checkmark -->
+  <circle cx="340" cy="135" r="18" fill="#10B981"/>
+  <polyline points="333 135 338 140 347 131" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
