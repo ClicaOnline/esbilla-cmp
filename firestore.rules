@@ -61,12 +61,21 @@ service cloud.firestore {
                  && userData.siteAccess[siteId].role in ['owner', 'admin']);
     }
 
-    // Multi-distribuidor: verificar acceso al distribuidor
-    function hasDistributorAccess(distributorId) {
+    // Multi-distribuidor: verificar acceso como distribuidor a una organización
+    function hasDistributorAccess(orgId) {
       if (!userDocExists()) return false;
       let userData = getUserData();
       return userData.role in ['admin', 'superadmin', 'superuser']
-             || userData.distributorId == distributorId;
+             || (userData.distributorAccess != null && orgId in userData.distributorAccess);
+    }
+
+    // Verificar si el usuario tiene algún tipo de acceso a una organización
+    function hasAnyOrgAccess(orgId) {
+      if (!userDocExists()) return false;
+      let userData = getUserData();
+      return userData.role in ['admin', 'superadmin', 'superuser']
+             || (userData.orgAccess != null && orgId in userData.orgAccess)
+             || (userData.distributorAccess != null && orgId in userData.distributorAccess);
     }
 
     // ============================================
@@ -90,7 +99,13 @@ service cloud.firestore {
     // SITES COLLECTION (Multi-tenant)
     // ============================================
     match /sites/{siteId} {
-      allow read: if isAdmin() || (isAuthorized() && hasSiteAccess(siteId));
+      // Lectura: admin, acceso directo al sitio, o distribuidor de la org del sitio
+      allow read: if isAdmin()
+                  || (isAuthorized() && hasSiteAccess(siteId))
+                  || (isAuthenticated() && resource.data.organizationId != null
+                      && hasDistributorAccess(resource.data.organizationId));
+
+      // Creación: admin, o durante onboarding
       allow create: if isAdmin();
 
       // Permitir crear sitio durante onboarding
@@ -98,7 +113,14 @@ service cloud.firestore {
       allow create: if isAuthenticated()
                     && request.resource.data.createdBy == request.auth.uid;
 
-      allow update: if isAdmin() || hasSiteAdminAccess(siteId);
+      // Actualización: admin, site_admin, o distributor_admin/distributor_manager
+      allow update: if isAdmin()
+                    || hasSiteAdminAccess(siteId)
+                    || (isAuthenticated() && resource.data.organizationId != null
+                        && getUserData().distributorAccess != null
+                        && resource.data.organizationId in getUserData().distributorAccess
+                        && getUserData().distributorAccess[resource.data.organizationId].role in ['distributor_admin', 'distributor_manager']);
+
       allow delete: if isSuperAdmin();
     }
 
@@ -178,7 +200,21 @@ service cloud.firestore {
     // ORGANIZATIONS COLLECTION (Modelo SaaS)
     // ============================================
     match /organizations/{orgId} {
+      // Superadmin: acceso total
       allow read, write: if isSuperAdmin();
+
+      // Lectura: org_owner, org_admin, org_viewer o distribuidor
+      allow read: if hasAnyOrgAccess(orgId);
+
+      // Escritura: org_owner o distributor_admin
+      allow update: if isAuthenticated() && (
+        (getUserData().orgAccess != null &&
+         orgId in getUserData().orgAccess &&
+         getUserData().orgAccess[orgId].role == 'org_owner') ||
+        (getUserData().distributorAccess != null &&
+         orgId in getUserData().distributorAccess &&
+         getUserData().distributorAccess[orgId].role == 'distributor_admin')
+      );
 
       // Permitir crear organización durante onboarding
       // El usuario autenticado puede crear su primera organización
@@ -197,12 +233,15 @@ service cloud.firestore {
         isSuperAdmin()
       );
 
-      // Crear: admins o users con rol de org_owner/org_admin
+      // Crear: admins, org_owner/org_admin, o distributor_admin/distributor_manager
       allow create: if isAuthenticated() && (
         isSuperAdmin() ||
         (getUserData().orgAccess != null &&
          request.resource.data.organizationId in getUserData().orgAccess &&
-         getUserData().orgAccess[request.resource.data.organizationId].role in ['org_owner', 'org_admin'])
+         getUserData().orgAccess[request.resource.data.organizationId].role in ['org_owner', 'org_admin']) ||
+        (getUserData().distributorAccess != null &&
+         request.resource.data.organizationId in getUserData().distributorAccess &&
+         getUserData().distributorAccess[request.resource.data.organizationId].role in ['distributor_admin', 'distributor_manager'])
       );
 
       // Actualizar: solo el invitado (para aceptar) o quien invitó (para revocar)

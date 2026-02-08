@@ -1193,6 +1193,9 @@
       accent: '#2F6E8D'
     };
 
+    // Debug: mostrar configuración de Panoya
+    console.log('[Esbilla] Generando Panoya:', { variant, colors });
+
     // Asegurar que los colores existen con valores por defecto
     const primary = colors.primary || '#FFBF00';
     const secondary = colors.secondary || '#C2A561';

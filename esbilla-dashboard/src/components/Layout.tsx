@@ -13,7 +13,8 @@ import {
   Globe2,
   Link2,
   Building2,
-  ClipboardList
+  ClipboardList,
+  UserCog
 } from 'lucide-react';
 import './Layout.css';
 
@@ -21,7 +22,7 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-type NavKey = 'dashboard' | 'organizations' | 'sites' | 'users' | 'footprint' | 'urlStats' | 'waitingList' | 'settings';
+type NavKey = 'dashboard' | 'organizations' | 'sites' | 'users' | 'distributors' | 'footprint' | 'urlStats' | 'waitingList' | 'settings';
 
 const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean; superAdminOnly?: boolean }[] = [
   { key: 'dashboard', href: '/', icon: LayoutDashboard },
@@ -29,8 +30,9 @@ const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adm
   { key: 'sites', href: '/sites', icon: Globe2, adminOnly: true },
   { key: 'urlStats', href: '/url-stats', icon: Link2 },
   { key: 'users', href: '/users', icon: Users, adminOnly: true },
+  { key: 'distributors', href: '/distributors', icon: UserCog, superAdminOnly: true },
   { key: 'footprint', href: '/footprint', icon: Search },
-  { key: 'waitingList', href: '/waiting-list', icon: ClipboardList, superAdminOnly: true },
+  { key: 'waitingList', href: '/waitlist', icon: ClipboardList, superAdminOnly: true },
   { key: 'settings', href: '/settings', icon: Settings, adminOnly: true },
 ];
 

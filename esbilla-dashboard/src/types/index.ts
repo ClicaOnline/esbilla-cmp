@@ -110,8 +110,29 @@ export interface SiteAccess {
 }
 
 /**
+ * Roles a nivel de distribuidor
+ * Los distribuidores gestionan organizaciones de clientes
+ */
+export type DistributorRole = 'distributor_admin' | 'distributor_manager' | 'distributor_viewer';
+
+/**
+ * Acceso de usuario como distribuidor de una organización
+ * Un distribuidor puede gestionar múltiples organizaciones de clientes
+ * IMPORTANTE: Un usuario puede ser org_owner de su propia org
+ * Y ADEMÁS distributor de otras organizaciones
+ */
+export interface DistributorAccess {
+  organizationId: string;
+  organizationName?: string;          // Cache para UI
+  role: DistributorRole;
+  addedAt: Date;
+  addedBy: string;                    // UID del superadmin que asignó
+  notes?: string;                     // Notas sobre el acuerdo comercial
+}
+
+/**
  * Mapa de permisos efectivos del usuario
- * Calculado a partir de orgAccess y siteAccess
+ * Calculado a partir de orgAccess, siteAccess y distributorAccess
  */
 export interface EffectivePermissions {
   canManageOrganization: boolean;     // Puede editar org, ver billing
@@ -312,6 +333,11 @@ export interface DashboardUser {
   // Solo necesario si el usuario NO tiene acceso a nivel de org
   // Útil para dar acceso a freelancers/agencias a sitios específicos
   siteAccess: Record<string, SiteAccess>;
+
+  // Acceso como distribuidor a organizaciones de clientes (por orgId)
+  // Los distribuidores gestionan organizaciones de terceros
+  // Un usuario puede ser org_owner de su propia org Y distributor de otras
+  distributorAccess: Record<string, DistributorAccess>;
 
   // Metadatos
   createdAt: Date;
@@ -698,6 +724,115 @@ export function canManageUser(
   }
 
   return false;
+}
+
+// ============================================
+// FUNCIONES DE PERMISOS DE DISTRIBUIDOR
+// ============================================
+
+/**
+ * Verifica si un usuario tiene acceso como distribuidor a una organización
+ */
+export function hasDistributorAccess(user: DashboardUser, orgId: string): boolean {
+  if (user.globalRole === 'superadmin') return true;
+  return orgId in (user.distributorAccess || {});
+}
+
+/**
+ * Obtiene el rol de distribuidor de un usuario en una organización
+ */
+export function getDistributorRole(
+  user: DashboardUser,
+  orgId: string
+): DistributorRole | 'superadmin' | null {
+  if (user.globalRole === 'superadmin') return 'superadmin';
+  return user.distributorAccess?.[orgId]?.role || null;
+}
+
+/**
+ * Calcula los permisos efectivos de un usuario como distribuidor
+ */
+export function getDistributorPermissions(
+  user: DashboardUser,
+  orgId: string
+): EffectivePermissions {
+  const role = getDistributorRole(user, orgId);
+
+  if (!role) {
+    return {
+      canManageOrganization: false,
+      canManageUsers: false,
+      canManageSites: false,
+      canViewStats: false,
+      canExportData: false,
+    };
+  }
+
+  switch (role) {
+    case 'superadmin':
+    case 'distributor_admin':
+      return {
+        canManageOrganization: true,     // Puede gestionar la org del cliente
+        canManageUsers: true,            // Puede gestionar usuarios del cliente
+        canManageSites: true,            // Puede gestionar sitios del cliente
+        canViewStats: true,
+        canExportData: true,
+      };
+    case 'distributor_manager':
+      return {
+        canManageOrganization: false,    // NO puede editar billing del cliente
+        canManageUsers: true,
+        canManageSites: true,
+        canViewStats: true,
+        canExportData: true,
+      };
+    case 'distributor_viewer':
+      return {
+        canManageOrganization: false,
+        canManageUsers: false,
+        canManageSites: false,
+        canViewStats: true,              // Solo lectura
+        canExportData: true,
+      };
+    default:
+      return {
+        canManageOrganization: false,
+        canManageUsers: false,
+        canManageSites: false,
+        canViewStats: false,
+        canExportData: false,
+      };
+  }
+}
+
+/**
+ * Verifica si un usuario tiene ALGÚN tipo de acceso a una organización
+ * (como owner, admin, viewer O como distribuidor)
+ */
+export function hasAnyAccessToOrg(user: DashboardUser, orgId: string): boolean {
+  if (user.globalRole === 'superadmin') return true;
+  return hasOrgAccess(user, orgId) || hasDistributorAccess(user, orgId);
+}
+
+/**
+ * Obtiene el rol efectivo más alto de un usuario en una organización
+ * Considera tanto roles de org como roles de distribuidor
+ */
+export function getEffectiveOrgRole(
+  user: DashboardUser,
+  orgId: string
+): OrganizationRole | DistributorRole | 'superadmin' | null {
+  if (user.globalRole === 'superadmin') return 'superadmin';
+
+  // Prioridad 1: Rol de organización (owner/admin)
+  const orgRole = getOrgRole(user, orgId);
+  if (orgRole) return orgRole;
+
+  // Prioridad 2: Rol de distribuidor
+  const distRole = getDistributorRole(user, orgId);
+  if (distRole) return distRole;
+
+  return null;
 }
 
 // ============================================

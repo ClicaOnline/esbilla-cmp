@@ -40,7 +40,8 @@ const UsersPage = lazy(() => import('./pages/Users').then(m => ({ default: m.Use
 const SettingsPage = lazy(() => import('./pages/Settings').then(m => ({ default: m.SettingsPage })));
 const UrlStatsPage = lazy(() => import('./pages/UrlStats').then(m => ({ default: m.UrlStatsPage })));
 const OrganizationsPage = lazy(() => import('./pages/Organizations').then(m => ({ default: m.OrganizationsPage })));
-const WaitingListPage = lazy(() => import('./pages/WaitingList').then(m => ({ default: m.WaitingListPage })));
+const WaitlistPage = lazy(() => import('./pages/Waitlist').then(m => ({ default: m.WaitlistPage })));
+const DistributorsPage = lazy(() => import('./pages/Distributors').then(m => ({ default: m.DistributorsPage })));
 
 function AppRoutes() {
   return (
@@ -172,10 +173,18 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/waiting-list"
+        path="/waitlist"
         element={
           <ProtectedRoute adminOnly>
-            <WaitingListPage />
+            <WaitlistPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/distributors"
+        element={
+          <ProtectedRoute adminOnly>
+            <DistributorsPage />
           </ProtectedRoute>
         }
       />
