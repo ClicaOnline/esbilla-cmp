@@ -42,8 +42,6 @@ const UrlStatsPage = lazy(() => import('./pages/UrlStats').then(m => ({ default:
 const OrganizationsPage = lazy(() => import('./pages/Organizations').then(m => ({ default: m.OrganizationsPage })));
 const WaitlistPage = lazy(() => import('./pages/Waitlist').then(m => ({ default: m.WaitlistPage })));
 const DistributorsPage = lazy(() => import('./pages/Distributors').then(m => ({ default: m.DistributorsPage })));
-const SupportTicketsPage = lazy(() => import('./pages/SupportTickets').then(m => ({ default: m.SupportTicketsPage })));
-const SupportTicketNewPage = lazy(() => import('./pages/SupportTicketNew').then(m => ({ default: m.SupportTicketNewPage })));
 
 function AppRoutes() {
   return (
@@ -187,22 +185,6 @@ function AppRoutes() {
         element={
           <ProtectedRoute adminOnly>
             <DistributorsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/support"
-        element={
-          <ProtectedRoute>
-            <SupportTicketsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/support/new"
-        element={
-          <ProtectedRoute>
-            <SupportTicketNewPage />
           </ProtectedRoute>
         }
       />
