@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* ============================================
+   ESBILLA COLOR VARIABLES - Personalización Global
+   ============================================ */
+:root {
+  /* Colores por defecto de Esbilla */
+  --esbilla-primary: #FFBF00;    /* Maíz - Amarillo dorado */
+  --esbilla-secondary: #C2A561;  /* Dorado */
+  --esbilla-accent: #2F6E8D;     /* Azul verdoso */
+}
+
+/* Transiciones suaves para iconos personalizables */
+.panoya-icon svg path,
+.panoya-icon svg circle,
+.panoya-icon svg ellipse,
+.panoya-icon svg rect {
+  transition: fill 0.3s ease;
+}
+
 /* Reset moderado - Mejora el espaciado */
 *,
 *::before,

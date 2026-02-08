@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Panoya from '../../components/icons/Panoya.astro';
+import FeatureIcon from '../../components/icons/FeatureIcon.astro';
 import { useTranslations } from '../../i18n/utils';
 import { languages } from '../../i18n/ui';
 import { Image } from 'astro:assets';
@@ -64,21 +65,24 @@ const t = useTranslations(lang as any);
       <div class="grid md:grid-cols-3 gap-12">
         <article class="space-y-4">
           <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
-             <Panoya size="24" /> </div>
+            <FeatureIcon name="cmp" />
+          </div>
           <h3 class="text-2xl font-bold text-madera">{t('concepts.cmp.title')}</h3>
           <p class="text-stone-600 leading-relaxed">{t('concepts.cmp.desc')}</p>
         </article>
 
         <article class="space-y-4">
           <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
-             <Panoya size="24" /> </div>
+            <FeatureIcon name="open-source" />
+          </div>
           <h3 class="text-2xl font-bold text-madera">{t('concepts.os.title')}</h3>
           <p class="text-stone-600 leading-relaxed">{t('concepts.os.desc')}</p>
         </article>
 
         <article class="space-y-4">
           <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-maiz">
-             <Panoya size="24" /> </div>
+            <FeatureIcon name="gdpr-compliant" />
+          </div>
           <h3 class="text-2xl font-bold text-madera">{t('concepts.gdpr.title')}</h3>
           <p class="text-stone-600 leading-relaxed">{t('concepts.gdpr.desc')}</p>
         </article>
@@ -248,17 +252,23 @@ const t = useTranslations(lang as any);
       <h2 class="text-4xl mb-16 text-center">{t('features.title')}</h2>
       <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
         <div class="space-y-4">
-          <Panoya class="text-amber-400" size="32" />
+          <div class="text-amber-400">
+            <FeatureIcon name="selfhosted" />
+          </div>
           <h3 class="text-xl font-bold">{t('feature.gov.title')}</h3>
           <p class="text-stone-400">{t('feature.gov.desc')}</p>
         </div>
         <div class="space-y-4">
-          <Panoya class="text-amber-400" size="32" />
+          <div class="text-amber-400">
+            <FeatureIcon name="open-source" />
+          </div>
           <h3 class="text-xl font-bold">{t('feature.community.title')}</h3>
           <p class="text-stone-400">{t('feature.community.desc')}</p>
         </div>
         <div class="space-y-4">
-          <Panoya class="text-amber-400" size="32" />
+          <div class="text-amber-400">
+            <FeatureIcon name="privacy-first" />
+          </div>
           <h3 class="text-xl font-bold">{t('feature.privacy.title')}</h3>
           <p class="text-stone-400">{t('feature.privacy.desc')}</p>
         </div>
@@ -272,6 +282,107 @@ const t = useTranslations(lang as any);
           <h3 class="text-xl font-bold">{t('feature.gtm.title')}</h3>
           <p class="text-stone-400">{t('feature.gtm.desc')}</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Sección Cómo Funciona */}
+  <section class="py-24 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-artesana text-madera mb-4">{t('howItWorks.title')}</h2>
+        <p class="text-lg text-stone-600 max-w-2xl mx-auto">
+          {t('howItWorks.subtitle')}
+        </p>
+        <div class="w-24 h-1 bg-maiz mx-auto rounded-full mt-6"></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Paso 1: Instalación del Script */}
+        <article class="flex flex-col items-center text-center space-y-4">
+          <div class="w-full max-w-[280px] h-[200px] flex items-center justify-center bg-stone-50 rounded-2xl border-2 border-stone-200 overflow-hidden">
+            <img
+              src="/images/illustrations/installation-script.svg"
+              alt={t('howItWorks.step1.alt')}
+              class="w-full h-full object-contain p-4"
+            />
+          </div>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-maiz text-madera font-bold text-lg">
+            1
+          </div>
+          <h3 class="text-xl font-bold text-madera">{t('howItWorks.step1.title')}</h3>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            {t('howItWorks.step1.desc')}
+          </p>
+        </article>
+
+        {/* Paso 2: Usuario da consentimiento */}
+        <article class="flex flex-col items-center text-center space-y-4">
+          <div class="w-full max-w-[280px] h-[200px] flex items-center justify-center bg-stone-50 rounded-2xl border-2 border-stone-200 overflow-hidden">
+            <img
+              src="/images/illustrations/user-consent.svg"
+              alt={t('howItWorks.step2.alt')}
+              class="w-full h-full object-contain p-4"
+            />
+          </div>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-maiz text-madera font-bold text-lg">
+            2
+          </div>
+          <h3 class="text-xl font-bold text-madera">{t('howItWorks.step2.title')}</h3>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            {t('howItWorks.step2.desc')}
+          </p>
+        </article>
+
+        {/* Paso 3: Dashboard con estadísticas */}
+        <article class="flex flex-col items-center text-center space-y-4">
+          <div class="w-full max-w-[280px] h-[200px] flex items-center justify-center bg-stone-50 rounded-2xl border-2 border-stone-200 overflow-hidden">
+            <img
+              src="/images/illustrations/dashboard-stats.svg"
+              alt={t('howItWorks.step3.alt')}
+              class="w-full h-full object-contain p-4"
+            />
+          </div>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-maiz text-madera font-bold text-lg">
+            3
+          </div>
+          <h3 class="text-xl font-bold text-madera">{t('howItWorks.step3.title')}</h3>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            {t('howItWorks.step3.desc')}
+          </p>
+        </article>
+
+        {/* Paso 4: Cumplimiento GDPR */}
+        <article class="flex flex-col items-center text-center space-y-4">
+          <div class="w-full max-w-[280px] h-[200px] flex items-center justify-center bg-stone-50 rounded-2xl border-2 border-stone-200 overflow-hidden">
+            <img
+              src="/images/illustrations/gdpr-compliance.svg"
+              alt={t('howItWorks.step4.alt')}
+              class="w-full h-full object-contain p-4"
+            />
+          </div>
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-maiz text-madera font-bold text-lg">
+            4
+          </div>
+          <h3 class="text-xl font-bold text-madera">{t('howItWorks.step4.title')}</h3>
+          <p class="text-stone-600 text-sm leading-relaxed">
+            {t('howItWorks.step4.desc')}
+          </p>
+        </article>
+      </div>
+
+      {/* CTA */}
+      <div class="text-center mt-16">
+        <a
+          href={`/${lang}/como-empezar/`}
+          class="inline-flex items-center gap-2 px-8 py-4 bg-madera text-white rounded-xl font-bold text-lg hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl"
+        >
+          {t('howItWorks.cta')}
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/>
+            <path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
       </div>
     </div>
   </section>

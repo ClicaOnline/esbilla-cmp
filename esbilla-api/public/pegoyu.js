@@ -1180,6 +1180,56 @@
     return parts.join('');
   }
 
+  /**
+   * Genera el SVG de la Panoya personalizada según configuración
+   * Soporta 3 variantes: realista, minimalista, geometrica
+   * @returns {string} HTML del SVG con colores personalizados
+   */
+  function generatePanoyaSvg() {
+    const variant = config.panoyaVariant || 'realista';
+    const colors = config.panoyaColors || {
+      primary: '#FFBF00',
+      secondary: '#C2A561',
+      accent: '#2F6E8D'
+    };
+
+    // Asegurar que los colores existen con valores por defecto
+    const primary = colors.primary || '#FFBF00';
+    const secondary = colors.secondary || '#C2A561';
+    const accent = colors.accent || '#2F6E8D';
+
+    let svg = '';
+
+    if (variant === 'realista') {
+      svg = `
+        <svg viewBox="0 0 1024 1024" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+          <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill="${accent}" opacity="0.8"/>
+          <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill="${primary}"/>
+          <circle cx="512" cy="400" r="15" fill="${secondary}"/>
+          <circle cx="480" cy="450" r="15" fill="${secondary}"/>
+          <circle cx="544" cy="450" r="15" fill="${secondary}"/>
+        </svg>
+      `;
+    } else if (variant === 'minimalista') {
+      svg = `
+        <svg viewBox="0 0 128 128" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+          <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill="${accent}"/>
+          <ellipse cx="64" cy="60" rx="25" ry="45" fill="${primary}"/>
+        </svg>
+      `;
+    } else if (variant === 'geometrica') {
+      svg = `
+        <svg viewBox="0 0 128 128" width="48" height="48" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+          <path d="M64 15 L84 45 L64 75 L44 45 Z" fill="${primary}"/>
+          <path d="M64 45 L84 75 L64 105 L44 75 Z" fill="${primary}" opacity="0.7"/>
+          <path d="M64 105 L72 120 L56 120 Z" fill="${secondary}"/>
+        </svg>
+      `;
+    }
+
+    return svg;
+  }
+
   function getTranslatedHtml() {
     const t = translations[currentLang] || translations['es'] || {};
     let html = templateHtml;
@@ -1203,7 +1253,9 @@
     }
 
     // Reemplazar icono de config
-    html = html.replaceAll('{{icon}}', config.icon || '🌽');
+    // Prioridad: config.icon manual > Panoya personalizada > emoji fallback
+    const iconHtml = config.icon || generatePanoyaSvg() || '🌽';
+    html = html.replaceAll('{{icon}}', iconHtml);
 
     // Aplicar información legal (GDPR compliance - Art. 13)
     if (config.legal) {

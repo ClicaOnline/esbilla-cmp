@@ -106,6 +106,14 @@ export function SettingsPage() {
   // Analytics settings
   const [enableG100, setEnableG100] = useState(false);
 
+  // Panoya customization
+  const [panoyaVariant, setPanoyaVariant] = useState<'realista' | 'minimalista' | 'geometrica'>('realista');
+  const [panoyaColors, setPanoyaColors] = useState({
+    primary: '#FFBF00',
+    secondary: '#C2A561',
+    accent: '#2F6E8D'
+  });
+
   // Load sites on mount
   useEffect(() => {
     loadSites();
@@ -172,6 +180,14 @@ export function SettingsPage() {
     // Load analytics settings
     setEnableG100(site?.enableG100 || false);
 
+    // Load panoya customization
+    setPanoyaVariant(site?.panoyaVariant || 'realista');
+    if (site?.panoyaColors) {
+      setPanoyaColors(site.panoyaColors);
+    } else {
+      setPanoyaColors({ primary: '#FFBF00', secondary: '#C2A561', accent: '#2F6E8D' });
+    }
+
     setSaved(false);
   }
 
@@ -229,6 +245,8 @@ export function SettingsPage() {
       await updateDoc(siteRef, {
         'settings.banner': config,
         enableG100: enableG100,
+        panoyaVariant: panoyaVariant,
+        panoyaColors: panoyaColors,
         updatedAt: serverTimestamp()
       });
 
@@ -387,6 +405,218 @@ export function SettingsPage() {
                 </div>
               }
             />
+          </div>
+        </section>
+
+        {/* Panoya Icon Customization Section */}
+        <section className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-amber-100 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-600">
+                <circle cx="12" cy="8" r="4"/><path d="M12 12v9"/><circle cx="12" cy="21" r="1"/>
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-stone-800">Personalización del Icono 🌽</h2>
+              <p className="text-sm text-stone-500">Elige el estilo de la panoya y personaliza sus colores</p>
+            </div>
+          </div>
+
+          {/* Variant Selector */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-stone-700 mb-3">Estilo de la Panoya</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Realista */}
+              <button
+                type="button"
+                onClick={() => { setPanoyaVariant('realista'); setSaved(false); }}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  panoyaVariant === 'realista'
+                    ? 'border-amber-500 bg-amber-50'
+                    : 'border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <svg viewBox="0 0 1024 1024" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill={panoyaColors.accent} opacity="0.8"/>
+                      <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill={panoyaColors.primary}/>
+                      <circle cx="512" cy="400" r="15" fill={panoyaColors.secondary}/>
+                      <circle cx="480" cy="450" r="15" fill={panoyaColors.secondary}/>
+                      <circle cx="544" cy="450" r="15" fill={panoyaColors.secondary}/>
+                    </svg>
+                  </div>
+                  <span className={`text-sm font-medium ${panoyaVariant === 'realista' ? 'text-amber-700' : 'text-stone-600'}`}>
+                    Realista
+                  </span>
+                  <span className="text-xs text-stone-500">Detallada y clásica</span>
+                </div>
+              </button>
+
+              {/* Minimalista */}
+              <button
+                type="button"
+                onClick={() => { setPanoyaVariant('minimalista'); setSaved(false); }}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  panoyaVariant === 'minimalista'
+                    ? 'border-amber-500 bg-amber-50'
+                    : 'border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <svg viewBox="0 0 128 128" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill={panoyaColors.accent}/>
+                      <ellipse cx="64" cy="60" rx="25" ry="45" fill={panoyaColors.primary}/>
+                    </svg>
+                  </div>
+                  <span className={`text-sm font-medium ${panoyaVariant === 'minimalista' ? 'text-amber-700' : 'text-stone-600'}`}>
+                    Minimalista
+                  </span>
+                  <span className="text-xs text-stone-500">Limpia y moderna</span>
+                </div>
+              </button>
+
+              {/* Geométrica */}
+              <button
+                type="button"
+                onClick={() => { setPanoyaVariant('geometrica'); setSaved(false); }}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  panoyaVariant === 'geometrica'
+                    ? 'border-amber-500 bg-amber-50'
+                    : 'border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-16 h-16 flex items-center justify-center">
+                    <svg viewBox="0 0 128 128" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M64 15 L84 45 L64 75 L44 45 Z" fill={panoyaColors.primary}/>
+                      <path d="M64 45 L84 75 L64 105 L44 75 Z" fill={panoyaColors.primary} opacity="0.7"/>
+                      <path d="M64 105 L72 120 L56 120 Z" fill={panoyaColors.secondary}/>
+                    </svg>
+                  </div>
+                  <span className={`text-sm font-medium ${panoyaVariant === 'geometrica' ? 'text-amber-700' : 'text-stone-600'}`}>
+                    Geométrica
+                  </span>
+                  <span className="text-xs text-stone-500">Angular y tech</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Color Customization */}
+          <div className="space-y-4 pt-4 border-t border-stone-200">
+            <label className="block text-sm font-medium text-stone-700 mb-3">Colores Personalizados</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Primary Color */}
+              <div>
+                <label className="block text-xs font-medium text-stone-600 mb-2">Color Primario</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={panoyaColors.primary}
+                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, primary: e.target.value }); setSaved(false); }}
+                    className="w-12 h-12 border-2 border-stone-200 rounded-lg cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={panoyaColors.primary}
+                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, primary: e.target.value }); setSaved(false); }}
+                    className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
+                    placeholder="#FFBF00"
+                  />
+                </div>
+              </div>
+
+              {/* Secondary Color */}
+              <div>
+                <label className="block text-xs font-medium text-stone-600 mb-2">Color Secundario</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={panoyaColors.secondary}
+                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, secondary: e.target.value }); setSaved(false); }}
+                    className="w-12 h-12 border-2 border-stone-200 rounded-lg cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={panoyaColors.secondary}
+                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, secondary: e.target.value }); setSaved(false); }}
+                    className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
+                    placeholder="#C2A561"
+                  />
+                </div>
+              </div>
+
+              {/* Accent Color */}
+              <div>
+                <label className="block text-xs font-medium text-stone-600 mb-2">Color de Acento</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={panoyaColors.accent}
+                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, accent: e.target.value }); setSaved(false); }}
+                    className="w-12 h-12 border-2 border-stone-200 rounded-lg cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={panoyaColors.accent}
+                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, accent: e.target.value }); setSaved(false); }}
+                    className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
+                    placeholder="#2F6E8D"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Reset Button */}
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setPanoyaColors({ primary: '#FFBF00', secondary: '#C2A561', accent: '#2F6E8D' });
+                  setSaved(false);
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 transition-colors"
+              >
+                <RotateCcw size={14} />
+                Restaurar colores por defecto
+              </button>
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="mt-6 pt-6 border-t border-stone-200">
+            <label className="block text-sm font-medium text-stone-700 mb-3">Vista Previa</label>
+            <div className="flex items-center justify-center p-8 bg-stone-50 rounded-lg border-2 border-stone-200">
+              <div className="w-32 h-32 flex items-center justify-center">
+                {panoyaVariant === 'realista' && (
+                  <svg viewBox="0 0 1024 1024" width="128" height="128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill={panoyaColors.accent} opacity="0.8"/>
+                    <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill={panoyaColors.primary}/>
+                    <circle cx="512" cy="400" r="15" fill={panoyaColors.secondary}/>
+                    <circle cx="480" cy="450" r="15" fill={panoyaColors.secondary}/>
+                    <circle cx="544" cy="450" r="15" fill={panoyaColors.secondary}/>
+                  </svg>
+                )}
+                {panoyaVariant === 'minimalista' && (
+                  <svg viewBox="0 0 128 128" width="128" height="128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill={panoyaColors.accent}/>
+                    <ellipse cx="64" cy="60" rx="25" ry="45" fill={panoyaColors.primary}/>
+                  </svg>
+                )}
+                {panoyaVariant === 'geometrica' && (
+                  <svg viewBox="0 0 128 128" width="128" height="128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M64 15 L84 45 L64 75 L44 45 Z" fill={panoyaColors.primary}/>
+                    <path d="M64 45 L84 75 L64 105 L44 75 Z" fill={panoyaColors.primary} opacity="0.7"/>
+                    <path d="M64 105 L72 120 L56 120 Z" fill={panoyaColors.secondary}/>
+                  </svg>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-stone-500 text-center mt-3">
+              Este icono aparecerá en el banner de cookies de tu sitio web
+            </p>
           </div>
         </section>
 

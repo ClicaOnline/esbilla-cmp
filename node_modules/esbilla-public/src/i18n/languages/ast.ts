@@ -309,5 +309,22 @@ export const ast = {
     'waitlist.legal.retention.text': 'Los datos van calteneise hasta\'l llanzamientu de la plataforma o hasta que solicites la so eliminación.',
     'waitlist.legal.rights.title': '✅ Los tos Dreches',
     'waitlist.legal.rights.text': 'Tienes derechu d\'accesu, rectificación, supresión, llimitación, portabilidá y oposición. Pa exercitalos, contauta en: hola@esbilla.com',
-    'waitlist.legal.close': 'Zarrar'
+    'waitlist.legal.close': 'Zarrar',
+
+    // Sección Cómu Funciona
+    'howItWorks.title': '¿Cómu Funciona?',
+    'howItWorks.subtitle': 'Implementa Esbilla CMP en 4 pasos cenciellos y entama a cumplir col RGPD güei mesmo',
+    'howItWorks.step1.title': 'Instala\'l Script',
+    'howItWorks.step1.desc': 'Amiesta una llinia de códigu al to sitiu web. Ye tan cenciellu como copiar y apegar.',
+    'howItWorks.step1.alt': 'Instalación del script Esbilla',
+    'howItWorks.step2.title': 'L\'Usuariu Esbilla',
+    'howItWorks.step2.desc': 'Apaez un banner claru y personalizable onde l\'usuariu decide qué acepta.',
+    'howItWorks.step2.alt': 'Usuariu dando consentimientu',
+    'howItWorks.step3.title': 'Visualiza Estadístiques',
+    'howItWorks.step3.desc': 'Accede a un dashboard con métriques en tiempu real d\'aceptación y refugu.',
+    'howItWorks.step3.alt': 'Dashboard con estadístiques',
+    'howItWorks.step4.title': 'Cumples col RGPD',
+    'howItWorks.step4.desc': 'Rexistru inmutable de 3 años, IPs hasheadas, y audit trail completu.',
+    'howItWorks.step4.alt': 'Cumplimientu RGPD garantizáu',
+    'howItWorks.cta': 'Entamar agora'
   } as const;
