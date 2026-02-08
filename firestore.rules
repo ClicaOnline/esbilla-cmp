@@ -20,9 +20,7 @@ service cloud.firestore {
 
     function getUserRole() {
       // Si el documento del usuario no existe (onboarding), retornar null
-      if (!userDocExists()) {
-        return null;
-      }
+      if (!userDocExists()) return null;
       let userData = getUserData();
       // Priorizar globalRole (nuevo schema), fallback a role (legacy)
       return userData.globalRole != null ? userData.globalRole : userData.role;
@@ -269,6 +267,30 @@ service cloud.firestore {
       allow update: if isSuperAdmin();
 
       // Eliminar: solo superadmins
+      allow delete: if isSuperAdmin();
+    }
+
+    // ============================================
+    // SUPPORT TICKETS COLLECTION (Tickets de soporte)
+    // ============================================
+    match /supportTickets/{ticketId} {
+      // Leer: el creador del ticket o superadmin (futuro: support team)
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+        // TODO: || isSupportTeam() para usuarios con rol de soporte
+      );
+
+      // Crear: cualquier usuario autenticado
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'open';
+
+      // Actualizar: solo superadmin (futuro: support team o ticket owner para añadir comentarios)
+      allow update: if isSuperAdmin();
+      // TODO: Permitir al owner añadir comentarios pero no cambiar status/priority
+
+      // Eliminar: solo superadmin
       allow delete: if isSuperAdmin();
     }
   }
