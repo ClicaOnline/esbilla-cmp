@@ -411,9 +411,167 @@
 }
 
 /* ============================================
+   MODAL DE POLÍTICA DE PRIVACIDAD
+   ============================================ */
+.esbilla-legal-link {
+  color: var(--esbilla-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--esbilla-transition);
+}
+
+.esbilla-legal-link:hover {
+  color: var(--esbilla-primary-hover);
+  text-decoration: none;
+}
+
+.esbilla-legal-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: esbillaFadeIn 0.2s ease;
+}
+
+.esbilla-legal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--esbilla-overlay);
+  backdrop-filter: blur(4px);
+}
+
+.esbilla-legal-content {
+  position: relative;
+  max-width: 700px;
+  width: 100%;
+  max-height: 80vh;
+  background: var(--esbilla-background);
+  border-radius: var(--esbilla-border-radius);
+  box-shadow: var(--esbilla-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: esbillaSlideIn 0.3s ease;
+}
+
+.esbilla-legal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--esbilla-secondary);
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--esbilla-transition);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.esbilla-legal-close:hover {
+  background: var(--esbilla-primary);
+  transform: scale(1.1);
+}
+
+.esbilla-legal-title {
+  padding: 24px 60px 16px 24px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--esbilla-text);
+  border-bottom: 2px solid var(--esbilla-border);
+  background: linear-gradient(135deg, var(--esbilla-background), var(--esbilla-background-end));
+}
+
+.esbilla-legal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: var(--esbilla-font-size-text);
+  line-height: 1.6;
+  color: var(--esbilla-text);
+}
+
+.esbilla-legal-body p {
+  margin-bottom: 16px;
+}
+
+.esbilla-legal-body h1,
+.esbilla-legal-body h2,
+.esbilla-legal-body h3 {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--esbilla-secondary);
+}
+
+.esbilla-legal-body h1 { font-size: 24px; }
+.esbilla-legal-body h2 { font-size: 20px; }
+.esbilla-legal-body h3 { font-size: 18px; }
+
+.esbilla-legal-body ul,
+.esbilla-legal-body ol {
+  margin-left: 20px;
+  margin-bottom: 16px;
+}
+
+.esbilla-legal-body li {
+  margin-bottom: 8px;
+}
+
+.esbilla-legal-body a {
+  color: var(--esbilla-primary);
+  text-decoration: underline;
+}
+
+.esbilla-legal-body a:hover {
+  color: var(--esbilla-primary-hover);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .esbilla-legal-content {
+    max-width: 100%;
+    max-height: 90vh;
+    margin: 10px;
+  }
+
+  .esbilla-legal-title {
+    font-size: 18px;
+    padding: 20px 50px 14px 20px;
+  }
+
+  .esbilla-legal-body {
+    padding: 20px;
+    font-size: 14px;
+  }
+}
+
+/* ============================================
    ANIMACIONES
    ============================================ */
 @keyframes esbillaFadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes esbillaSlideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

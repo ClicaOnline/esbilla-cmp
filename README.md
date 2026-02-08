@@ -4,6 +4,28 @@
 
 ---
 
+## ⚖️ AVISO LEGAL IMPORTANTE
+
+> **DESCARGO DE RESPONSABILIDAD LEGAL**
+>
+> Este software se proporciona "TAL CUAL" como herramienta técnica para asistir en la gestión de consentimientos. **El cumplimiento legal con GDPR, ePrivacy Directive y otras leyes de protección de datos es RESPONSABILIDAD EXCLUSIVA de cada organización que implemente este software.**
+>
+> **Clica Online Soluciones S.L. y los colaboradores de este proyecto NO son responsables de:**
+> - Multas, sanciones o penalizaciones impuestas por autoridades de protección de datos
+> - Reclamaciones legales derivadas del incumplimiento de leyes de privacidad
+> - Daños resultantes de una implementación o configuración incorrecta
+> - Cualquier consecuencia legal derivada del uso de este software
+>
+> **Obligaciones del usuario:**
+> - Consultar con profesionales legales cualificados
+> - Configurar correctamente el sistema según sus necesidades específicas
+> - Mantener textos legales y políticas de privacidad actualizadas
+> - Asegurar el cumplimiento con las leyes aplicables en su jurisdicción
+>
+> Ver [LICENSE](LICENSE) para los términos completos y la exención de responsabilidad legal detallada.
+
+---
+
 ## 🍎 ¿Por qué "Esbilla"?
 
 El nombre proviene del verbo asturiano **esbillar**, que define el arte de seleccionar, desgranar y limpiar. Tradicionalmente, *esbillar* es quitar la vaina a las legumbres, la cáscara a las avellanas o el erizo a las castañas para llegar al fruto limpio.

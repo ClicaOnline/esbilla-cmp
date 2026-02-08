@@ -31,14 +31,25 @@
 - ✅ **Documentación: SCRIPT-BLOCKING.md** - Guía completa con ejemplos de GA4, Facebook Pixel, Hotjar, LinkedIn, TikTok
 - ✅ **Ejemplo funcional: script-blocking-example.html** - Demo interactiva del sistema de bloqueo de scripts
 
-**✅ Completado Recientemente (2026-02-08): G100 Opt-In GDPR Compliant**
+**✅ Completado Recientemente (2026-02-08): G100 Opt-In + Legal Compliance**
 
+**G100 Opt-In GDPR Compliant:**
 - ✅ **SDK v2.1: G100 Opt-In** - Google Consent Mode V2 G100 ahora es opt-in (activado solo si `config.enableG100 === true`)
 - ✅ **Arquitectura: Type definitions** - Añadido campo `enableG100?: boolean` a interface `Site` en dashboard
 - ✅ **Dashboard: Analytics Settings UI** - Nueva sección en Settings.tsx con checkbox G100 y advertencias GDPR (CJEU Breyer, CNIL)
 - ✅ **WordPress Plugin: G100 checkbox** - Añadido campo `enable_g100` en settings con advertencias de compliance
 - ✅ **SDK: Config merge** - Pegoyu lee `window.esbillaConfig` para opciones inline (útil para plugins)
 - ✅ **Compliance fix**: Por defecto G100 está DESACTIVADO - Solo envía pings anónimos a GA4 si usuario lo activa explícitamente
+
+**Legal Disclaimers + Banner Compliance (FASE 1):**
+- ✅ **LICENSE**: Disclaimer legal robusto con exención de responsabilidad GDPR/ePrivacy
+- ✅ **README.md**: Aviso legal prominente al inicio del documento
+- ✅ **LEGAL-COMPLIANCE-BANNER.md**: Guía completa (8000+ palabras) sobre requisitos GDPR Art. 13
+- ✅ **Templates HTML**: Enlace "Más información" + modal de política de privacidad (maiz.html, modal.html, bottom-bar.html)
+- ✅ **i18n/config.json**: Traducciones en ast/es/en para enlace legal y título modal
+- ✅ **SDK v2.1**: Lógica para modal legal (apertura/cierre, ESC, overlay)
+- ✅ **base.css**: Estilos completos para modal responsive con animaciones
+- ✅ **Type definitions**: Nuevo interface `LegalInfo` con campos GDPR completos (companyName, taxId, DPO, cross-domain, etc.)
 
 **🔥 Backlog Prioritario (Próximos Sprints)**
 

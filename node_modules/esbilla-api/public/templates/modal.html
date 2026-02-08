@@ -3,11 +3,24 @@
   <div id="esbilla-banner-inner" class="esbilla-inner">
     <div id="esbilla-banner-icon" class="esbilla-icon">{{icon}}</div>
     <div id="esbilla-banner-title" class="esbilla-title">{{title}}</div>
-    <p id="esbilla-banner-description" class="esbilla-text">{{description}}</p>
+    <p id="esbilla-banner-description" class="esbilla-text">
+      {{description}}
+      <a href="#" id="esbilla-legal-link" class="esbilla-legal-link">{{legalLinkText}}</a>
+    </p>
     <div id="esbilla-banner-actions" class="esbilla-actions">
       <button id="esbilla-btn-accept" class="esbilla-btn btn-primary">{{accept}}</button>
       <button id="esbilla-btn-settings" class="esbilla-btn btn-secondary">{{settings}}</button>
       <button id="esbilla-btn-reject" class="esbilla-btn btn-link">{{reject}}</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal de Política de Privacidad -->
+<div id="esbilla-legal-modal" class="esbilla-legal-modal" style="display: none;">
+  <div class="esbilla-legal-overlay"></div>
+  <div class="esbilla-legal-content">
+    <button id="esbilla-legal-close" class="esbilla-legal-close" aria-label="Cerrar">×</button>
+    <h2 id="esbilla-legal-title" class="esbilla-legal-title">{{legalTitle}}</h2>
+    <div id="esbilla-legal-text" class="esbilla-legal-body">{{legalContent}}</div>
   </div>
 </div>
