@@ -284,7 +284,7 @@ export function OrganizationsPage() {
         pass: org.smtp.pass,
         fromName: org.smtp.fromName,
         fromEmail: org.smtp.fromEmail,
-        replyTo: org.smtp.replyTo || ''
+        replyTo: org.smtp.replyTo || undefined
       } : { ...EMPTY_SMTP }
     });
     setShowModal(true);
@@ -321,15 +321,15 @@ export function OrganizationsPage() {
         pass: formData.smtp.pass, // TODO: encriptar en el backend
         fromName: formData.smtp.fromName,
         fromEmail: formData.smtp.fromEmail,
-        replyTo: formData.smtp.replyTo || null
-      } : null;
+        replyTo: formData.smtp.replyTo || undefined
+      } : undefined;
 
       if (editingOrg) {
         // Update existing organization
         await updateDoc(doc(db, 'organizations', editingOrg.id), {
           name: formData.name,
-          legalName: formData.legalName || null,
-          taxId: formData.taxId || null,
+          legalName: formData.legalName || undefined,
+          taxId: formData.taxId || undefined,
           billingEmail: formData.billingEmail,
           billingAddress,
           plan: formData.plan,
@@ -364,8 +364,8 @@ export function OrganizationsPage() {
         const newOrgData = {
           id: orgId,
           name: formData.name,
-          legalName: formData.legalName || null,
-          taxId: formData.taxId || null,
+          legalName: formData.legalName || undefined,
+          taxId: formData.taxId || undefined,
           plan: formData.plan,
           maxSites: planLimits.maxSites,
           maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
