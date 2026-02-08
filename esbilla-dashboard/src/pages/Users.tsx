@@ -18,7 +18,6 @@ import { useSearch } from '../hooks/useSearch';
 import { Pagination } from '../components/shared/Pagination';
 import { SearchInput } from '../components/shared/SearchInput';
 import { PageSizeSelector } from '../components/shared/PageSizeSelector';
-import { BadgeEstado } from '../components/BadgeEstado';
 import {
   Shield, Eye, Clock, Trash2, Check, X, Crown,
   Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save
