@@ -1120,6 +1120,66 @@
     }
   }
 
+  /**
+   * Genera texto legal automáticamente desde campos estructurados (GDPR Art. 13)
+   * @param {Object} legal - Objeto LegalInfo con campos estructurados
+   * @param {Object} t - Traducciones actuales
+   * @returns {string} Texto legal formateado
+   */
+  function generateLegalText(legal, t) {
+    const parts = [];
+
+    // 1. Responsable del Tratamiento (Art. 13.1.a)
+    if (legal.companyName) {
+      parts.push(`<strong>${t.dataController || 'Responsable del tratamiento'}:</strong> ${legal.companyName}` +
+        (legal.taxId ? ` (${legal.taxId})` : ''));
+      if (legal.address) parts.push(`<br>${legal.address}`);
+      if (legal.contactEmail) parts.push(`<br>Email: ${legal.contactEmail}`);
+    }
+
+    // 2. DPO (Art. 13.1.b) - si aplica
+    if (legal.dpoName || legal.dpoEmail) {
+      parts.push('<br><br><strong>' + (t.dpo || 'Delegado de Protección de Datos') + ':</strong>');
+      if (legal.dpoName) parts.push(`<br>${legal.dpoName}`);
+      if (legal.dpoEmail) parts.push(`<br>Email: ${legal.dpoEmail}`);
+    }
+
+    // 3. Finalidades y base legal (texto genérico)
+    parts.push(`<br><br><strong>${t.purpose || 'Finalidad'}:</strong> Personalización de contenido, analítica web, publicidad comportamental.`);
+    parts.push(`<br><strong>${t.legalBasis || 'Base legal'}:</strong> Consentimiento (Art. 6.1.a GDPR).`);
+
+    // 4. Plazo de conservación (Art. 13.2.a)
+    if (legal.consentRetentionDays) {
+      const days = legal.consentRetentionDays;
+      const years = Math.floor(days / 365);
+      parts.push(`<br><strong>${t.retention || 'Plazo de conservación'}:</strong> ${days} días (${years} años).`);
+    }
+
+    // 5. Derechos del interesado (Art. 13.2.b)
+    parts.push(`<br><br><strong>${t.rights || 'Tus derechos'}:</strong> Acceso, rectificación, supresión, limitación, portabilidad y oposición.` +
+      (legal.contactEmail ? ` Contacta en ${legal.contactEmail}` : ''));
+
+    // 6. Derecho a reclamar ante autoridad (Art. 13.2.d)
+    if (legal.supervisoryAuthority) {
+      parts.push(`<br><strong>${t.complaint || 'Reclamaciones'}:</strong> ${legal.supervisoryAuthority}` +
+        (legal.supervisoryAuthorityUrl ? ` (<a href="${legal.supervisoryAuthorityUrl}" target="_blank" rel="noopener">${legal.supervisoryAuthorityUrl}</a>)` : ''));
+    }
+
+    // 7. Cross-domain (si aplica)
+    if (legal.crossDomainEnabled && legal.relatedDomains && legal.relatedDomains.length > 0) {
+      parts.push(`<br><br><strong>${t.crossDomain || 'Consentimiento compartido'}:</strong> Tu consentimiento se comparte entre los siguientes dominios: ${legal.relatedDomains.join(', ')}`);
+    }
+
+    // 8. Enlaces externos
+    if (legal.privacyPolicyUrl || legal.cookiePolicyUrl) {
+      parts.push('<br><br><strong>' + (t.moreInfo || 'Más información') + ':</strong>');
+      if (legal.privacyPolicyUrl) parts.push(`<br>• <a href="${legal.privacyPolicyUrl}" target="_blank" rel="noopener">${t.privacyPolicy || 'Política de Privacidad'}</a>`);
+      if (legal.cookiePolicyUrl) parts.push(`<br>• <a href="${legal.cookiePolicyUrl}" target="_blank" rel="noopener">${t.cookiePolicy || 'Política de Cookies'}</a>`);
+    }
+
+    return parts.join('');
+  }
+
   function getTranslatedHtml() {
     const t = translations[currentLang] || translations['es'] || {};
     let html = templateHtml;
@@ -1145,10 +1205,21 @@
     // Reemplazar icono de config
     html = html.replaceAll('{{icon}}', config.icon || '🌽');
 
-    // Aplicar información legal (GDPR compliance)
+    // Aplicar información legal (GDPR compliance - Art. 13)
     if (config.legal) {
       const legalTitle = config.legal.title || t.legalTitle || 'Política de Privacidad';
-      const legalContent = config.legal.content || config.legal.fullPolicyText || 'No se ha configurado la política de privacidad.';
+
+      // Priorizar fullPolicyText > content > auto-generado
+      let legalContent = config.legal.fullPolicyText || config.legal.content;
+
+      // Si no hay texto manual, generar automáticamente desde campos estructurados
+      if (!legalContent && config.legal.companyName) {
+        legalContent = generateLegalText(config.legal, t);
+      }
+
+      // Fallback final
+      legalContent = legalContent || 'No se ha configurado la política de privacidad.';
+
       html = html.replaceAll('{{legalTitle}}', legalTitle);
       html = html.replaceAll('{{legalContent}}', legalContent.replaceAll('\n', '<br>'));
     } else {

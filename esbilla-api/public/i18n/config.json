@@ -17,7 +17,18 @@
     "panoyaTitle": "Configurar cookies",
     "footprintLabel": "El to ID de privacidá",
     "legalLinkText": "Más información",
-    "legalTitle": "Política de Privacidá"
+    "legalTitle": "Política de Privacidá",
+    "dataController": "Responsable del tratamientu",
+    "dpo": "Delegáu de Protección de Datos",
+    "purpose": "Finalidá",
+    "legalBasis": "Base llegal",
+    "retention": "Plazu de caltenimientu",
+    "rights": "Los tos derechos",
+    "complaint": "Reclamaciones",
+    "crossDomain": "Consentimientu compartíu",
+    "moreInfo": "Más información",
+    "privacyPolicy": "Política de Privacidá",
+    "cookiePolicy": "Política de Cookies"
   },
   "es": {
     "template": "maiz.html",
@@ -37,7 +48,18 @@
     "panoyaTitle": "Configurar cookies",
     "footprintLabel": "Tu ID de privacidad",
     "legalLinkText": "Más información",
-    "legalTitle": "Política de Privacidad"
+    "legalTitle": "Política de Privacidad",
+    "dataController": "Responsable del tratamiento",
+    "dpo": "Delegado de Protección de Datos",
+    "purpose": "Finalidad",
+    "legalBasis": "Base legal",
+    "retention": "Plazo de conservación",
+    "rights": "Tus derechos",
+    "complaint": "Reclamaciones",
+    "crossDomain": "Consentimiento compartido",
+    "moreInfo": "Más información",
+    "privacyPolicy": "Política de Privacidad",
+    "cookiePolicy": "Política de Cookies"
   },
   "en": {
     "template": "maiz.html",
@@ -57,7 +79,18 @@
     "panoyaTitle": "Configure cookies",
     "footprintLabel": "Your privacy ID",
     "legalLinkText": "Learn more",
-    "legalTitle": "Privacy Policy"
+    "legalTitle": "Privacy Policy",
+    "dataController": "Data controller",
+    "dpo": "Data Protection Officer",
+    "purpose": "Purpose",
+    "legalBasis": "Legal basis",
+    "retention": "Retention period",
+    "rights": "Your rights",
+    "complaint": "Complaints",
+    "crossDomain": "Shared consent",
+    "moreInfo": "More information",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy"
   },
   "fr": {
     "template": "maiz.html",
@@ -75,7 +108,20 @@
     "marketingDesc": "Permettent de personnaliser les publicités",
     "saveSettings": "Enregistrer les préférences",
     "panoyaTitle": "Configurer les cookies",
-    "footprintLabel": "Votre ID de confidentialité"
+    "footprintLabel": "Votre ID de confidentialité",
+    "legalLinkText": "Plus d'informations",
+    "legalTitle": "Politique de Confidentialité",
+    "dataController": "Responsable du traitement",
+    "dpo": "Délégué à la Protection des Données",
+    "purpose": "Finalité",
+    "legalBasis": "Base légale",
+    "retention": "Durée de conservation",
+    "rights": "Vos droits",
+    "complaint": "Réclamations",
+    "crossDomain": "Consentement partagé",
+    "moreInfo": "Plus d'informations",
+    "privacyPolicy": "Politique de Confidentialité",
+    "cookiePolicy": "Politique des Cookies"
   },
   "pt": {
     "template": "maiz.html",
@@ -92,6 +138,20 @@
     "marketingLabel": "Marketing",
     "marketingDesc": "Permitem personalizar anúncios",
     "saveSettings": "Salvar preferências",
-    "panoyaTitle": "Configurar cookies"
+    "panoyaTitle": "Configurar cookies",
+    "footprintLabel": "Seu ID de privacidade",
+    "legalLinkText": "Mais informações",
+    "legalTitle": "Política de Privacidade",
+    "dataController": "Responsável pelo tratamento",
+    "dpo": "Encarregado de Proteção de Dados",
+    "purpose": "Finalidade",
+    "legalBasis": "Base legal",
+    "retention": "Prazo de conservação",
+    "rights": "Seus direitos",
+    "complaint": "Reclamações",
+    "crossDomain": "Consentimento compartilhado",
+    "moreInfo": "Mais informações",
+    "privacyPolicy": "Política de Privacidade",
+    "cookiePolicy": "Política de Cookies"
   }
 }
