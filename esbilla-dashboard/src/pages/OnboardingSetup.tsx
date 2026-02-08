@@ -123,6 +123,7 @@ export function OnboardingSetupPage() {
           },
         },
         siteAccess: {},
+        distributorAccess: {},
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
         authProvider: userData?.authProvider || 'google',
