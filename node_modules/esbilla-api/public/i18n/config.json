@@ -15,7 +15,9 @@
     "marketingDesc": "Permiten personalizar anuncios",
     "saveSettings": "Guardar preferencies",
     "panoyaTitle": "Configurar cookies",
-    "footprintLabel": "El to ID de privacidá"
+    "footprintLabel": "El to ID de privacidá",
+    "legalLinkText": "Más información",
+    "legalTitle": "Política de Privacidá"
   },
   "es": {
     "template": "maiz.html",
@@ -33,7 +35,9 @@
     "marketingDesc": "Permiten personalizar anuncios",
     "saveSettings": "Guardar preferencias",
     "panoyaTitle": "Configurar cookies",
-    "footprintLabel": "Tu ID de privacidad"
+    "footprintLabel": "Tu ID de privacidad",
+    "legalLinkText": "Más información",
+    "legalTitle": "Política de Privacidad"
   },
   "en": {
     "template": "maiz.html",
@@ -51,7 +55,9 @@
     "marketingDesc": "Allow personalized ads",
     "saveSettings": "Save preferences",
     "panoyaTitle": "Configure cookies",
-    "footprintLabel": "Your privacy ID"
+    "footprintLabel": "Your privacy ID",
+    "legalLinkText": "Learn more",
+    "legalTitle": "Privacy Policy"
   },
   "fr": {
     "template": "maiz.html",
