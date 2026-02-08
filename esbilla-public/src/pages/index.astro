@@ -1,19 +1,38 @@
 ---
 // src/pages/index.astro
+// Redirect root to browser language preserving query params
+
+const url = Astro.url;
+const searchParams = url.search; // Includes '?' if params exist
+
+// Supported languages
+const supportedLangs = ['ast', 'es', 'gl', 'eu', 'ca', 'en', 'fr', 'pt', 'it', 'de'];
+const defaultLang = 'ast';
+
+// Get browser language from Accept-Language header
+const acceptLanguage = Astro.request.headers.get('accept-language') || '';
+
+// Parse Accept-Language header (format: "en-US,en;q=0.9,es;q=0.8")
+const browserLangs = acceptLanguage
+  .split(',')
+  .map(lang => {
+    const [code, qStr] = lang.trim().split(';');
+    const q = qStr ? parseFloat(qStr.split('=')[1]) : 1.0;
+    // Extract base language (en-US -> en, es-ES -> es)
+    const baseLang = code.toLowerCase().split('-')[0];
+    return { lang: baseLang, q };
+  })
+  .sort((a, b) => b.q - a.q); // Sort by quality value
+
+// Find first supported language
+let targetLang = defaultLang;
+for (const { lang } of browserLangs) {
+  if (supportedLangs.includes(lang)) {
+    targetLang = lang;
+    break;
+  }
+}
+
+// Redirect preserving query parameters
+return Astro.redirect(`/${targetLang}/${searchParams}`, 302);
 ---
-<meta http-equiv="refresh" content="0;url=/es/" />
-<html lang="ast">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Esbilla CMP - Asturianu</title>
-	</head>
-	<body>
-		
-    <h1>Bienveníos a Esbilla CMP (Asturianu)</h1>
-  
-	</body>
-</html>

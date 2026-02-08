@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import {
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
@@ -228,6 +229,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Manejar resultado del redirect de Google Sign-In
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log('Usuario autenticado con Google redirect:', result.user.email);
+          // onAuthStateChanged se encargará de cargar los datos del usuario
+        }
+      })
+      .catch((err) => {
+        console.error('Error procesando redirect result:', err);
+        setError(err instanceof Error ? err.message : 'Error al procesar autenticación');
+      });
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
@@ -254,8 +268,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       setError(null);
-      // Solo llamar a signInWithPopup - onAuthStateChanged se encargará del resto
-      await signInWithPopup(auth, googleProvider);
+      // Usar redirect en lugar de popup para evitar problemas con COOP
+      await signInWithRedirect(auth, googleProvider);
+      // El usuario será redirigido a Google y luego volverá
+      // getRedirectResult se encargará de procesar el resultado al volver
     } catch (err: unknown) {
       console.error('Error en login:', err);
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');

@@ -38,10 +38,10 @@ export function WaitlistPage() {
     setLoading(true);
 
     try {
-      let q = query(collection(db, 'waitlist'), orderBy('createdAt', 'desc'));
+      let q = query(collection(db, 'waitingList'), orderBy('createdAt', 'desc'));
 
       if (filterStatus !== 'all') {
-        q = query(collection(db, 'waitlist'), where('status', '==', filterStatus), orderBy('createdAt', 'desc'));
+        q = query(collection(db, 'waitingList'), where('status', '==', filterStatus), orderBy('createdAt', 'desc'));
       }
 
       const snapshot = await getDocs(q);
@@ -70,7 +70,7 @@ export function WaitlistPage() {
 
       setEntries(list);
     } catch (error) {
-      console.error('Error loading waitlist:', error);
+      console.error('Error loading waitingList:', error);
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export function WaitlistPage() {
         updateData.convertedAt = new Date();
       }
 
-      await updateDoc(doc(db, 'waitlist', entryId), updateData);
+      await updateDoc(doc(db, 'waitingList', entryId), updateData);
 
       setEntries(prev => prev.map(entry =>
         entry.id === entryId
@@ -126,7 +126,7 @@ export function WaitlistPage() {
     setSaving(true);
 
     try {
-      await updateDoc(doc(db, 'waitlist', entryId), {
+      await updateDoc(doc(db, 'waitingList', entryId), {
         ...editForm,
         updatedAt: new Date()
       });
@@ -149,7 +149,7 @@ export function WaitlistPage() {
     if (!db || !confirm('¿Estás seguro de que quieres eliminar este contacto?')) return;
 
     try {
-      await deleteDoc(doc(db, 'waitlist', entryId));
+      await deleteDoc(doc(db, 'waitingList', entryId));
       setEntries(prev => prev.filter(entry => entry.id !== entryId));
     } catch (error) {
       console.error('Error deleting entry:', error);
@@ -178,7 +178,7 @@ export function WaitlistPage() {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `waitlist_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `waitingList_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   }
 
