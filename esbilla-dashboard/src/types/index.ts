@@ -856,3 +856,33 @@ export interface WaitingListEntry {
   locale?: string;                    // Idioma preferido (es, en, ast, etc.)
   createdAt: Date;                    // Fecha de registro
 }
+
+// ============================================
+// SUPPORT TICKETS (TICKETS DE SOPORTE)
+// ============================================
+
+export type SupportTicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type SupportTicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type SupportTicketCategory = 'access' | 'billing' | 'technical' | 'feature_request' | 'other';
+
+export interface SupportTicket {
+  id: string;                         // ID del documento
+  userId: string;                     // UID del usuario que crea el ticket
+  userEmail: string;                  // Email del usuario
+  userName: string;                   // Nombre del usuario
+  organizationId?: string;            // ID de organización (si aplica)
+  organizationName?: string;          // Nombre de organización
+  category: SupportTicketCategory;    // Categoría del ticket
+  subject: string;                    // Asunto del ticket
+  description: string;                // Descripción detallada
+  status: SupportTicketStatus;        // Estado del ticket
+  priority: SupportTicketPriority;    // Prioridad
+  assignedTo?: string;                // UID del admin asignado (opcional)
+  assignedToName?: string;            // Nombre del admin asignado
+  resolvedAt?: Date;                  // Fecha de resolución
+  resolvedBy?: string;                // UID de quien resolvió
+  closedAt?: Date;                    // Fecha de cierre
+  notes?: string;                     // Notas internas (solo superadmin)
+  createdAt: Date;                    // Fecha de creación
+  updatedAt?: Date;                   // Última actualización
+}
