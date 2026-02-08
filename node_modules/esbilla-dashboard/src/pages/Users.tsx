@@ -609,13 +609,7 @@ export function UsersPage() {
                       <img src={user.photoURL} alt="" className="w-10 h-10 rounded-full" />
                     )}
                     <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-stone-800">{user.displayName}</p>
-                        <BadgeEstado
-                          name={user.emailVerified ? 'email-verified' : 'email-pending'}
-                          label={user.emailVerified ? 'Verificado' : 'Pendiente'}
-                        />
-                      </div>
+                      <p className="font-medium text-stone-800">{user.displayName}</p>
                       <p className="text-sm text-stone-500">{user.email}</p>
                     </div>
                   </div>
@@ -699,13 +693,7 @@ export function UsersPage() {
                         <img src={user.photoURL} alt="" className="w-10 h-10 rounded-full" />
                       )}
                       <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-stone-800">{user.displayName}</p>
-                          <BadgeEstado
-                            name={user.emailVerified ? 'email-verified' : 'email-pending'}
-                            label={user.emailVerified ? 'Verificado' : 'Pendiente'}
-                          />
-                        </div>
+                        <p className="font-medium text-stone-800">{user.displayName}</p>
                         <p className="text-sm text-stone-500">{user.email}</p>
                       </div>
                     </div>
