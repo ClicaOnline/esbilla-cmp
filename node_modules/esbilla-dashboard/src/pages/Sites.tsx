@@ -127,7 +127,16 @@ export function SitesPage() {
       const snapshot = await getDocs(collection(db, 'users'));
       const userList: DashboardUser[] = [];
       snapshot.forEach((docSnapshot) => {
-        userList.push({ id: docSnapshot.id, ...docSnapshot.data() } as DashboardUser);
+        const data = docSnapshot.data();
+        userList.push({
+          id: docSnapshot.id,
+          ...data,
+          orgAccess: data.orgAccess || {},
+          siteAccess: data.siteAccess || {},
+          distributorAccess: data.distributorAccess || {},
+          createdAt: data.createdAt?.toDate?.() || new Date(),
+          lastLogin: data.lastLogin?.toDate?.() || new Date(),
+        } as DashboardUser);
       });
       setUsers(userList);
     } catch (err) {
