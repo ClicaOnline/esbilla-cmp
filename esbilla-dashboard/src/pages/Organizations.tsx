@@ -284,7 +284,7 @@ export function OrganizationsPage() {
         pass: org.smtp.pass,
         fromName: org.smtp.fromName,
         fromEmail: org.smtp.fromEmail,
-        replyTo: org.smtp.replyTo || undefined
+        replyTo: org.smtp.replyTo || ''
       } : { ...EMPTY_SMTP }
     });
     setShowModal(true);
