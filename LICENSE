@@ -22,6 +22,62 @@ SOFTWARE.
 
 ---
 
+## LEGAL COMPLIANCE DISCLAIMER
+
+**IMPORTANT:** This software is provided as a technical tool to assist with
+consent management. However, **legal compliance with GDPR, ePrivacy Directive,
+and other applicable data protection laws is the EXCLUSIVE RESPONSIBILITY of
+each organization that implements this software.**
+
+### No Legal Advice or Guarantees
+
+1. **Not Legal Advice**: This software and its documentation do not constitute
+   legal advice. Organizations must consult with qualified legal professionals
+   to ensure compliance with applicable laws in their jurisdiction.
+
+2. **No Compliance Guarantee**: While this software provides technical mechanisms
+   for consent management, Clica Online Soluciones S.L. and the contributors
+   DO NOT guarantee that use of this software will result in legal compliance
+   with GDPR, ePrivacy, CCPA, or any other data protection regulation.
+
+3. **Implementation Responsibility**: Each organization is solely responsible for:
+   - Proper configuration of the consent management system
+   - Accurate legal texts and privacy policies
+   - Correct categorization of cookies and tracking technologies
+   - Ensuring consent mechanisms meet legal requirements
+   - Maintaining audit trails and responding to data subject requests
+   - Compliance with data transfer regulations
+   - Any other legal obligations under applicable laws
+
+4. **No Liability**: Under no circumstances shall Clica Online Soluciones S.L.,
+   its employees, contractors, or contributors be liable for:
+   - Fines, penalties, or sanctions imposed by data protection authorities
+   - Legal claims arising from non-compliance with data protection laws
+   - Damages resulting from improper implementation or configuration
+   - Any legal consequences of using this software
+
+### User Obligations
+
+Organizations using this software must:
+- Conduct their own legal analysis of applicable regulations
+- Obtain professional legal counsel when necessary
+- Properly configure and maintain the system according to their specific needs
+- Regularly review and update their consent mechanisms and legal texts
+- Ensure all staff are properly trained on GDPR/privacy compliance
+- Monitor changes in applicable laws and update their implementation accordingly
+
+### Indemnification
+
+Users of this software agree to indemnify and hold harmless Clica Online
+Soluciones S.L. and all contributors from any claims, damages, losses,
+liabilities, costs, or expenses arising from or related to:
+- Use or misuse of this software
+- Non-compliance with applicable data protection laws
+- Inaccurate or incomplete legal texts or configurations
+- Any violation of third-party rights
+
+---
+
 ## Additional Terms for SaaS Usage
 
 While this software is licensed under MIT, if you wish to use Esbilla CMP
