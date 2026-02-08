@@ -9,8 +9,10 @@ import type {
   Organization,
   SiteAccess,
   OrganizationAccess,
+  DistributorAccess,
   SiteRole,
   OrganizationRole,
+  DistributorRole,
   GlobalRole
 } from '../types';
 import { usePagination } from '../hooks/usePagination';
@@ -20,7 +22,7 @@ import { SearchInput } from '../components/shared/SearchInput';
 import { PageSizeSelector } from '../components/shared/PageSizeSelector';
 import {
   Shield, Eye, Clock, Trash2, Check, X, Crown,
-  Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save
+  Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save, Store
 } from 'lucide-react';
 
 interface UserRecord {
@@ -31,7 +33,7 @@ interface UserRecord {
   globalRole: GlobalRole;
   orgAccess: Record<string, OrganizationAccess>;
   siteAccess: Record<string, SiteAccess>;
-  distributorAccess?: Record<string, any>;
+  distributorAccess?: Record<string, DistributorAccess>;
   createdAt: Date;
   lastLogin: Date;
 }
@@ -47,7 +49,7 @@ export function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserRecord | null>(null);
-  const [activeTab, setActiveTab] = useState<'orgs' | 'sites'>('orgs');
+  const [activeTab, setActiveTab] = useState<'orgs' | 'sites' | 'distributors'>('orgs');
   const [modalOrgSearch, setModalOrgSearch] = useState('');
   const [modalSiteSearch, setModalSiteSearch] = useState('');
 
@@ -497,6 +499,39 @@ export function UsersPage() {
     }
   }
 
+  async function updateDistributorAccess(userId: string, orgId: string, role: DistributorRole | null) {
+    if (!isSuperAdmin || !db) return;
+
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const newDistributorAccess = { ...(user.distributorAccess || {}) };
+    const org = organizations.find(o => o.id === orgId);
+
+    if (role === null) {
+      delete newDistributorAccess[orgId];
+    } else {
+      newDistributorAccess[orgId] = {
+        organizationId: orgId,
+        organizationName: org?.name,
+        role,
+        addedAt: new Date(),
+        addedBy: currentUser?.uid || '',
+        notes: undefined
+      };
+    }
+
+    try {
+      await updateDoc(doc(db, 'users', userId), { distributorAccess: newDistributorAccess });
+      setUsers(users.map(u => u.id === userId ? { ...u, distributorAccess: newDistributorAccess } : u));
+      if (selectedUser?.id === userId) {
+        setSelectedUser({ ...selectedUser, distributorAccess: newDistributorAccess });
+      }
+    } catch (err) {
+      console.error('Error updating distributor access:', err);
+    }
+  }
+
   function getAccessSummary(user: UserRecord): string {
     if (user.globalRole === 'superadmin') return 'All';
 
@@ -822,6 +857,17 @@ export function UsersPage() {
                   <Globe2 size={16} className="inline mr-2" />
                   {t.users.sites} ({Object.keys(selectedUser.siteAccess || {}).length})
                 </button>
+                <button
+                  onClick={() => setActiveTab('distributors')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'distributors'
+                      ? 'text-amber-600 border-b-2 border-amber-600'
+                      : 'text-stone-500 hover:text-stone-700'
+                  }`}
+                >
+                  <Store size={16} className="inline mr-2" />
+                  Distributors ({Object.keys(selectedUser.distributorAccess || {}).length})
+                </button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-6">
@@ -904,7 +950,7 @@ export function UsersPage() {
                       })}
                     </div>
                   )
-                ) : (
+                ) : activeTab === 'sites' ? (
                   // Sites tab (for direct site access, bypassing org)
                   sites.length === 0 ? (
                     <p className="text-center text-stone-500 py-8">{t.sites?.noSites || 'No sites'}</p>
@@ -995,6 +1041,84 @@ export function UsersPage() {
                           </div>
                         );
                       })}
+                    </div>
+                  )
+                ) : (
+                  // Distributors tab
+                  organizations.length === 0 ? (
+                    <p className="text-center text-stone-500 py-8">No organizations available</p>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                        <p className="font-medium mb-1">Distributor Access</p>
+                        <p className="text-xs">As a distributor, this user can manage these organizations on behalf of clients.</p>
+                      </div>
+                      {organizations
+                        .map((org) => {
+                          const access = selectedUser.distributorAccess?.[org.id];
+                          const hasAccess = !!access;
+                          const hasOrgOwnership = selectedUser.orgAccess?.[org.id]?.role === 'org_owner';
+
+                          return (
+                            <div
+                              key={org.id}
+                              className={`flex items-center justify-between p-4 rounded-lg border ${
+                                hasAccess ? 'border-purple-200 bg-purple-50' : 'border-stone-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                  hasAccess ? 'bg-purple-200' : 'bg-stone-100'
+                                }`}>
+                                  <Store size={20} className={hasAccess ? 'text-purple-700' : 'text-stone-400'} />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-stone-800">{org.name}</p>
+                                  <p className="text-xs text-stone-500">
+                                    {sites.filter(s => s.organizationId === org.id).length} sites
+                                    {' • '}
+                                    {org.plan}
+                                  </p>
+                                  {hasOrgOwnership && (
+                                    <p className="text-xs text-green-600 mt-1">
+                                      ✓ User is owner of this organization
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                {hasAccess ? (
+                                  <>
+                                    <select
+                                      value={access.role}
+                                      onChange={(e) => updateDistributorAccess(selectedUser.id, org.id, e.target.value as DistributorRole)}
+                                      className="text-sm border border-stone-200 rounded-lg px-2 py-1"
+                                    >
+                                      <option value="distributor_viewer">Viewer</option>
+                                      <option value="distributor_manager">Manager</option>
+                                      <option value="distributor_admin">Admin</option>
+                                    </select>
+                                    <button
+                                      onClick={() => updateDistributorAccess(selectedUser.id, org.id, null)}
+                                      className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                      <X size={16} />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <button
+                                    onClick={() => updateDistributorAccess(selectedUser.id, org.id, 'distributor_viewer')}
+                                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+                                  >
+                                    <Plus size={14} />
+                                    <span>Add as Distributor</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
                   )
                 )}
