@@ -26,6 +26,7 @@ export const es: Translations = {
     users: 'Usuarios',
     footprint: 'Buscar Footprint',
     urlStats: 'URLs',
+    distributors: 'Distribuidores',
     waitingList: 'Lista de Espera',
     settings: 'Configuración',
     logout: 'Cerrar sesión',

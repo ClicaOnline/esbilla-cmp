@@ -22,6 +22,7 @@ export interface Translations {
     users: string;
     footprint: string;
     urlStats: string;
+    distributors: string;
     waitingList: string;
     settings: string;
     logout: string;

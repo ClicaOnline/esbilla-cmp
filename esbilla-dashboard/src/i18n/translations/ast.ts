@@ -26,6 +26,7 @@ export const ast: Translations = {
     users: 'Usuarios',
     footprint: 'Buscar Footprint',
     urlStats: 'URLs',
+    distributors: 'Distribuidores',
     waitingList: 'Llista d\'Espera',
     settings: 'Configuración',
     logout: 'Zarrar sesión',

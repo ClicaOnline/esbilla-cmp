@@ -440,6 +440,13 @@ app.get('/.well-known/gateway/gtm-verification.txt', async (req, res) => {
 app.get('/api/config/:id', async (req, res) => {
   const { id } = req.params;
 
+  // Cache control: no cachear la config para que cambios se reflejen inmediatamente
+  res.set({
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  });
+
   // 1. Intentar cargar config personalizada de Firestore
   if (db) {
     try {
