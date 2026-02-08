@@ -69,20 +69,49 @@ jobs:
           docker push gcr.io/esbilla-cmp/esbilla-api:${{ github.sha }}
           docker push gcr.io/esbilla-cmp/esbilla-api:latest
 
+      - name: Validate SMTP Secrets
+        run: |
+          if [ -z "${{ secrets.SMTP_HOST_PROD }}" ]; then
+            echo "ERROR: SMTP_HOST_PROD secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SMTP_PORT_PROD }}" ]; then
+            echo "ERROR: SMTP_PORT_PROD secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SMTP_USER_PROD }}" ]; then
+            echo "ERROR: SMTP_USER_PROD secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SMTP_PASS_PROD }}" ]; then
+            echo "ERROR: SMTP_PASS_PROD secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.FROM_EMAIL_PROD }}" ]; then
+            echo "ERROR: FROM_EMAIL_PROD secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.FRONTEND_URL_PROD }}" ]; then
+            echo "ERROR: FRONTEND_URL_PROD secret is not set"
+            exit 1
+          fi
+          echo "All SMTP secrets are configured ✓"
+
       - name: Deploy to Cloud Run
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST_PROD }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT_PROD }}
+          SMTP_USER: ${{ secrets.SMTP_USER_PROD }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS_PROD }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL_PROD }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL_PROD }}
         run: |
           gcloud run deploy esbilla-api \
             --image gcr.io/esbilla-cmp/esbilla-api:${{ github.sha }} \
             --platform managed \
             --region europe-west4 \
             --allow-unauthenticated \
-            --update-env-vars NODE_ENV=production \
-            --update-env-vars SMTP_HOST=${{ secrets.SMTP_HOST_PROD }} \
-            --update-env-vars SMTP_PORT=${{ secrets.SMTP_PORT_PROD }} \
-            --update-env-vars SMTP_USER=${{ secrets.SMTP_USER_PROD }} \
-            --update-env-vars SMTP_PASS=${{ secrets.SMTP_PASS_PROD }} \
-            --update-env-vars FROM_EMAIL="${{ secrets.FROM_EMAIL_PROD }}" \
-            --update-env-vars FRONTEND_URL=${{ secrets.FRONTEND_URL_PROD }} \
+            --update-env-vars "NODE_ENV=production,SMTP_HOST=${SMTP_HOST},SMTP_PORT=${SMTP_PORT},SMTP_USER=${SMTP_USER},SMTP_PASS=${SMTP_PASS},FROM_EMAIL=${FROM_EMAIL},FRONTEND_URL=${FRONTEND_URL}" \
             --memory 1Gi \
             --cpu 2 \
             --min-instances 1 \
