@@ -3,13 +3,11 @@ import { collection, getDocs, updateDoc, doc, serverTimestamp, deleteField } fro
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
 import type { DashboardUser, Organization, DistributorAccess, DistributorRole } from '../types';
 import { Users, Building2, Plus, Trash2, Search, X, AlertCircle, CheckCircle } from 'lucide-react';
 
 export function DistributorsPage() {
   const { userData, isSuperAdmin } = useAuth();
-  const { t } = useI18n();
 
   // State
   const [users, setUsers] = useState<DashboardUser[]>([]);
@@ -34,6 +32,8 @@ export function DistributorsPage() {
   }, [isSuperAdmin]);
 
   async function loadData() {
+    if (!db) return;
+
     setLoading(true);
     setError(null);
 
@@ -89,6 +89,7 @@ export function DistributorsPage() {
 
   // Assign distributor to organization
   async function assignDistributor() {
+    if (!db) return;
     if (!selectedUser || !selectedOrg || !selectedRole) {
       setError('Completa todos los campos');
       return;
@@ -130,6 +131,7 @@ export function DistributorsPage() {
 
   // Remove distributor from organization
   async function removeDistributor(user: DashboardUser, orgId: string) {
+    if (!db) return;
     if (!confirm(`¿Eliminar acceso de distribuidor a ${getOrgName(orgId)}?`)) return;
 
     setSaving(true);

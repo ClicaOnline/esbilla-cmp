@@ -3,7 +3,6 @@ import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where }
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
 import type { WaitingListEntry } from '../types';
 import { usePagination } from '../hooks/usePagination';
 import { useSearch } from '../hooks/useSearch';
@@ -12,13 +11,12 @@ import { SearchInput } from '../components/shared/SearchInput';
 import { PageSizeSelector } from '../components/shared/PageSizeSelector';
 import { BadgeEstado } from '../components/BadgeEstado';
 import {
-  Mail, Calendar, Building2, Globe2, MessageSquare, Trash2, Edit2,
+  Mail, Calendar, Building2, Globe2, Trash2, Edit2,
   Save, X, Filter, Download
 } from 'lucide-react';
 
 export function WaitlistPage() {
   const { user, isSuperAdmin } = useAuth();
-  const { t } = useI18n();
   const [entries, setEntries] = useState<WaitingListEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<WaitingListEntry['status'] | 'all'>('all');
@@ -160,7 +158,7 @@ export function WaitlistPage() {
 
   function exportToCSV() {
     const headers = ['Fecha', 'Nombre', 'Email', 'Empresa', 'Web', 'Plan', 'Estado', 'Mensaje', 'Notas'];
-    const rows = filteredEntries.map(entry => [
+    const rows = filteredEntries.map((entry: WaitingListEntry) => [
       entry.createdAt.toLocaleDateString(),
       entry.name || '',
       entry.email,
@@ -174,7 +172,7 @@ export function WaitlistPage() {
 
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ...rows.map((row: string[]) => row.map((cell: string) => `"${cell}"`).join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -184,20 +182,16 @@ export function WaitlistPage() {
     link.click();
   }
 
-  function getStatusBadge(status: WaitingListEntry['status']) {
-    const badges: Record<WaitingListEntry['status'], { name: any; label: string }> = {
-      pending: { name: 'email-pending', label: 'Pendiente' },
-      contacted: { name: 'smtp-configured', label: 'Contactado' },
-      converted: { name: 'email-verified', label: 'Convertido' },
-      rejected: { name: 'plan-free', label: 'Rechazado' }
-    };
+  const { filteredData: filteredEntries } = useSearch({
+    data: entries,
+    searchKeys: ['email', 'name', 'company', 'website'],
+    searchTerm
+  });
 
-    const badge = badges[status];
-    return <BadgeEstado name={badge.name} label={badge.label} />;
-  }
-
-  const filteredEntries = useSearch(entries, searchTerm, ['email', 'name', 'company', 'website']);
-  const { currentItems, ...paginationProps } = usePagination(filteredEntries, pageSize);
+  const { pageData: currentItems, goToPage, currentPage, totalPages } = usePagination({
+    data: filteredEntries,
+    pageSize
+  });
 
   if (!isSuperAdmin) {
     return (
@@ -261,7 +255,7 @@ export function WaitlistPage() {
                 onChange={setSearchTerm}
                 placeholder="Buscar por email, nombre, empresa..."
               />
-              <PageSizeSelector value={pageSize} onChange={setPageSize} />
+              <PageSizeSelector pageSize={pageSize} onPageSizeChange={setPageSize} />
             </div>
           </div>
         </div>
@@ -309,7 +303,7 @@ export function WaitlistPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-stone-200">
-                    {currentItems.map((entry) => (
+                    {currentItems.map((entry: WaitingListEntry) => (
                       <tr key={entry.id} className="hover:bg-stone-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-600">
                           <div className="flex items-center gap-2">
@@ -473,7 +467,7 @@ export function WaitlistPage() {
               </div>
             </div>
 
-            <Pagination {...paginationProps} />
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={goToPage} />
           </>
         )}
       </div>
