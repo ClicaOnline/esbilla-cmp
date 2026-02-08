@@ -86,10 +86,13 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.auth.uid == userId
                     && (request.resource.data.role == 'pending' || request.resource.data.globalRole == 'pending');
 
+      // Usuarios pueden actualizar su propio lastLogin y onboardingCompleted
       allow update: if isAuthenticated() && request.auth.uid == userId
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin', 'onboardingCompleted']);
 
+      // Admins pueden actualizar cualquier campo de otros usuarios (incluyendo onboardingCompleted)
       allow update: if isAdmin() && request.auth.uid != userId;
+
       allow delete: if isSuperAdmin();
     }
 
