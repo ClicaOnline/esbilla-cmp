@@ -40,12 +40,18 @@ export function DistributorsPage() {
     try {
       // Load all users
       const usersSnapshot = await getDocs(collection(db, 'users'));
-      const usersData = usersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        lastLogin: doc.data().lastLogin?.toDate(),
-      })) as DashboardUser[];
+      const usersData = usersSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          orgAccess: data.orgAccess || {},
+          siteAccess: data.siteAccess || {},
+          distributorAccess: data.distributorAccess || {},
+          createdAt: data.createdAt?.toDate(),
+          lastLogin: data.lastLogin?.toDate(),
+        } as DashboardUser;
+      });
       setUsers(usersData);
 
       // Load all organizations

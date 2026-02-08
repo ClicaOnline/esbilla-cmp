@@ -228,6 +228,7 @@ export function OrganizationsPage() {
           globalRole: data.globalRole || 'pending',
           orgAccess: data.orgAccess || {},
           siteAccess: data.siteAccess || {},
+          distributorAccess: data.distributorAccess || {},
           createdAt: data.createdAt?.toDate?.() || new Date(),
           lastLogin: data.lastLogin?.toDate?.() || new Date(),
           createdBy: data.createdBy
