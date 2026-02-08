@@ -121,14 +121,49 @@ export interface BannerSettings {
     customize: string;
     acceptEssential: string;
   };
-  legal: {
-    title: string;
-    content: string;
-  };
+  legal: LegalInfo;
   // Categorías de cookies configurables
   categories: CookieCategory[];
   // CSS personalizado para el banner
   customCSS?: string;
+}
+
+/**
+ * Información Legal Completa (GDPR Art. 13)
+ */
+export interface LegalInfo {
+  // Campos Legacy (backward compatibility)
+  title?: string;
+  content?: string;
+
+  // Responsable del Tratamiento (Art. 13.1.a)
+  companyName?: string;           // "Acme Corp S.L."
+  taxId?: string;                 // "B12345678"
+  address?: string;               // "C/ Mayor 1, Madrid"
+  contactEmail?: string;          // "legal@acme.com"
+
+  // DPO - si aplica (Art. 13.1.b)
+  dpoName?: string;               // "Juan Pérez"
+  dpoEmail?: string;              // "dpo@acme.com"
+
+  // Enlaces externos
+  privacyPolicyUrl?: string;      // "https://acme.com/privacidad"
+  cookiePolicyUrl?: string;       // "https://acme.com/cookies"
+
+  // Texto personalizado para el banner
+  bannerText?: string;            // Texto corto para el banner
+  fullPolicyText?: string;        // Texto completo del modal
+
+  // Cross-domain (si aplica)
+  crossDomainEnabled?: boolean;
+  relatedDomains?: string[];      // ["acme.com", "shop.acme.com"]
+
+  // Plazos de conservación
+  consentRetentionDays?: number;  // 1095 (3 años GDPR)
+
+  // Autoridad de Control
+  supervisoryAuthority?: string;  // "AEPD" (España), "CNIL" (Francia), etc.
+  supervisoryAuthorityUrl?: string; // "https://www.aepd.es"
 }
 
 /**

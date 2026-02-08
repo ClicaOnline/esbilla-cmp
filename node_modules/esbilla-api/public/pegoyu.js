@@ -1145,6 +1145,17 @@
     // Reemplazar icono de config
     html = html.replaceAll('{{icon}}', config.icon || '🌽');
 
+    // Aplicar información legal (GDPR compliance)
+    if (config.legal) {
+      const legalTitle = config.legal.title || t.legalTitle || 'Política de Privacidad';
+      const legalContent = config.legal.content || config.legal.fullPolicyText || 'No se ha configurado la política de privacidad.';
+      html = html.replaceAll('{{legalTitle}}', legalTitle);
+      html = html.replaceAll('{{legalContent}}', legalContent.replaceAll('\n', '<br>'));
+    } else {
+      html = html.replaceAll('{{legalTitle}}', t.legalTitle || 'Política de Privacidad');
+      html = html.replaceAll('{{legalContent}}', 'No se ha configurado la política de privacidad.');
+    }
+
     return html;
   }
 
@@ -1182,10 +1193,43 @@
     const btnAccept = document.getElementById('esbilla-btn-accept');
     const btnReject = document.getElementById('esbilla-btn-reject');
     const btnSettings = document.getElementById('esbilla-btn-settings');
+    const legalLink = document.getElementById('esbilla-legal-link');
+    const legalModal = document.getElementById('esbilla-legal-modal');
+    const legalClose = document.getElementById('esbilla-legal-close');
 
     if (btnAccept) btnAccept.onclick = () => saveConsent({ analytics: true, marketing: true }, 'accept_all');
     if (btnReject) btnReject.onclick = () => saveConsent({ analytics: false, marketing: false }, 'reject_all');
     if (btnSettings) btnSettings.onclick = () => toggleSettings();
+
+    // Event listeners para modal de política de privacidad
+    if (legalLink && legalModal) {
+      legalLink.onclick = (e) => {
+        e.preventDefault();
+        legalModal.style.display = 'flex';
+        console.log('[Esbilla v2.1] ✓ Modal de política de privacidad abierto');
+      };
+
+      if (legalClose) {
+        legalClose.onclick = () => {
+          legalModal.style.display = 'none';
+        };
+      }
+
+      // Cerrar al hacer clic en el overlay
+      const overlay = legalModal.querySelector('.esbilla-legal-overlay');
+      if (overlay) {
+        overlay.onclick = () => {
+          legalModal.style.display = 'none';
+        };
+      }
+
+      // Cerrar con tecla ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && legalModal.style.display === 'flex') {
+          legalModal.style.display = 'none';
+        }
+      });
+    }
   }
 
   // ============================================
