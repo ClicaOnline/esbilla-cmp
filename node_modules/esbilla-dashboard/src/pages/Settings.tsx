@@ -85,6 +85,9 @@ export function SettingsPage() {
   const [selectedSiteId, setSelectedSiteId] = useState<string>('');
   const [loadingSites, setLoadingSites] = useState(true);
 
+  // Analytics settings
+  const [enableG100, setEnableG100] = useState(false);
+
   // Load sites on mount
   useEffect(() => {
     loadSites();
@@ -147,6 +150,10 @@ export function SettingsPage() {
     } else {
       setConfig(defaultConfig);
     }
+
+    // Load analytics settings
+    setEnableG100(site?.enableG100 || false);
+
     setSaved(false);
   }
 
@@ -203,6 +210,7 @@ export function SettingsPage() {
       const siteRef = doc(db, 'sites', selectedSiteId);
       await updateDoc(siteRef, {
         'settings.banner': config,
+        enableG100: enableG100,
         updatedAt: serverTimestamp()
       });
 
@@ -217,7 +225,8 @@ export function SettingsPage() {
                   ...config,
                   categories: site.settings?.banner?.categories || []
                 }
-              }
+              },
+              enableG100: enableG100
             }
           : site
       ));
@@ -630,6 +639,68 @@ export function SettingsPage() {
                     Ver guía completa de personalización →
                   </a>
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Analytics Settings Section */}
+        <section className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <svg className="text-green-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 3v18h18" />
+                <path d="m19 9-5 5-4-4-3 3" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-stone-800">Configuración de Analytics</h2>
+              <p className="text-sm text-stone-500">Control de medición antes del consentimiento</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* G100 Toggle */}
+            <div className="flex items-start gap-4 p-4 bg-stone-50 rounded-lg border border-stone-200">
+              <input
+                type="checkbox"
+                id="enableG100"
+                checked={enableG100}
+                onChange={(e) => {
+                  setEnableG100(e.target.checked);
+                  setSaved(false);
+                }}
+                className="mt-1 h-5 w-5 rounded border-stone-300 text-amber-500 focus:ring-2 focus:ring-amber-500 cursor-pointer"
+              />
+              <div className="flex-1">
+                <label htmlFor="enableG100" className="font-medium text-stone-800 cursor-pointer">
+                  Activar pings anónimos de Google Analytics (G100)
+                </label>
+                <p className="text-sm text-stone-600 mt-1">
+                  Cuando está activado, se envían pings anónimos a Google Analytics 4 <strong>antes del consentimiento</strong> del usuario,
+                  siguiendo la característica G100 de Google Consent Mode V2.
+                </p>
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <p className="text-xs text-amber-800 mb-2">
+                    <strong>⚠️ Advertencia GDPR:</strong>
+                  </p>
+                  <ul className="text-xs text-amber-700 space-y-1 list-disc list-inside">
+                    <li>Los pings anónimos establecen conexión con servidores de Google <strong>sin consentimiento previo</strong></li>
+                    <li>La dirección IP del usuario se envía a Google, incluso si está anonimizada</li>
+                    <li>Según CJEU (caso Breyer), las IPs son datos personales</li>
+                    <li>La CNIL francesa ha multado por usar GA sin consentimiento previo</li>
+                  </ul>
+                  <p className="text-xs text-amber-800 mt-2">
+                    <strong>Recomendación:</strong> Mantener desactivado para cumplimiento estricto de GDPR.
+                    Solo activar si tu asesor legal lo aprueba.
+                  </p>
+                </div>
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-xs text-blue-700">
+                    <strong>💡 Alternativa cookieless:</strong> SealMetrics (activado por defecto) mide tráfico sin cookies ni consentimiento,
+                    cumpliendo 100% con GDPR.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

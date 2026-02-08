@@ -317,6 +317,23 @@ class Esbilla_Admin {
             'esbilla_scripts_functional_section'
         );
 
+        // Sección: Analytics Settings
+        add_settings_section(
+            'esbilla_analytics_section',
+            __('Configuración de Analytics', 'esbilla-cmp'),
+            array($this, 'analytics_section_callback'),
+            $this->options_page_slug
+        );
+
+        // Campo: Habilitar G100
+        add_settings_field(
+            'enable_g100',
+            __('Pings anónimos de Google Analytics (G100)', 'esbilla-cmp'),
+            array($this, 'enable_g100_callback'),
+            $this->options_page_slug,
+            'esbilla_analytics_section'
+        );
+
         // Sección: Personalización
         add_settings_section(
             'esbilla_customization_section',
@@ -438,6 +455,10 @@ class Esbilla_Admin {
 
     public function scripts_functional_section_callback() {
         echo '<p style="margin: 0; color: #666; font-size: 13px;">' . esc_html__('Herramientas de soporte y comunicación con usuarios', 'esbilla-cmp') . '</p>';
+    }
+
+    public function analytics_section_callback() {
+        echo '<p style="margin: 0; color: #666; font-size: 13px;">' . esc_html__('Control de medición antes del consentimiento', 'esbilla-cmp') . '</p>';
     }
 
     public function customization_section_callback() {
@@ -937,6 +958,40 @@ class Esbilla_Admin {
         <p class="description">
             <?php esc_html_e('Key de Zendesk Web Widget', 'esbilla-cmp'); ?>
         </p>
+        <?php
+    }
+
+    public function enable_g100_callback() {
+        $options = get_option('esbilla_settings', array());
+        $checked = !empty($options['enable_g100']) ? 'checked' : '';
+        ?>
+        <label>
+            <input type="checkbox" name="esbilla_settings[enable_g100]" value="1" <?php echo $checked; ?>>
+            <?php esc_html_e('Activar pings anónimos de Google Analytics (G100)', 'esbilla-cmp'); ?>
+        </label>
+        <p class="description">
+            <?php esc_html_e('Cuando está activado, se envían pings anónimos a Google Analytics 4 ANTES del consentimiento del usuario, siguiendo la característica G100 de Google Consent Mode V2.', 'esbilla-cmp'); ?>
+        </p>
+        <div style="margin-top: 12px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0 0 8px 0; font-weight: 600; color: #92400e;">
+                ⚠️ <?php esc_html_e('Advertencia GDPR:', 'esbilla-cmp'); ?>
+            </p>
+            <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #92400e;">
+                <li><?php esc_html_e('Los pings anónimos establecen conexión con servidores de Google SIN consentimiento previo', 'esbilla-cmp'); ?></li>
+                <li><?php esc_html_e('La dirección IP del usuario se envía a Google, incluso si está anonimizada', 'esbilla-cmp'); ?></li>
+                <li><?php esc_html_e('Según CJEU (caso Breyer), las IPs son datos personales', 'esbilla-cmp'); ?></li>
+                <li><?php esc_html_e('La CNIL francesa ha multado por usar GA sin consentimiento previo', 'esbilla-cmp'); ?></li>
+            </ul>
+            <p style="margin: 8px 0 0 0; font-weight: 600; color: #92400e;">
+                <?php esc_html_e('Recomendación: Mantener desactivado para cumplimiento estricto de GDPR. Solo activar si tu asesor legal lo aprueba.', 'esbilla-cmp'); ?>
+            </p>
+        </div>
+        <div style="margin-top: 12px; padding: 12px; background: #dbeafe; border-left: 4px solid #3b82f6;">
+            <p style="margin: 0; font-size: 12px; color: #1e40af;">
+                💡 <strong><?php esc_html_e('Alternativa cookieless:', 'esbilla-cmp'); ?></strong>
+                <?php esc_html_e('SealMetrics (activado por defecto) mide tráfico sin cookies ni consentimiento, cumpliendo 100% con GDPR.', 'esbilla-cmp'); ?>
+            </p>
+        </div>
         <?php
     }
 

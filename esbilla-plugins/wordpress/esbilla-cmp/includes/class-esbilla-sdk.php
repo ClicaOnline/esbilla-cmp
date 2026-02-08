@@ -42,6 +42,15 @@ class Esbilla_SDK {
 
         echo "\n<!-- Esbilla CMP Pegoyu v" . ESBILLA_SDK_VERSION . " (Performance Optimized) -->\n";
 
+        // Config inline para G100 y otras opciones
+        $enable_g100 = !empty($this->options['enable_g100']);
+        ?>
+        <script>
+        window.esbillaConfig = window.esbillaConfig || {};
+        window.esbillaConfig.enableG100 = <?php echo $enable_g100 ? 'true' : 'false'; ?>;
+        </script>
+        <?php
+
         // Resource hints para mejorar rendimiento
         $parsed_url = parse_url($api_url);
         $api_origin = $parsed_url['scheme'] . '://' . $parsed_url['host'];

@@ -203,6 +203,11 @@ export interface Site {
   // Configuración de scripts (SDK v1.7 - modo simplified con 20+ integraciones)
   scriptConfig?: ScriptConfig;
 
+  // Google Consent Mode V2 - G100 (opt-in para GDPR compliance)
+  // Si true, envía pings anónimos a GA4 antes del consentimiento
+  // Si false, solo envía datos a GA4 después del consentimiento del usuario
+  enableG100?: boolean;
+
   // Autenticación del SDK
   apiKey: string;
 
