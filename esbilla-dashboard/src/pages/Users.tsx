@@ -22,7 +22,7 @@ import { SearchInput } from '../components/shared/SearchInput';
 import { PageSizeSelector } from '../components/shared/PageSizeSelector';
 import {
   Shield, Eye, Clock, Trash2, Check, X, Crown,
-  Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save, Store
+  Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save, Store, CheckCircle, AlertCircle
 } from 'lucide-react';
 
 interface UserRecord {
@@ -36,6 +36,8 @@ interface UserRecord {
   distributorAccess?: Record<string, DistributorAccess>;
   createdAt: Date;
   lastLogin: Date;
+  onboardingCompleted?: boolean;
+  authProvider?: 'google' | 'email';
 }
 
 type AnyRole = GlobalRole | OrganizationRole | SiteRole;
@@ -111,7 +113,9 @@ export function UsersPage() {
           siteAccess: data.siteAccess || {},
           distributorAccess: data.distributorAccess || {},
           createdAt: data.createdAt?.toDate?.() || new Date(),
-          lastLogin: data.lastLogin?.toDate?.() || new Date()
+          lastLogin: data.lastLogin?.toDate?.() || new Date(),
+          onboardingCompleted: data.onboardingCompleted || false,
+          authProvider: data.authProvider || 'google'
         });
       });
 
@@ -239,6 +243,39 @@ export function UsersPage() {
       setUsers(users.filter(u => u.id !== userId));
     } catch (err) {
       console.error('Error deleting user:', err);
+    }
+  }
+
+  async function completeOnboarding(userId: string) {
+    if (!isSuperAdmin || !db) return;
+
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    const hasOrgAccess = Object.keys(user.orgAccess || {}).length > 0;
+
+    if (!hasOrgAccess) {
+      if (!confirm('Este usuario no tiene acceso a ninguna organización. ¿Quieres completar el onboarding de todas formas? Deberás asignarle una organización después.')) {
+        return;
+      }
+    }
+
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        onboardingCompleted: true,
+        updatedAt: serverTimestamp()
+      });
+
+      setUsers(users.map(u =>
+        u.id === userId
+          ? { ...u, onboardingCompleted: true }
+          : u
+      ));
+
+      alert('✅ Onboarding completado');
+    } catch (err) {
+      console.error('Error completing onboarding:', err);
+      alert('❌ Error al completar onboarding');
     }
   }
 
@@ -708,6 +745,9 @@ export function UsersPage() {
                   {t.users.user}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
                   {t.users.role}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase">
@@ -734,6 +774,28 @@ export function UsersPage() {
                         <p className="text-sm text-stone-500">{user.email}</p>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    {user.onboardingCompleted ? (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle size={16} className="text-green-500" />
+                        <span className="text-xs text-green-600 font-medium">Completado</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <AlertCircle size={16} className="text-amber-500" />
+                        <span className="text-xs text-amber-600 font-medium">Pendiente</span>
+                        {isSuperAdmin && (
+                          <button
+                            onClick={() => completeOnboarding(user.id)}
+                            className="ml-2 px-2 py-1 text-xs text-white bg-amber-500 hover:bg-amber-600 rounded transition-colors"
+                            title="Marcar onboarding como completado"
+                          >
+                            Completar
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {isSuperAdmin && user.id !== currentUser?.uid ? (

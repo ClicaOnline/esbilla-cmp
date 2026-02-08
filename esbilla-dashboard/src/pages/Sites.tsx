@@ -24,7 +24,8 @@ import {
   RefreshCw,
   Code,
   Users,
-  Building2
+  Building2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface SiteFormData {
@@ -413,6 +414,31 @@ export function SitesPage() {
     }).length;
   }
 
+  function isOrphanSite(siteId: string): boolean {
+    // Un site es huérfano si no tiene ningún usuario con acceso directo (siteAccess)
+    // o con acceso vía organización con rol de owner/admin (excluyendo superadmins)
+    const site = sites.find(s => s.id === siteId);
+
+    return !users.some(u => {
+      if (u.globalRole === 'superadmin') return false; // Excluir superadmins
+
+      // Acceso directo con rol de admin
+      if (siteId in (u.siteAccess || {}) && u.siteAccess[siteId].role === 'site_admin') {
+        return true;
+      }
+
+      // Acceso vía organización con rol de owner o admin
+      if (site?.organizationId && site.organizationId in (u.orgAccess || {})) {
+        const orgRole = u.orgAccess[site.organizationId].role;
+        if (orgRole === 'org_owner' || orgRole === 'org_admin') {
+          return true;
+        }
+      }
+
+      return false;
+    });
+  }
+
   function openUsersModal(siteId: string) {
     setSelectedSiteId(siteId);
     setShowUsersModal(true);
@@ -571,7 +597,10 @@ export function SitesPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {paginatedSites.map((site) => (
+            {paginatedSites.map((site) => {
+              const isOrphan = isOrphanSite(site.id);
+
+              return (
               <div
                 key={site.id}
                 className="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden"
@@ -589,6 +618,12 @@ export function SitesPage() {
                           <code className="px-2 py-0.5 bg-stone-100 text-xs text-stone-600 rounded font-mono">
                             {site.id}
                           </code>
+                          {isOrphan && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                              <AlertTriangle size={12} />
+                              Sin admins
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           {site.organizationId && (
@@ -726,7 +761,8 @@ export function SitesPage() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
