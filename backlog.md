@@ -31,6 +31,15 @@
 - ✅ **Documentación: SCRIPT-BLOCKING.md** - Guía completa con ejemplos de GA4, Facebook Pixel, Hotjar, LinkedIn, TikTok
 - ✅ **Ejemplo funcional: script-blocking-example.html** - Demo interactiva del sistema de bloqueo de scripts
 
+**✅ Completado Recientemente (2026-02-08): G100 Opt-In GDPR Compliant**
+
+- ✅ **SDK v2.1: G100 Opt-In** - Google Consent Mode V2 G100 ahora es opt-in (activado solo si `config.enableG100 === true`)
+- ✅ **Arquitectura: Type definitions** - Añadido campo `enableG100?: boolean` a interface `Site` en dashboard
+- ✅ **Dashboard: Analytics Settings UI** - Nueva sección en Settings.tsx con checkbox G100 y advertencias GDPR (CJEU Breyer, CNIL)
+- ✅ **WordPress Plugin: G100 checkbox** - Añadido campo `enable_g100` en settings con advertencias de compliance
+- ✅ **SDK: Config merge** - Pegoyu lee `window.esbillaConfig` para opciones inline (útil para plugins)
+- ✅ **Compliance fix**: Por defecto G100 está DESACTIVADO - Solo envía pings anónimos a GA4 si usuario lo activa explícitamente
+
 **🔥 Backlog Prioritario (Próximos Sprints)**
 
 **🎯 Alta Prioridad (Semana 1-2)**

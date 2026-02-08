@@ -1,5 +1,5 @@
 /**
- * ESBILLA CMP - Pegoyu v2.0 (Modular Architecture)
+ * ESBILLA CMP - Pegoyu v2.1 (GDPR-Compliant G100)
  * Pegoyu: El pilar que sostiene el Hórreo (sistema de consent management)
  * Arquitectura modular: carga dinámica de integraciones bajo demanda
  * Incluye captura de atribución de marketing (UTM, click IDs)
@@ -10,9 +10,10 @@
  *       Pinterest, Twitter, Taboola, HubSpot, Intercom, Zendesk, Crazy Egg, VWO, Optimizely
  * v1.8: GTM Gateway support - carga GTM desde dominio personalizado (evita ad blockers)
  * v2.0: Arquitectura modular - Pegoyu core ~58% más pequeño, módulos cargados bajo demanda
+ * v2.1: G100 opt-in - Solo envía pings anónimos a GA4 si config.enableG100=true (GDPR compliant)
  */
 (function() {
-  const PEGOYU_VERSION = '2.0.0';
+  const PEGOYU_VERSION = '2.1.0';
   const script = document.currentScript;
   const cmpId = script.getAttribute('data-id') || 'default';
   const gtmId = script.getAttribute('data-gtm');
@@ -662,21 +663,22 @@
       Object.keys(analytics).forEach(async (moduleName) => {
         const configValue = analytics[moduleName];
         if (configValue) {
-          // G100: Google Analytics se carga SIEMPRE (para pings anónimos)
+          // G100 (opcional): Google Analytics se carga sin consentimiento solo si config.enableG100 === true
           // SealMetrics: Se carga SIEMPRE (cookieless, sin consentimiento requerido)
           // Otros analytics solo con consentimiento
           const isGA4 = moduleName === 'googleAnalytics';
           const isSealMetrics = moduleName === 'sealmetrics';
-          const isCookieless = isGA4 || isSealMetrics;
-          const shouldLoad = isCookieless || choices.analytics;
+          const enableG100 = config.enableG100 === true; // Opt-in para G100
+          const shouldLoadWithoutConsent = isSealMetrics || (isGA4 && enableG100);
+          const shouldLoad = shouldLoadWithoutConsent || choices.analytics;
 
           if (shouldLoad) {
             const promise = loadModule(moduleName).then(moduleFunc => {
               if (moduleFunc) {
                 const scriptHTML = moduleFunc(configValue);
                 injectScript(scriptHTML, 'analytics');
-                if (isGA4 && !choices.analytics) {
-                  console.log('[Esbilla v2.0] ✓ GA4 cargado para G100 (pings anónimos)');
+                if (isGA4 && !choices.analytics && enableG100) {
+                  console.log('[Esbilla v2.0] ✓ GA4 cargado para G100 (pings anónimos - opt-in activado)');
                 }
                 if (isSealMetrics) {
                   console.log('[Esbilla v2.0] ✓ SealMetrics cargado (cookieless, sin consentimiento)');
@@ -832,6 +834,13 @@
       // B. Cargar configuración del sitio
       const configRes = await fetch(`${apiBase}/api/config/${cmpId}`);
       config = await configRes.json();
+
+      // B0.25. Merge con configuración inline (window.esbillaConfig)
+      // Útil para plugins (WordPress, etc.) que necesitan pasar opciones sin modificar Firestore
+      if (typeof window.esbillaConfig === 'object' && window.esbillaConfig !== null) {
+        config = Object.assign({}, config, window.esbillaConfig);
+        console.log('[Esbilla v2.1] ✓ Configuración inline aplicada:', window.esbillaConfig);
+      }
 
       // B0.5. Cargar GTM con soporte para Gateway (v1.8)
       // Se carga después de obtener config para acceder a scriptConfig.gtm
@@ -1429,15 +1438,19 @@
       });
       console.log('[Esbilla v2.0] ✓ Google Consent Mode V2 actualizado');
 
-      // G100: Enviar page_view después de actualizar consent
-      // Si analytics_storage='denied': ping anónimo para modelado de conversiones
-      // Si analytics_storage='granted': hit normal con cookies
+      // G100 (opcional): Enviar page_view después de actualizar consent
+      // Si analytics_storage='denied': ping anónimo para modelado de conversiones (requiere enableG100=true)
+      // Si analytics_storage='granted': hit normal con cookies (siempre se envía)
       if (window._esbilla_ga4_ready && window._esbilla_ga4_id) {
-        gtag('event', 'page_view', {
-          'send_to': window._esbilla_ga4_id
-        });
-        console.log('[Esbilla v2.0] ✓ G100: page_view enviado (' +
-          (choices.analytics ? 'hit con cookies' : 'ping anónimo') + ')');
+        // Solo enviar ping anónimo si G100 está activado O si hay consentimiento
+        const enableG100 = config.enableG100 === true;
+        if (choices.analytics || enableG100) {
+          gtag('event', 'page_view', {
+            'send_to': window._esbilla_ga4_id
+          });
+          console.log('[Esbilla v2.0] ✓ G100: page_view enviado (' +
+            (choices.analytics ? 'hit con cookies' : 'ping anónimo con opt-in') + ')');
+        }
       }
     }
 

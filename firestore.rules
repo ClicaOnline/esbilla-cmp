@@ -10,37 +10,50 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function userDocExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
     function getUserRole() {
+      // Si el documento del usuario no existe (onboarding), retornar null
+      if (!userDocExists()) {
+        return null;
+      }
       let userData = getUserData();
       // Priorizar globalRole (nuevo schema), fallback a role (legacy)
       return userData.globalRole != null ? userData.globalRole : userData.role;
     }
 
     function isAdmin() {
-      return isAuthenticated() && getUserRole() in ['admin', 'superadmin', 'superuser'];
+      let role = getUserRole();
+      return isAuthenticated() && role != null && role in ['admin', 'superadmin', 'superuser'];
     }
 
     function isSuperAdmin() {
       // Incluye 'admin' para compatibilidad con usuarios legacy
-      return isAuthenticated() && getUserRole() in ['admin', 'superadmin', 'superuser'];
+      let role = getUserRole();
+      return isAuthenticated() && role != null && role in ['admin', 'superadmin', 'superuser'];
     }
 
     function isAuthorized() {
-      return isAuthenticated() && getUserRole() in ['viewer', 'admin', 'superadmin', 'superuser'];
+      let role = getUserRole();
+      return isAuthenticated() && role != null && role in ['viewer', 'admin', 'superadmin', 'superuser'];
     }
 
     // Multi-tenant: verificar acceso a sitio específico
     function hasSiteAccess(siteId) {
+      if (!userDocExists()) return false;
       let userData = getUserData();
       return userData.role in ['admin', 'superadmin', 'superuser']
              || (userData.siteAccess != null && siteId in userData.siteAccess);
     }
 
     function hasSiteAdminAccess(siteId) {
+      if (!userDocExists()) return false;
       let userData = getUserData();
       return userData.role in ['admin', 'superadmin', 'superuser']
              || (userData.siteAccess != null
@@ -50,6 +63,7 @@ service cloud.firestore {
 
     // Multi-distribuidor: verificar acceso al distribuidor
     function hasDistributorAccess(distributorId) {
+      if (!userDocExists()) return false;
       let userData = getUserData();
       return userData.role in ['admin', 'superadmin', 'superuser']
              || userData.distributorId == distributorId;
