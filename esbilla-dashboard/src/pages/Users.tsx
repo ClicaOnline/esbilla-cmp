@@ -516,8 +516,7 @@ export function UsersPage() {
         organizationName: org?.name,
         role,
         addedAt: new Date(),
-        addedBy: currentUser?.uid || '',
-        notes: undefined
+        addedBy: currentUser?.uid || ''
       };
     }
 
