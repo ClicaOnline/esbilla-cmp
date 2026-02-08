@@ -15,6 +15,7 @@ import type { User } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
 import { auth, db, googleProvider, initError, isFirebaseConfigured } from '../lib/firebase';
 import { isSelfHostedMode } from '../utils/featureFlags';
+import type { DistributorAccess } from '../types';
 
 // ============================================
 // TIPOS DE ROLES Y PERMISOS
@@ -49,6 +50,7 @@ export interface UserData {
   globalRole: GlobalRole | LegacyRole; // Support legacy roles
   orgAccess?: Record<string, OrganizationAccess>;
   siteAccess?: Record<string, SiteAccess>;
+  distributorAccess?: Record<string, DistributorAccess>;
   createdAt: Date;
   lastLogin: Date;
   createdBy?: string;
@@ -132,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: data.role || data.globalRole || 'pending', // Backward compatibility
           orgAccess: data.orgAccess || {},
           siteAccess: data.siteAccess || {},
+          distributorAccess: data.distributorAccess || {},
           createdAt: data.createdAt?.toDate?.() || new Date(),
           lastLogin: data.lastLogin?.toDate?.() || new Date(),
           createdBy: data.createdBy,
@@ -174,6 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: globalRole, // Backward compatibility
           orgAccess: {},
           siteAccess: {},
+          distributorAccess: {},
           createdAt: new Date(),
           lastLogin: new Date(),
           authProvider: 'google',
@@ -190,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: newUserData.globalRole, // Backward compatibility
           orgAccess: {},
           siteAccess: {},
+          distributorAccess: {},
           createdAt: serverTimestamp(),
           lastLogin: serverTimestamp(),
           authProvider: 'google',
