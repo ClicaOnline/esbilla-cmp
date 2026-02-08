@@ -183,7 +183,7 @@ Descargar de: https://cloud.google.com/sdk/docs/install#windows
 
 ### B. Configurar Variables en Cloud Run
 
-**URL:** https://console.cloud.google.com/run/detail/europe-west4/esbilla-api/edit
+**URL:** https://console.cloud.google.com/run/deploy/europe-west4/esbilla-api?project=esbilla-cmp
 
 1. Click en **Edit & Deploy New Revision**
 2. Scroll hasta **Variables & Secrets**
