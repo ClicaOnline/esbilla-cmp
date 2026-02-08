@@ -1,0 +1,254 @@
+---
+// 404 Not Found Page - Fun Asturian Corn Theme 🌽
+const title = "404 - Panoya nun alcuentrada | Esbilla CMP";
+const description = "Esta página nun s'alcuentra, como una panoya perdida nel campos";
+---
+
+<!doctype html>
+<html lang="ast">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 25%, #fcd34d 50%, #fbbf24 75%, #f59e0b 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Animated corn background */
+      .corn-bg {
+        position: absolute;
+        font-size: 3rem;
+        opacity: 0.1;
+        animation: float 20s infinite ease-in-out;
+      }
+
+      .corn-bg:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
+      .corn-bg:nth-child(2) { right: 15%; top: 40%; animation-delay: 3s; }
+      .corn-bg:nth-child(3) { left: 20%; bottom: 30%; animation-delay: 6s; }
+      .corn-bg:nth-child(4) { right: 10%; bottom: 20%; animation-delay: 9s; }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-30px) rotate(180deg); }
+      }
+
+      .container {
+        position: relative;
+        z-index: 10;
+        max-width: 42rem;
+        text-align: center;
+      }
+
+      .corn-emoji {
+        font-size: 8rem;
+        animation: bounce 2s infinite;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+      }
+
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+      }
+
+      .error-code {
+        font-size: 6rem;
+        font-weight: 900;
+        color: #f59e0b;
+        text-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        margin-bottom: 1rem;
+        line-height: 1;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #292524;
+        margin-bottom: 0.75rem;
+      }
+
+      .subtitle {
+        font-size: 1.25rem;
+        color: #57534e;
+        margin-bottom: 2rem;
+      }
+
+      .message-box {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 2rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        border: 2px solid #fcd34d;
+        margin-bottom: 2rem;
+      }
+
+      .message {
+        font-size: 1.125rem;
+        color: #44403c;
+        margin-bottom: 1rem;
+        line-height: 1.75;
+      }
+
+      .quote {
+        font-size: 0.875rem;
+        color: #78716c;
+        font-style: italic;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 3rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        background: #f59e0b;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+      }
+
+      .btn:hover {
+        background: #d97706;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 8px -1px rgba(0,0,0,0.3);
+      }
+
+      .btn-secondary {
+        background: #78716c;
+      }
+
+      .btn-secondary:hover {
+        background: #57534e;
+      }
+
+      .fun-fact {
+        background: rgba(255, 255, 255, 0.7);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid #fcd34d;
+      }
+
+      .fun-fact-title {
+        font-weight: 700;
+        color: #292524;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      .fun-fact-text {
+        font-size: 0.8125rem;
+        color: #57534e;
+        font-style: italic;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 640px) {
+        .error-code { font-size: 4rem; }
+        h1 { font-size: 1.5rem; }
+        .corn-emoji { font-size: 5rem; }
+        .buttons { flex-direction: column; }
+        .btn { width: 100%; justify-content: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Floating corn decorations -->
+    <div class="corn-bg">🌽</div>
+    <div class="corn-bg">🌽</div>
+    <div class="corn-bg">🌽</div>
+    <div class="corn-bg">🌽</div>
+
+    <div class="container">
+      <!-- Main Corn -->
+      <div class="corn-emoji">🌽</div>
+
+      <!-- Error Code -->
+      <div class="error-code">404</div>
+
+      <!-- Title -->
+      <h1>¡Ayyyy, que nun s'alcuentra esta panoya! 🌽</h1>
+      <p class="subtitle">(Esta página no existe)</p>
+
+      <!-- Message Box -->
+      <div class="message-box">
+        <p class="message">
+          Parece que esta página se fue a <strong style="color: #f59e0b;">esbillar el maíz</strong>
+          y aún no volvió del campo...
+        </p>
+        <p class="quote">
+          "Nun ta equí, probablemente ta en La Quintana" 🏔️
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="buttons">
+        <a href="javascript:history.back()" class="btn btn-secondary">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          Volver atrás
+        </a>
+
+        <a href="/" class="btn">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Ir al inicio
+        </a>
+
+        <a href="https://app.esbilla.com" class="btn">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          Ir al Dashboard
+        </a>
+      </div>
+
+      <!-- Fun Fact -->
+      <div class="fun-fact">
+        <p class="fun-fact-title">💡 ¿Sabías que...?</p>
+        <p class="fun-fact-text">
+          "Esbillar" en asturiano significa quitar las hojas del maíz,
+          y "panoya" es la mazorca. ¡Ahora ya lo sabes! 🌽
+          <br><br>
+          En Asturias, el maíz es más que un cultivo, ¡es tradición! 🏔️
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -43,6 +43,7 @@ const UrlStatsPage = lazy(() => import('./pages/UrlStats').then(m => ({ default:
 const OrganizationsPage = lazy(() => import('./pages/Organizations').then(m => ({ default: m.OrganizationsPage })));
 const WaitlistPage = lazy(() => import('./pages/Waitlist').then(m => ({ default: m.WaitlistPage })));
 const DistributorsPage = lazy(() => import('./pages/Distributors').then(m => ({ default: m.DistributorsPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFoundPage })));
 
 function AppRoutes() {
   return (
@@ -197,6 +198,9 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* 404 - Catch all unmatched routes */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     </Suspense>
   );
