@@ -105,12 +105,13 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     if (isSaasMode()) {
       return <Navigate to="/onboarding/setup" replace />;
     }
-    // In self-hosted mode, if not superadmin and no onboarding, something is wrong
-    return <Navigate to="/pending" replace />;
+    // In self-hosted mode, if not superadmin and no onboarding → no account page
+    return <Navigate to="/no-account" replace />;
   }
 
   // 4. Must have org access or be superadmin
   if (!hasOrgAccess && !isSuperAdmin) {
+    // User completed onboarding but has no org access → waiting for approval
     return <Navigate to="/pending" replace />;
   }
 

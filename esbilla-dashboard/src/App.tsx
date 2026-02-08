@@ -31,6 +31,7 @@ const AuthActionPage = lazy(() => import('./pages/AuthAction').then(m => ({ defa
 const PendingApprovalPage = lazy(() => import('./pages/PendingApproval').then(m => ({ default: m.PendingApprovalPage })));
 const OnboardingSetupPage = lazy(() => import('./pages/OnboardingSetup').then(m => ({ default: m.OnboardingSetupPage })));
 const AcceptInvitePage = lazy(() => import('./pages/AcceptInvite').then(m => ({ default: m.AcceptInvitePage })));
+const NoAccountPage = lazy(() => import('./pages/NoAccount').then(m => ({ default: m.NoAccountPage })));
 
 // Dashboard pages - Todos lazy loaded
 const DashboardPage = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.DashboardPage })));
@@ -111,6 +112,14 @@ function AppRoutes() {
         element={
           <OnboardingRoute>
             <PendingApprovalPage />
+          </OnboardingRoute>
+        }
+      />
+      <Route
+        path="/no-account"
+        element={
+          <OnboardingRoute>
+            <NoAccountPage />
           </OnboardingRoute>
         }
       />
