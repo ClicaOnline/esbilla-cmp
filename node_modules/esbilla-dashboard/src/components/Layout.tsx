@@ -24,26 +24,31 @@ interface LayoutProps {
 
 type NavKey = 'dashboard' | 'organizations' | 'sites' | 'users' | 'distributors' | 'footprint' | 'urlStats' | 'waitingList' | 'settings';
 
-const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean; superAdminOnly?: boolean }[] = [
+const navigation: { key: NavKey; href: string; icon: typeof LayoutDashboard; adminOnly?: boolean; superAdminOnly?: boolean; requireOrgAccess?: boolean }[] = [
   { key: 'dashboard', href: '/', icon: LayoutDashboard },
-  { key: 'organizations', href: '/organizations', icon: Building2, adminOnly: true },
-  { key: 'sites', href: '/sites', icon: Globe2, adminOnly: true },
+  { key: 'organizations', href: '/organizations', icon: Building2, superAdminOnly: true }, // Only superadmin sees ALL orgs
+  { key: 'sites', href: '/sites', icon: Globe2, requireOrgAccess: true }, // Users with org/site access
   { key: 'urlStats', href: '/url-stats', icon: Link2 },
-  { key: 'users', href: '/users', icon: Users, adminOnly: true },
+  { key: 'users', href: '/users', icon: Users, requireOrgAccess: true }, // Users with org access can manage their org's users
   { key: 'distributors', href: '/distributors', icon: UserCog, superAdminOnly: true },
   { key: 'footprint', href: '/footprint', icon: Search },
   { key: 'waitingList', href: '/waitlist', icon: ClipboardList, superAdminOnly: true },
-  { key: 'settings', href: '/settings', icon: Settings, adminOnly: true },
+  { key: 'settings', href: '/settings', icon: Settings, requireOrgAccess: true }, // Users with site access can configure their sites
 ];
 
 export function Layout({ children }: LayoutProps) {
-  const { user, userData, signOut, isAdmin, isSuperAdmin } = useAuth();
+  const { user, userData, signOut, isSuperAdmin } = useAuth();
   const { language, setLanguage, t } = useI18n();
   const location = useLocation();
 
+  // Check if user has any org or site access
+  const hasOrgAccess = userData ? Object.keys(userData.orgAccess || {}).length > 0 : false;
+  const hasSiteAccess = userData ? Object.keys(userData.siteAccess || {}).length > 0 : false;
+  const hasAnyAccess = hasOrgAccess || hasSiteAccess;
+
   const filteredNav = navigation.filter(item => {
     if (item.superAdminOnly && !isSuperAdmin) return false;
-    if (item.adminOnly && !isAdmin) return false;
+    if (item.requireOrgAccess && !isSuperAdmin && !hasAnyAccess) return false;
     return true;
   });
 

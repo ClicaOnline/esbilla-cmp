@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, serverTimestamp, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -106,7 +106,7 @@ const defaultConfig: BannerConfig = {
 
 export function SettingsPage() {
   const { t } = useI18n();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin, userData } = useAuth();
   const [config, setConfig] = useState<BannerConfig>(defaultConfig);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -134,27 +134,85 @@ export function SettingsPage() {
   }, [selectedSiteId]);
 
   async function loadSites() {
-    if (!db || !isAdmin) {
+    if (!db) {
       setLoadingSites(false);
       return;
     }
 
     try {
-      const q = query(collection(db, 'sites'), orderBy('name', 'asc'));
-      const snapshot = await getDocs(q);
-      const siteList: Site[] = [];
-      snapshot.forEach((docSnapshot) => {
-        const data = docSnapshot.data();
-        siteList.push({
-          id: docSnapshot.id,
-          name: data.name,
-          domains: data.domains || [],
-          settings: data.settings,
-          apiKey: data.apiKey,
-          createdAt: data.createdAt?.toDate?.() || new Date(),
-          createdBy: data.createdBy,
+      let siteList: Site[] = [];
+
+      if (isSuperAdmin) {
+        // Superadmin: cargar todos los sitios
+        const q = query(collection(db, 'sites'), orderBy('name', 'asc'));
+        const snapshot = await getDocs(q);
+        snapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data();
+          siteList.push({
+            id: docSnapshot.id,
+            name: data.name,
+            domains: data.domains || [],
+            settings: data.settings,
+            apiKey: data.apiKey,
+            createdAt: data.createdAt?.toDate?.() || new Date(),
+            createdBy: data.createdBy,
+          });
         });
-      });
+      } else if (userData) {
+        // Usuario con org/site access: cargar solo sitios accesibles
+        const accessibleSiteIds = new Set<string>();
+
+        // 1. Sitios con acceso directo
+        if (userData.siteAccess) {
+          Object.keys(userData.siteAccess).forEach(siteId => {
+            accessibleSiteIds.add(siteId);
+          });
+        }
+
+        // 2. Sitios de organizaciones con acceso
+        if (userData.orgAccess) {
+          const orgIds = Object.keys(userData.orgAccess);
+          if (orgIds.length > 0) {
+            const q = query(
+              collection(db, 'sites'),
+              where('organizationId', 'in', orgIds.slice(0, 30))
+            );
+            const snapshot = await getDocs(q);
+            snapshot.forEach((docSnapshot) => {
+              accessibleSiteIds.add(docSnapshot.id);
+            });
+          }
+        }
+
+        // 3. Cargar documentos de los sitios accesibles
+        if (accessibleSiteIds.size > 0) {
+          const siteIdArray = Array.from(accessibleSiteIds);
+          for (let i = 0; i < siteIdArray.length; i += 30) {
+            const batch = siteIdArray.slice(i, i + 30);
+            const q = query(
+              collection(db, 'sites'),
+              where('__name__', 'in', batch)
+            );
+            const snapshot = await getDocs(q);
+            snapshot.forEach((docSnapshot) => {
+              const data = docSnapshot.data();
+              siteList.push({
+                id: docSnapshot.id,
+                name: data.name,
+                domains: data.domains || [],
+                settings: data.settings,
+                apiKey: data.apiKey,
+                createdAt: data.createdAt?.toDate?.() || new Date(),
+                createdBy: data.createdBy,
+              });
+            });
+          }
+        }
+
+        // Ordenar por nombre
+        siteList.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
       setSites(siteList);
 
       // Auto-select first site

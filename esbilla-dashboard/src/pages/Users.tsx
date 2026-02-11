@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, setDoc, serverTimestamp, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -43,7 +43,7 @@ interface UserRecord {
 type AnyRole = GlobalRole | OrganizationRole | SiteRole;
 
 export function UsersPage() {
-  const { user: currentUser, isSuperAdmin } = useAuth();
+  const { user: currentUser, isSuperAdmin, userData: currentUserData } = useAuth();
   const { t, language } = useI18n();
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -96,73 +96,181 @@ export function UsersPage() {
     }
 
     try {
-      // Load users
-      const usersQ = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
-      const usersSnapshot = await getDocs(usersQ);
+      let userList: UserRecord[] = [];
+      let orgList: Organization[] = [];
+      let siteList: Site[] = [];
 
-      const userList: UserRecord[] = [];
-      usersSnapshot.forEach((docSnapshot) => {
-        const data = docSnapshot.data();
-        userList.push({
-          id: docSnapshot.id,
-          email: data.email,
-          displayName: data.displayName,
-          photoURL: data.photoURL,
-          globalRole: data.globalRole || data.role || 'pending', // Legacy support
-          orgAccess: data.orgAccess || {},
-          siteAccess: data.siteAccess || {},
-          distributorAccess: data.distributorAccess || {},
-          createdAt: data.createdAt?.toDate?.() || new Date(),
-          lastLogin: data.lastLogin?.toDate?.() || new Date(),
-          onboardingCompleted: data.onboardingCompleted || false,
-          authProvider: data.authProvider || 'google'
+      if (isSuperAdmin) {
+        // Superadmin: cargar todos los datos
+
+        // Load all users
+        const usersQ = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+        const usersSnapshot = await getDocs(usersQ);
+        usersSnapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data();
+          userList.push({
+            id: docSnapshot.id,
+            email: data.email,
+            displayName: data.displayName,
+            photoURL: data.photoURL,
+            globalRole: data.globalRole || data.role || 'pending',
+            orgAccess: data.orgAccess || {},
+            siteAccess: data.siteAccess || {},
+            distributorAccess: data.distributorAccess || {},
+            createdAt: data.createdAt?.toDate?.() || new Date(),
+            lastLogin: data.lastLogin?.toDate?.() || new Date(),
+            onboardingCompleted: data.onboardingCompleted || false,
+            authProvider: data.authProvider || 'google'
+          });
         });
-      });
+
+        // Load all organizations
+        const orgsQ = query(collection(db, 'organizations'), orderBy('name', 'asc'));
+        const orgsSnapshot = await getDocs(orgsQ);
+        orgsSnapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data();
+          orgList.push({
+            id: docSnapshot.id,
+            name: data.name,
+            legalName: data.legalName,
+            taxId: data.taxId,
+            plan: data.plan || 'free',
+            maxSites: data.maxSites || 3,
+            maxConsentsPerMonth: data.maxConsentsPerMonth || 10000,
+            billingEmail: data.billingEmail || '',
+            createdAt: data.createdAt?.toDate?.() || new Date(),
+            createdBy: data.createdBy,
+          });
+        });
+
+        // Load all sites
+        const sitesQ = query(collection(db, 'sites'), orderBy('name', 'asc'));
+        const sitesSnapshot = await getDocs(sitesQ);
+        sitesSnapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data();
+          siteList.push({
+            id: docSnapshot.id,
+            name: data.name,
+            domains: data.domains || [],
+            organizationId: data.organizationId,
+            settings: data.settings,
+            apiKey: data.apiKey,
+            createdAt: data.createdAt?.toDate?.() || new Date(),
+            createdBy: data.createdBy,
+          });
+        });
+      } else if (currentUserData) {
+        // Usuario con org/site access: cargar solo datos de sus organizaciones
+
+        const accessibleOrgIds = Object.keys(currentUserData.orgAccess || {});
+
+        // Load only accessible organizations
+        if (accessibleOrgIds.length > 0) {
+          const orgsQ = query(
+            collection(db, 'organizations'),
+            where('__name__', 'in', accessibleOrgIds.slice(0, 30))
+          );
+          const orgsSnapshot = await getDocs(orgsQ);
+          orgsSnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data();
+            orgList.push({
+              id: docSnapshot.id,
+              name: data.name,
+              legalName: data.legalName,
+              taxId: data.taxId,
+              plan: data.plan || 'free',
+              maxSites: data.maxSites || 3,
+              maxConsentsPerMonth: data.maxConsentsPerMonth || 10000,
+              billingEmail: data.billingEmail || '',
+              createdAt: data.createdAt?.toDate?.() || new Date(),
+              createdBy: data.createdBy,
+            });
+          });
+          orgList.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        // Load users who have access to the same organizations
+        const usersQ = query(collection(db, 'users'));
+        const usersSnapshot = await getDocs(usersQ);
+        usersSnapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data();
+          const userOrgAccess = data.orgAccess || {};
+
+          // Include user if they have access to any of the same orgs
+          const hasSharedOrg = accessibleOrgIds.some(orgId => orgId in userOrgAccess);
+
+          if (hasSharedOrg || docSnapshot.id === currentUser?.uid) {
+            userList.push({
+              id: docSnapshot.id,
+              email: data.email,
+              displayName: data.displayName,
+              photoURL: data.photoURL,
+              globalRole: data.globalRole || data.role || 'pending',
+              orgAccess: data.orgAccess || {},
+              siteAccess: data.siteAccess || {},
+              distributorAccess: data.distributorAccess || {},
+              createdAt: data.createdAt?.toDate?.() || new Date(),
+              lastLogin: data.lastLogin?.toDate?.() || new Date(),
+              onboardingCompleted: data.onboardingCompleted || false,
+              authProvider: data.authProvider || 'google'
+            });
+          }
+        });
+        userList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+        // Load sites from accessible organizations
+        if (accessibleOrgIds.length > 0) {
+          const sitesQ = query(
+            collection(db, 'sites'),
+            where('organizationId', 'in', accessibleOrgIds.slice(0, 30))
+          );
+          const sitesSnapshot = await getDocs(sitesQ);
+          sitesSnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data();
+            siteList.push({
+              id: docSnapshot.id,
+              name: data.name,
+              domains: data.domains || [],
+              organizationId: data.organizationId,
+              settings: data.settings,
+              apiKey: data.apiKey,
+              createdAt: data.createdAt?.toDate?.() || new Date(),
+              createdBy: data.createdBy,
+            });
+          });
+          siteList.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        // Also include sites with direct site access
+        const directSiteIds = Object.keys(currentUserData.siteAccess || {});
+        if (directSiteIds.length > 0) {
+          const directSitesQ = query(
+            collection(db, 'sites'),
+            where('__name__', 'in', directSiteIds.slice(0, 30))
+          );
+          const directSitesSnapshot = await getDocs(directSitesQ);
+          directSitesSnapshot.forEach((docSnapshot) => {
+            // Avoid duplicates
+            if (!siteList.find(s => s.id === docSnapshot.id)) {
+              const data = docSnapshot.data();
+              siteList.push({
+                id: docSnapshot.id,
+                name: data.name,
+                domains: data.domains || [],
+                organizationId: data.organizationId,
+                settings: data.settings,
+                apiKey: data.apiKey,
+                createdAt: data.createdAt?.toDate?.() || new Date(),
+                createdBy: data.createdBy,
+              });
+            }
+          });
+          siteList.sort((a, b) => a.name.localeCompare(b.name));
+        }
+      }
 
       setUsers(userList);
-
-      // Load organizations
-      const orgsQ = query(collection(db, 'organizations'), orderBy('name', 'asc'));
-      const orgsSnapshot = await getDocs(orgsQ);
-
-      const orgList: Organization[] = [];
-      orgsSnapshot.forEach((docSnapshot) => {
-        const data = docSnapshot.data();
-        orgList.push({
-          id: docSnapshot.id,
-          name: data.name,
-          legalName: data.legalName,
-          taxId: data.taxId,
-          plan: data.plan || 'free',
-          maxSites: data.maxSites || 3,
-          maxConsentsPerMonth: data.maxConsentsPerMonth || 10000,
-          billingEmail: data.billingEmail || '',
-          createdAt: data.createdAt?.toDate?.() || new Date(),
-          createdBy: data.createdBy,
-        });
-      });
-
       setOrganizations(orgList);
-
-      // Load sites
-      const sitesQ = query(collection(db, 'sites'), orderBy('name', 'asc'));
-      const sitesSnapshot = await getDocs(sitesQ);
-
-      const siteList: Site[] = [];
-      sitesSnapshot.forEach((docSnapshot) => {
-        const data = docSnapshot.data();
-        siteList.push({
-          id: docSnapshot.id,
-          name: data.name,
-          domains: data.domains || [],
-          organizationId: data.organizationId,
-          settings: data.settings,
-          apiKey: data.apiKey,
-          createdAt: data.createdAt?.toDate?.() || new Date(),
-          createdBy: data.createdBy,
-        });
-      });
-
       setSites(siteList);
     } catch (err) {
       console.error('Error loading data:', err);

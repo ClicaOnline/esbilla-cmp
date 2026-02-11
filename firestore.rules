@@ -39,7 +39,16 @@ service cloud.firestore {
 
     function isAuthorized() {
       let role = getUserRole();
-      return isAuthenticated() && role != null && role in ['viewer', 'admin', 'superadmin', 'superuser'];
+      // Autorizado si tiene rol global O si tiene acceso a org/sitio
+      if (isAuthenticated() && role != null && role in ['viewer', 'admin', 'superadmin', 'superuser']) {
+        return true;
+      }
+      // También autorizado si tiene acceso a alguna organización o sitio
+      if (!userDocExists()) return false;
+      let userData = getUserData();
+      let hasAnyAccess = (userData.orgAccess != null && userData.orgAccess.keys().hasAny())
+                         || (userData.siteAccess != null && userData.siteAccess.keys().hasAny());
+      return isAuthenticated() && hasAnyAccess;
     }
 
     // Multi-tenant: verificar acceso a sitio específico
@@ -103,9 +112,11 @@ service cloud.firestore {
     // SITES COLLECTION (Multi-tenant)
     // ============================================
     match /sites/{siteId} {
-      // Lectura: admin, acceso directo al sitio, o distribuidor de la org del sitio
+      // Lectura: admin, acceso directo al sitio, acceso a la org del sitio, o distribuidor
       allow read: if isAdmin()
-                  || (isAuthorized() && hasSiteAccess(siteId))
+                  || hasSiteAccess(siteId)
+                  || (isAuthenticated() && resource.data.organizationId != null
+                      && hasAnyOrgAccess(resource.data.organizationId))
                   || (isAuthenticated() && resource.data.organizationId != null
                       && hasDistributorAccess(resource.data.organizationId));
 
@@ -153,8 +164,8 @@ service cloud.firestore {
       allow read: if isAdmin()
                   // Opción 1: Usuario autenticado del mismo distribuidor
                   || (isAuthenticated() && hasDistributorAccess(resource.data.distributorId))
-                  // Opción 2: Usuario con acceso al sitio (legacy)
-                  || (isAuthorized() && resource.data.siteId != null && hasSiteAccess(resource.data.siteId))
+                  // Opción 2: Usuario con acceso al sitio (legacy o nuevo sistema)
+                  || (isAuthenticated() && resource.data.siteId != null && hasSiteAccess(resource.data.siteId))
                   // Opción 3: Usuario final consultando su propio rastro (transparencia GDPR)
                   || (request.auth != null
                       && request.auth.token.user_hash != null
@@ -216,11 +227,27 @@ service cloud.firestore {
     }
 
     // ============================================
-    // DAILY STATS COLLECTION (Estadísticas agregadas)
+    // STATS COLLECTION (Estadísticas agregadas)
+    // ============================================
+    match /stats/{statsId} {
+      allow read: if isAdmin()
+                  || hasSiteAccess(resource.data.siteId)
+                  || (isAuthenticated() && resource.data.organizationId != null
+                      && hasAnyOrgAccess(resource.data.organizationId))
+                  || (isAuthenticated() && hasDistributorAccess(resource.data.distributorId));
+
+      // Stats se crean/actualizan vía Cloud Functions o Admin SDK
+      allow write: if false;
+    }
+
+    // ============================================
+    // DAILY STATS COLLECTION (Estadísticas agregadas - legacy)
     // ============================================
     match /dailyStats/{statsId} {
       allow read: if isAdmin()
-                  || (isAuthorized() && hasSiteAccess(resource.data.siteId))
+                  || hasSiteAccess(resource.data.siteId)
+                  || (isAuthenticated() && resource.data.organizationId != null
+                      && hasAnyOrgAccess(resource.data.organizationId))
                   || (isAuthenticated() && hasDistributorAccess(resource.data.distributorId));
 
       // Stats se crean/actualizan vía Cloud Functions o Admin SDK

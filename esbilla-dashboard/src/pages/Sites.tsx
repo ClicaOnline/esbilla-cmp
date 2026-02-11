@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -46,7 +46,7 @@ interface SiteFormData {
 }
 
 export function SitesPage() {
-  const { user } = useAuth();
+  const { user, isSuperAdmin, userData } = useAuth();
   const { t, language } = useI18n();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,25 +93,84 @@ export function SitesPage() {
     }
 
     try {
-      const q = query(collection(db, 'sites'), orderBy('createdAt', 'desc'));
-      const snapshot = await getDocs(q);
+      let siteList: Site[] = [];
 
-      const siteList: Site[] = [];
-      snapshot.forEach((docSnapshot) => {
-        const data = docSnapshot.data();
-        siteList.push({
-          id: docSnapshot.id,
-          name: data.name,
-          domains: data.domains || [],
-          organizationId: data.organizationId,
-          settings: data.settings || { banner: DEFAULT_BANNER_SETTINGS },
-          apiKey: data.apiKey,
-          stats: data.stats,
-          createdAt: data.createdAt?.toDate?.() || new Date(),
-          createdBy: data.createdBy,
-          updatedAt: data.updatedAt?.toDate?.(),
+      if (isSuperAdmin) {
+        // Superadmin: cargar todos los sitios
+        const q = query(collection(db, 'sites'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(q);
+        snapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data();
+          siteList.push({
+            id: docSnapshot.id,
+            name: data.name,
+            domains: data.domains || [],
+            organizationId: data.organizationId,
+            settings: data.settings || { banner: DEFAULT_BANNER_SETTINGS },
+            apiKey: data.apiKey,
+            stats: data.stats,
+            createdAt: data.createdAt?.toDate?.() || new Date(),
+            createdBy: data.createdBy,
+            updatedAt: data.updatedAt?.toDate?.(),
+          });
         });
-      });
+      } else if (userData) {
+        // Usuario con org/site access: cargar solo sitios accesibles
+        const accessibleSiteIds = new Set<string>();
+
+        // 1. Sitios con acceso directo
+        if (userData.siteAccess) {
+          Object.keys(userData.siteAccess).forEach(siteId => {
+            accessibleSiteIds.add(siteId);
+          });
+        }
+
+        // 2. Sitios de organizaciones con acceso
+        if (userData.orgAccess) {
+          const orgIds = Object.keys(userData.orgAccess);
+          if (orgIds.length > 0) {
+            const q = query(
+              collection(db, 'sites'),
+              where('organizationId', 'in', orgIds.slice(0, 30))
+            );
+            const snapshot = await getDocs(q);
+            snapshot.forEach((docSnapshot) => {
+              accessibleSiteIds.add(docSnapshot.id);
+            });
+          }
+        }
+
+        // 3. Cargar documentos de los sitios accesibles
+        if (accessibleSiteIds.size > 0) {
+          const siteIdArray = Array.from(accessibleSiteIds);
+          for (let i = 0; i < siteIdArray.length; i += 30) {
+            const batch = siteIdArray.slice(i, i + 30);
+            const q = query(
+              collection(db, 'sites'),
+              where('__name__', 'in', batch)
+            );
+            const snapshot = await getDocs(q);
+            snapshot.forEach((docSnapshot) => {
+              const data = docSnapshot.data();
+              siteList.push({
+                id: docSnapshot.id,
+                name: data.name,
+                domains: data.domains || [],
+                organizationId: data.organizationId,
+                settings: data.settings || { banner: DEFAULT_BANNER_SETTINGS },
+                apiKey: data.apiKey,
+                stats: data.stats,
+                createdAt: data.createdAt?.toDate?.() || new Date(),
+                createdBy: data.createdBy,
+                updatedAt: data.updatedAt?.toDate?.(),
+              });
+            });
+          }
+        }
+
+        // Ordenar por fecha de creación (más recientes primero)
+        siteList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      }
 
       setSites(siteList);
     } catch (err) {

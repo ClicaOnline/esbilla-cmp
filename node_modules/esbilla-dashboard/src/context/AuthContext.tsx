@@ -418,8 +418,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isEmailVerified = user?.emailVerified ?? false;
   const hasCompletedOnboarding = userData?.onboardingCompleted ?? false;
   const hasOrgAccess = userData ? Object.keys(userData.orgAccess || {}).length > 0 : false;
+  const hasSiteAccess = userData ? Object.keys(userData.siteAccess || {}).length > 0 : false;
   const globalRole = userData?.globalRole || userData?.role || 'pending';
-  const isPending = globalRole === 'pending' && !hasOrgAccess;
+  const isPending = globalRole === 'pending' && !hasOrgAccess && !hasSiteAccess;
   const locale = userData?.locale || 'es';
 
   // ============================================
@@ -428,8 +429,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Compatibilidad: verificar tanto 'role' (legacy) como 'globalRole' (nuevo sistema)
   // 'admin' del sistema antiguo se trata como 'superadmin' (era el único nivel admin)
   const isSuperAdmin = globalRole === 'superadmin' || globalRole === 'admin';
-  const isAdmin = globalRole === 'admin' || globalRole === 'superadmin';
-  const isAuthorized = ['superadmin', 'admin', 'viewer'].includes(globalRole) || hasOrgAccess;
+
+  // isAdmin: superadmin OR users with any org/site access
+  // This allows users with organization or site permissions to access admin pages
+  const isAdmin = isSuperAdmin || hasOrgAccess || hasSiteAccess;
+
+  // isAuthorized: any user with permissions (global OR org OR site)
+  const isAuthorized = ['superadmin', 'admin', 'viewer'].includes(globalRole) || hasOrgAccess || hasSiteAccess;
 
   function hasAccessToSite(siteId: string): boolean {
     if (isSuperAdmin) return true;
