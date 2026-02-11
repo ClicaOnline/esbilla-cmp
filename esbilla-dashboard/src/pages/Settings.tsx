@@ -106,7 +106,7 @@ const defaultConfig: BannerConfig = {
 
 export function SettingsPage() {
   const { t } = useI18n();
-  const { isAdmin, isSuperAdmin, userData } = useAuth();
+  const { isSuperAdmin, userData } = useAuth();
   const [config, setConfig] = useState<BannerConfig>(defaultConfig);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
