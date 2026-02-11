@@ -1109,6 +1109,20 @@
       if (typo.textSize) root.style.setProperty('--esbilla-font-size-text', typo.textSize);
     }
 
+    // Configuración de panoya
+    if (config.panoya) {
+      const panoya = config.panoya;
+
+      // Tamaño
+      if (panoya.size) {
+        root.style.setProperty('--esbilla-panoya-size', panoya.size);
+      }
+
+      // Color de fondo (usar color primario de panoya o el global)
+      const panoyaBg = panoya.colors?.primary || config.colors?.primary || '#FFBF00';
+      root.style.setProperty('--esbilla-panoya-bg', panoyaBg);
+    }
+
     // Posición de la panoya
     if (config.panoya?.position) {
       const pos = manifest.panoyaPositions?.[config.panoya.position];
@@ -1613,6 +1627,48 @@
   // ============================================
   // 10. PANOYA (BOTÓN FLOTANTE)
   // ============================================
+  /**
+   * Genera el SVG de la panoya según el variant configurado
+   * @param {string} variant - 'realista', 'minimalista', 'geometrica'
+   * @param {object} colors - Colores personalizados { primary, secondary, accent }
+   * @returns {string} HTML del SVG
+   */
+  function generatePanoyaSVG(variant, colors) {
+    const primary = colors?.primary || config.colors?.primary || '#FFBF00';
+    const secondary = colors?.secondary || config.colors?.secondary || '#3D2B1F';
+    const accent = colors?.accent || '#FFA500';
+
+    if (variant === 'realista') {
+      return `
+        <svg viewBox="0 0 1024 1024" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+          <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill="${accent}" opacity="0.8"/>
+          <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill="${primary}"/>
+          <circle cx="512" cy="400" r="15" fill="${secondary}"/>
+          <circle cx="480" cy="450" r="15" fill="${secondary}"/>
+          <circle cx="544" cy="450" r="15" fill="${secondary}"/>
+        </svg>
+      `;
+    } else if (variant === 'minimalista') {
+      return `
+        <svg viewBox="0 0 128 128" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+          <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill="${accent}"/>
+          <ellipse cx="64" cy="60" rx="25" ry="45" fill="${primary}"/>
+        </svg>
+      `;
+    } else if (variant === 'geometrica') {
+      return `
+        <svg viewBox="0 0 128 128" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+          <path d="M64 15 L84 45 L64 75 L44 45 Z" fill="${primary}"/>
+          <path d="M64 45 L84 75 L64 105 L44 75 Z" fill="${primary}" opacity="0.7"/>
+          <path d="M64 105 L72 120 L56 120 Z" fill="${secondary}"/>
+        </svg>
+      `;
+    }
+
+    // Fallback a emoji
+    return config.panoya?.icon || '🌽';
+  }
+
   // Panoya: La mazorca (botón flotante de configuración)
   function showPanoya() {
     if (!config.panoya?.enabled && config.panoya?.enabled !== undefined) return;
@@ -1625,14 +1681,30 @@
     panoya.id = 'esbilla-panoya';
     panoya.title = t.panoyaTitle || 'Configurar cookies';
 
+    // Determinar qué mostrar: emoji o SVG
+    const variant = config.panoya?.variant;
+    const useIcon = config.panoya?.icon && config.panoya.icon.trim() !== '';
+    let iconContent;
+
+    if (useIcon) {
+      // Prioridad 1: Emoji personalizado
+      iconContent = config.panoya.icon;
+    } else if (variant && variant !== 'none') {
+      // Prioridad 2: SVG según variant
+      iconContent = generatePanoyaSVG(variant, config.panoya?.colors);
+    } else {
+      // Fallback: emoji por defecto
+      iconContent = '🌽';
+    }
+
     if (showFootprint) {
       panoya.classList.add('esbilla-panoya-expanded');
       panoya.innerHTML = `
-        <span class="esbilla-panoya-icon">${config.panoya?.icon || '🌽'}</span>
+        <span class="esbilla-panoya-icon">${iconContent}</span>
         <span class="esbilla-panoya-footprint" style="display:none;">${footprintId}</span>
       `;
     } else {
-      panoya.innerHTML = config.panoya?.icon || '🌽';
+      panoya.innerHTML = `<span class="esbilla-panoya-icon">${iconContent}</span>`;
     }
 
     panoya.onclick = () => {

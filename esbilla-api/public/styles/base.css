@@ -40,6 +40,9 @@
   --esbilla-panoya-size: 56px;
   --esbilla-panoya-bottom: 20px;
   --esbilla-panoya-left: 20px;
+  --esbilla-panoya-right: auto;
+  --esbilla-panoya-top: auto;
+  --esbilla-panoya-bg: var(--esbilla-primary);
 }
 
 /* ============================================
@@ -373,9 +376,11 @@
   position: fixed;
   bottom: var(--esbilla-panoya-bottom);
   left: var(--esbilla-panoya-left);
+  right: var(--esbilla-panoya-right);
+  top: var(--esbilla-panoya-top);
   cursor: pointer;
   z-index: 999998;
-  background: linear-gradient(145deg, var(--esbilla-primary), var(--esbilla-primary-hover));
+  background: var(--esbilla-panoya-bg);
   padding: 14px;
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(61, 43, 31, 0.35);
@@ -405,6 +410,9 @@
 .esbilla-panoya-icon {
   font-size: 22px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .esbilla-panoya-footprint {

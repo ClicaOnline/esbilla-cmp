@@ -242,8 +242,8 @@ export function OnboardingSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl max-h-[95vh] overflow-y-auto py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-6xl mb-4">🌽</div>

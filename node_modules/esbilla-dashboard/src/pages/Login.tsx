@@ -68,22 +68,24 @@ export function LoginPage() {
       return <Navigate to={`/verify-email?email=${encodeURIComponent(user.email || '')}`} replace />;
     }
 
-    // 2. Check if onboarding is completed
+    // 2. PRIORIDAD: Superadmin o usuarios con acceso → Dashboard directo
+    // (Superadmin no necesita onboarding completado)
+    const isSuperAdmin = userData.globalRole === 'superadmin' || userData.role === 'superadmin';
+    if (isSuperAdmin || hasOrgAccess) {
+      return <Navigate to="/" replace />;
+    }
+
+    // 3. Usuario sin permisos: verificar onboarding
     if (!hasCompletedOnboarding) {
       // In SaaS mode, redirect to onboarding
       if (isSaasMode()) {
         return <Navigate to="/onboarding/setup" replace />;
       }
-      // In self-hosted mode, first user becomes superadmin automatically
-      // Other users should not be here without invitation
+      // In self-hosted mode, usuarios sin permisos van a /pending
+      return <Navigate to="/pending" replace />;
     }
 
-    // 3. Check if has org access or is superadmin
-    if (hasOrgAccess || userData.globalRole === 'superadmin' || userData.role === 'superadmin') {
-      return <Navigate to="/" replace />;
-    }
-
-    // 4. User is pending approval
+    // 4. User is pending approval (tiene onboarding pero no acceso)
     return <Navigate to="/pending" replace />;
   }
 

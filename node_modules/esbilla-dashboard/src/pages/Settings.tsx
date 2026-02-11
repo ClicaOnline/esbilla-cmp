@@ -511,13 +511,18 @@ export function SettingsPage() {
 
             {/* Icon */}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">Icono (Emoji)</label>
+              <label className="block text-sm font-medium text-stone-700 mb-2">
+                Icono (Emoji)
+                <span className="block text-xs font-normal text-stone-500 mt-1">
+                  Deja vacío para usar el estilo SVG seleccionado abajo
+                </span>
+              </label>
               <input
                 type="text"
-                value={config.panoya?.icon || '🌽'}
+                value={config.panoya?.icon || ''}
                 onChange={(e) => updatePanoya('icon', e.target.value)}
                 className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-2xl text-center"
-                placeholder="🌽"
+                placeholder="🌽 o vacío"
                 maxLength={2}
                 disabled={config.panoya?.enabled === false}
               />

@@ -28,8 +28,15 @@ export function PublicRoute({ children }: RouteProps) {
 
   // If authenticated and has completed setup, redirect to dashboard
   if (user && userData) {
-    // Check if fully set up
-    if (isEmailVerified && hasCompletedOnboarding && (hasOrgAccess || userData.globalRole === 'superadmin')) {
+    const isSuperAdmin = userData.globalRole === 'superadmin' || userData.role === 'superadmin';
+
+    // Superadmin → siempre al dashboard (no requiere onboarding)
+    if (isEmailVerified && isSuperAdmin) {
+      return <Navigate to="/" replace />;
+    }
+
+    // Usuario con acceso y onboarding completado → dashboard
+    if (isEmailVerified && hasCompletedOnboarding && hasOrgAccess) {
       return <Navigate to="/" replace />;
     }
   }
@@ -99,8 +106,17 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     return <Navigate to={`/verify-email?email=${encodeURIComponent(user.email || '')}`} replace />;
   }
 
-  // 3. Onboarding must be completed (except for superadmins)
-  if (!hasCompletedOnboarding && !isSuperAdmin) {
+  // 3. Superadmin tiene acceso total (no requiere onboarding ni orgAccess)
+  if (isSuperAdmin) {
+    // Superadmin puede acceder a todo
+    if (adminOnly && !isAdmin) {
+      return <Navigate to="/" replace />;
+    }
+    return <>{children}</>;
+  }
+
+  // 4. Para usuarios normales: onboarding debe estar completado
+  if (!hasCompletedOnboarding) {
     // In SaaS mode, redirect to onboarding
     if (isSaasMode()) {
       return <Navigate to="/onboarding/setup" replace />;
@@ -109,14 +125,14 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     return <Navigate to="/no-account" replace />;
   }
 
-  // 4. Must have org access or be superadmin
-  if (!hasOrgAccess && !isSuperAdmin) {
+  // 5. Must have org access
+  if (!hasOrgAccess) {
     // User completed onboarding but has no org access → waiting for approval
     return <Navigate to="/pending" replace />;
   }
 
-  // 5. Check admin-only routes
-  if (adminOnly && !isAdmin && !isSuperAdmin) {
+  // 6. Check admin-only routes (para usuarios normales con orgAccess)
+  if (adminOnly && !isAdmin) {
     return <Navigate to="/" replace />;
   }
 
