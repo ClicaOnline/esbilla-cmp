@@ -55,9 +55,22 @@
   align-items: center;
   justify-content: center;
   z-index: 999999;
+  /* Por defecto: sin overlay (modo no bloqueante) */
+  background: transparent;
+  pointer-events: none; /* Permite clicks en el contenido de fondo */
+}
+
+/* Modo bloqueante: overlay oscuro que impide interacción */
+#esbilla-wrapper.esbilla-blocking {
   background: var(--esbilla-overlay);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  pointer-events: all; /* Bloquea clicks en el fondo */
+}
+
+/* El banner siempre puede recibir clicks */
+#esbilla-wrapper #esbilla-banner {
+  pointer-events: all;
 }
 
 /* ============================================

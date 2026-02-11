@@ -235,6 +235,7 @@ export interface Translations {
     accessLevel: string;
     roles: {
       superadmin: string;
+      accepted: string;
       pending: string;
       org_owner: string;
       org_admin: string;

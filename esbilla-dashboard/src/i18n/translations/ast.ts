@@ -243,6 +243,7 @@ export const ast: Translations = {
     accessLevel: 'Nivel d\'accesu',
     roles: {
       superadmin: 'Superadmin',
+      accepted: 'Aceptáu',
       pending: 'Pendiente',
       org_owner: 'Propietariu',
       org_admin: 'Admin Org',

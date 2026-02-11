@@ -327,18 +327,30 @@ export function OrganizationsPage() {
 
       if (editingOrg) {
         // Update existing organization
-        await updateDoc(doc(db, 'organizations', editingOrg.id), {
+        const updateData: any = {
           name: formData.name,
-          legalName: formData.legalName || undefined,
-          taxId: formData.taxId || undefined,
           billingEmail: formData.billingEmail,
-          billingAddress,
           plan: formData.plan,
           maxSites: planLimits.maxSites,
           maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
-          smtp: smtpConfig,
           updatedAt: new Date()
-        });
+        };
+
+        // Solo incluir campos opcionales si tienen valor
+        if (formData.legalName) {
+          updateData.legalName = formData.legalName;
+        }
+        if (formData.taxId) {
+          updateData.taxId = formData.taxId;
+        }
+        if (billingAddress && Object.keys(billingAddress).length > 0) {
+          updateData.billingAddress = billingAddress;
+        }
+        if (smtpConfig) {
+          updateData.smtp = smtpConfig;
+        }
+
+        await updateDoc(doc(db, 'organizations', editingOrg.id), updateData);
 
         setOrganizations(prev => prev.map(org =>
           org.id === editingOrg.id
@@ -362,21 +374,25 @@ export function OrganizationsPage() {
         const orgId = generateOrgId();
         const trackingId = generateTrackingId();
 
-        const newOrgData = {
+        const newOrgData: any = {
           id: orgId,
           name: formData.name,
-          legalName: formData.legalName || undefined,
-          taxId: formData.taxId || undefined,
           plan: formData.plan,
           maxSites: planLimits.maxSites,
           maxConsentsPerMonth: planLimits.maxConsentsPerMonth,
           billingEmail: formData.billingEmail,
-          billingAddress,
-          smtp: smtpConfig,
           trackingId,
           createdAt: new Date(),
           createdBy: user.uid
         };
+
+        // Solo incluir campos opcionales si tienen valor
+        if (formData.legalName) newOrgData.legalName = formData.legalName;
+        if (formData.taxId) newOrgData.taxId = formData.taxId;
+        if (billingAddress && Object.keys(billingAddress).length > 0) {
+          newOrgData.billingAddress = billingAddress;
+        }
+        if (smtpConfig) newOrgData.smtp = smtpConfig;
 
         await setDoc(doc(db, 'organizations', orgId), newOrgData);
 

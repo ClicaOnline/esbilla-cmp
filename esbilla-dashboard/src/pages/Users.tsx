@@ -383,7 +383,8 @@ export function UsersPage() {
       setShowCreateModal(false);
     } catch (err) {
       console.error('Error creating user:', err);
-      setCreateError('Error al crear el usuario');
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      setCreateError(`Error al crear el usuario: ${errorMessage}`);
     } finally {
       setCreateLoading(false);
     }
@@ -805,6 +806,7 @@ export function UsersPage() {
                         className="px-3 py-1.5 text-xs font-medium border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
                       >
                         <option value="pending">⏳ {t.users.roles.pending || 'Pendiente'}</option>
+                        <option value="accepted">✓ {t.users.roles.accepted || 'Aceptado'}</option>
                         <option value="superadmin">👑 {t.users.roles.superadmin || 'Superadmin'}</option>
                       </select>
                     ) : (
@@ -1268,12 +1270,15 @@ export function UsersPage() {
                       className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                     >
                       <option value="pending">{t.users.roles.pending || 'Pendiente'}</option>
+                      <option value="accepted">{t.users.roles.accepted || 'Aceptado'}</option>
                       <option value="superadmin">{t.users.roles.superadmin || 'Superadmin'}</option>
                     </select>
                     <p className="text-xs text-stone-500 mt-1">
                       {newUserGlobalRole === 'superadmin'
                         ? 'Tendrá acceso total a toda la plataforma'
-                        : 'Los permisos se definirán por organización/sitio'}
+                        : newUserGlobalRole === 'accepted'
+                        ? 'Puede acceder según permisos de organización/sitio'
+                        : 'Usuario en espera de aprobación'}
                     </p>
                   </div>
                 </div>
@@ -1668,6 +1673,7 @@ export function UsersPage() {
 function RoleBadge({ role, labels }: { role: AnyRole; labels: Record<string, string> }) {
   const styles: Record<string, string> = {
     superadmin: 'bg-purple-100 text-purple-700',
+    accepted: 'bg-green-100 text-green-700',
     pending: 'bg-amber-100 text-amber-700',
     org_owner: 'bg-indigo-100 text-indigo-700',
     org_admin: 'bg-blue-100 text-blue-700',
@@ -1678,6 +1684,7 @@ function RoleBadge({ role, labels }: { role: AnyRole; labels: Record<string, str
 
   const icons: Record<string, React.ReactNode> = {
     superadmin: <Crown size={14} />,
+    accepted: <Check size={14} />,
     pending: <Clock size={14} />,
     org_owner: <Crown size={14} />,
     org_admin: <Shield size={14} />,

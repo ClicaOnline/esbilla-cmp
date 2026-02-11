@@ -243,6 +243,7 @@ export const en: Translations = {
     accessLevel: 'Access level',
     roles: {
       superadmin: 'Superadmin',
+      accepted: 'Accepted',
       pending: 'Pending',
       org_owner: 'Owner',
       org_admin: 'Org Admin',

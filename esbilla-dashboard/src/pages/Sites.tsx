@@ -203,6 +203,12 @@ export function SitesPage() {
     e.preventDefault();
     if (!db || !user) return;
 
+    // Validar que se haya seleccionado una organización
+    if (!formData.organizationId) {
+      alert('Debes seleccionar una organización antes de crear el sitio.');
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -236,16 +242,10 @@ export function SitesPage() {
 
       if (editingSite) {
         // Update existing site
-        const updateData: {
-          name: string;
-          domains: string[];
-          organizationId: string | null;
-          updatedAt: Date;
-          scriptConfig?: typeof scriptConfig;
-        } = {
+        const updateData: any = {
           name: formData.name,
           domains,
-          organizationId: formData.organizationId || null,
+          organizationId: formData.organizationId, // Ya validado que no sea undefined
           updatedAt: new Date()
         };
 
@@ -262,7 +262,7 @@ export function SitesPage() {
                 ...s,
                 name: formData.name,
                 domains,
-                organizationId: formData.organizationId || undefined,
+                organizationId: formData.organizationId,
                 scriptConfig: Object.keys(scriptConfig).length > 0 ? scriptConfig : undefined,
                 updatedAt: new Date()
               }
@@ -271,11 +271,11 @@ export function SitesPage() {
       } else {
         // Create new site
         const siteId = generateSiteId();
-        const newSite: Site = {
+        const newSite: any = {
           id: siteId,
           name: formData.name,
           domains,
-          organizationId: formData.organizationId || undefined,
+          organizationId: formData.organizationId, // Ya validado que no sea undefined
           settings: { banner: DEFAULT_BANNER_SETTINGS },
           apiKey: generateApiKey(),
           createdAt: new Date(),
@@ -287,10 +287,7 @@ export function SitesPage() {
           newSite.scriptConfig = scriptConfig;
         }
 
-        await setDoc(doc(db, 'sites', siteId), {
-          ...newSite,
-          createdAt: new Date(),
-        });
+        await setDoc(doc(db, 'sites', siteId), newSite);
 
         setSites([newSite, ...sites]);
       }
@@ -780,8 +777,8 @@ export function SitesPage() {
 
         {/* Create/Edit Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
                 <h2 className="text-lg font-semibold text-stone-800">
                   {editingSite ? t.sites.editSite : t.sites.createSite}

@@ -346,3 +346,44 @@ Prioridad: Preparar para crecimiento
 9. **SaaS features** - Solo si quieres modelo self-service
 10. **Kubernetes/Terraform** - Solo si escala requiere múltiples clusters
 
+---
+
+## 📊 **Dashboard de Analytics Anónimos**
+
+**Prioridad:** Media
+**Fecha agregada:** 2026-02-11
+**Descripción:** Agregar visualización de estadísticas de bounce y pages_until_decision en el dashboard.
+
+**Features a implementar:**
+1. **Tarjetas de métricas:**
+   - Tasa de bounce por sitio/layout
+   - Promedio de páginas hasta decisión
+   - Tiempo promedio hasta decisión
+
+2. **Gráficas:**
+   - Bounce rate por día (últimos 7/30/90 días)
+   - Distribución de páginas navegadas antes de decisión
+   - Comparativa por layout (modal vs bar vs corner)
+   - Funnel de conversión: Banner mostrado → Decisión tomada
+
+3. **Filtros:**
+   - Por sitio
+   - Por rango de fechas
+   - Por layout del banner
+
+**Colección de datos:** `analytics`
+- Eventos de tipo "bounce" y "pages_until_decision"
+- TTL de 90 días
+- Sin datos personales (anónimo)
+
+**Archivos involucrados:**
+- Dashboard: `esbilla-dashboard/src/pages/Dashboard.tsx` o nueva página `Analytics.tsx`
+- API: Ya existe endpoint `/api/analytics/event`
+- Firestore rules: Ya implementadas
+- SDK: Ya implementado el tracking automático
+
+**Estado actual:**
+- ✅ Backend completamente implementado
+- ✅ SDK enviando eventos automáticamente
+- ❌ Visualización en dashboard pendiente
+

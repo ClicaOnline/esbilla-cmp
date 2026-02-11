@@ -27,6 +27,15 @@
   let templateHtml = '';
   let footprintId = '';
 
+  // Analytics: Bounce tracking
+  let bounceTimerId = null;
+  let bannerShownAt = null;
+  let hasUserDecided = false;
+
+  // Analytics: Pages until decision tracking
+  let pagesVisitedWithoutDecision = 0;
+  let firstBannerShownAt = null;
+
   // ============================================
   // MARKETING ATTRIBUTION - Parámetros de tráfico
   // ============================================
@@ -985,6 +994,14 @@
       config.legal = bannerSettings.legal;
     }
 
+    // Aplicar configuración de panoya (botón flotante)
+    if (bannerSettings.panoya) {
+      config.panoya = {
+        ...config.panoya,
+        ...bannerSettings.panoya
+      };
+    }
+
     // Aplicar CSS personalizado
     if (bannerSettings.customCSS) {
       injectCustomCSS(bannerSettings.customCSS);
@@ -1288,6 +1305,93 @@
   // ============================================
   // 7. RENDERIZADO DEL BANNER
   // ============================================
+  /**
+   * Envía eventos analíticos anónimos al servidor
+   * @param {string} type - 'bounce' | 'pages_until_decision'
+   * @param {object} metadata - Datos específicos del evento
+   */
+  async function sendAnalyticsEvent(type, metadata) {
+    try {
+      const payload = {
+        type,
+        siteId: cmpId,
+        metadata: {
+          ...metadata,
+          domain: window.location.hostname,
+          url: window.location.href
+        }
+      };
+
+      await fetch(`${apiBase}/api/analytics/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true // Importante: permite que la request se complete aunque se cierre la página
+      });
+
+      console.log(`[Esbilla Analytics] Evento "${type}" enviado`);
+    } catch (err) {
+      console.warn('[Esbilla Analytics] Error enviando evento:', err);
+    }
+  }
+
+  /**
+   * Inicia el timer de bounce (10 segundos)
+   * Si el usuario no interactúa en ese tiempo, se considera bounce
+   */
+  function startBounceTimer() {
+    // Limpiar timer anterior si existe
+    if (bounceTimerId) {
+      clearTimeout(bounceTimerId);
+    }
+
+    bannerShownAt = Date.now();
+    hasUserDecided = false;
+
+    // Timer de 10 segundos
+    bounceTimerId = setTimeout(() => {
+      if (!hasUserDecided) {
+        const timeVisible = Math.round((Date.now() - bannerShownAt) / 1000);
+        sendAnalyticsEvent('bounce', {
+          layout: config.layout || 'modal',
+          timeVisible: timeVisible
+        });
+      }
+    }, 10000); // 10 segundos
+
+    console.log('[Esbilla Analytics] Bounce timer iniciado (10s)');
+  }
+
+  /**
+   * Cancela el timer de bounce (el usuario tomó una decisión)
+   */
+  function cancelBounceTimer() {
+    if (bounceTimerId) {
+      clearTimeout(bounceTimerId);
+      bounceTimerId = null;
+      console.log('[Esbilla Analytics] Bounce timer cancelado');
+    }
+    hasUserDecided = true;
+  }
+
+  /**
+   * Incrementa el contador de páginas visitadas sin decisión
+   */
+  function trackPageVisit() {
+    // Solo contar si no hay consentimiento guardado
+    const savedConsent = getStorageItem('esbilla_consent');
+    if (!savedConsent) {
+      pagesVisitedWithoutDecision++;
+
+      // Guardar timestamp del primer banner mostrado
+      if (!firstBannerShownAt) {
+        firstBannerShownAt = Date.now();
+      }
+
+      console.log(`[Esbilla Analytics] Páginas sin decisión: ${pagesVisitedWithoutDecision}`);
+    }
+  }
+
   function renderBanner(showSettings = false) {
     const html = getTranslatedHtml();
 
@@ -1301,6 +1405,14 @@
     container.innerHTML = html;
     container.classList.remove('esbilla-hidden');
 
+    // Aplicar modo bloqueante si está configurado
+    const isBlocking = config.settings?.banner?.blocking === true;
+    if (isBlocking) {
+      container.classList.add('esbilla-blocking');
+    } else {
+      container.classList.remove('esbilla-blocking');
+    }
+
     // Insertar selector de idioma si está habilitado
     const banner = document.getElementById('esbilla-banner');
     if (banner && config.features?.languageSelector !== false) {
@@ -1313,6 +1425,10 @@
     if (showSettings) {
       toggleSettings();
     }
+
+    // Analytics: Iniciar tracking de bounce y página visitada
+    trackPageVisit();
+    startBounceTimer();
   }
 
   function bindEvents() {
@@ -1532,8 +1648,21 @@
   function saveConsent(choices, action = 'customize') {
     updateConsentMode(choices);
 
+    // Analytics: Cancelar bounce timer y enviar evento de páginas hasta decisión
+    cancelBounceTimer();
+
+    // Solo enviar páginas hasta decisión si es la primera vez (no es update)
     const previousConsent = getStorageItem('esbilla_consent');
     const isUpdate = !!previousConsent;
+
+    if (!isUpdate && pagesVisitedWithoutDecision > 0 && firstBannerShownAt) {
+      const timeUntilDecision = Math.round((Date.now() - firstBannerShownAt) / 1000);
+      sendAnalyticsEvent('pages_until_decision', {
+        pagesVisited: pagesVisitedWithoutDecision,
+        timeUntilDecision: timeUntilDecision,
+        finalAction: action
+      });
+    }
 
     setStorageItem('esbilla_consent', JSON.stringify(choices));
 

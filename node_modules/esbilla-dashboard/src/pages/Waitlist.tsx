@@ -126,10 +126,21 @@ export function WaitlistPage() {
     setSaving(true);
 
     try {
-      await updateDoc(doc(db, 'waitingList', entryId), {
-        ...editForm,
+      // Build update data, excluding undefined fields
+      const updateData: any = {
         updatedAt: new Date()
-      });
+      };
+
+      // Only include fields that are not undefined
+      if (editForm.name !== undefined) updateData.name = editForm.name;
+      if (editForm.email !== undefined) updateData.email = editForm.email;
+      if (editForm.company !== undefined) updateData.company = editForm.company;
+      if (editForm.website !== undefined) updateData.website = editForm.website;
+      if (editForm.plan !== undefined) updateData.plan = editForm.plan;
+      if (editForm.message !== undefined) updateData.message = editForm.message;
+      if (editForm.notes !== undefined) updateData.notes = editForm.notes;
+
+      await updateDoc(doc(db, 'waitingList', entryId), updateData);
 
       setEntries(prev => prev.map(entry =>
         entry.id === entryId
@@ -140,6 +151,7 @@ export function WaitlistPage() {
       cancelEdit();
     } catch (error) {
       console.error('Error saving entry:', error);
+      alert(`Error al guardar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     } finally {
       setSaving(false);
     }
@@ -153,6 +165,7 @@ export function WaitlistPage() {
       setEntries(prev => prev.filter(entry => entry.id !== entryId));
     } catch (error) {
       console.error('Error deleting entry:', error);
+      alert(`Error al eliminar: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     }
   }
 

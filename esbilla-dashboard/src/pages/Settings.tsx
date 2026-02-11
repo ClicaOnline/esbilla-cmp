@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { Layout } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n';
-import type { Site, LegalInfo } from '../types';
+import type { Site, LegalInfo, PanoyaSettings } from '../types';
 import {
   Palette,
   Layout as LayoutIcon,
@@ -31,6 +31,7 @@ type FontFamily = 'system' | 'inter' | 'roboto' | 'opensans' | 'lato' | 'montser
 
 interface BannerConfig {
   layout: BannerLayout;
+  blocking?: boolean;
   colors: {
     primary: string;
     secondary: string;
@@ -47,6 +48,7 @@ interface BannerConfig {
   };
   legal: LegalInfo;
   customCSS?: string;
+  panoya?: PanoyaSettings;
 }
 
 const defaultConfig: BannerConfig = {
@@ -87,6 +89,19 @@ const defaultConfig: BannerConfig = {
     supervisoryAuthorityUrl: '',
   },
   customCSS: '',
+  panoya: {
+    enabled: true,
+    position: 'bottom-left',
+    size: '56px',
+    icon: '🌽',
+    variant: 'realista',
+    colors: {
+      primary: '#FFBF00',
+      secondary: '#C2A561',
+      accent: '#2F6E8D',
+    },
+    showFootprint: false,
+  },
 };
 
 export function SettingsPage() {
@@ -105,14 +120,6 @@ export function SettingsPage() {
 
   // Analytics settings
   const [enableG100, setEnableG100] = useState(false);
-
-  // Panoya customization
-  const [panoyaVariant, setPanoyaVariant] = useState<'realista' | 'minimalista' | 'geometrica'>('realista');
-  const [panoyaColors, setPanoyaColors] = useState({
-    primary: '#FFBF00',
-    secondary: '#C2A561',
-    accent: '#2F6E8D'
-  });
 
   // Load sites on mount
   useEffect(() => {
@@ -166,12 +173,22 @@ export function SettingsPage() {
     const site = sites.find(s => s.id === siteId);
     if (site?.settings?.banner) {
       // Merge with defaults to handle missing fields
+      const sitePanoya = site.settings.banner.panoya;
       setConfig({
         ...defaultConfig,
         ...site.settings.banner,
         colors: { ...defaultConfig.colors, ...site.settings.banner.colors },
         labels: { ...defaultConfig.labels, ...site.settings.banner.labels },
         legal: { ...defaultConfig.legal, ...site.settings.banner.legal },
+        panoya: sitePanoya ? {
+          enabled: sitePanoya.enabled ?? defaultConfig.panoya!.enabled,
+          position: sitePanoya.position ?? defaultConfig.panoya!.position,
+          size: sitePanoya.size ?? defaultConfig.panoya!.size,
+          icon: sitePanoya.icon ?? defaultConfig.panoya!.icon,
+          variant: sitePanoya.variant ?? defaultConfig.panoya!.variant,
+          colors: sitePanoya.colors ?? defaultConfig.panoya!.colors,
+          showFootprint: sitePanoya.showFootprint ?? defaultConfig.panoya!.showFootprint,
+        } : defaultConfig.panoya,
       });
     } else {
       setConfig(defaultConfig);
@@ -179,14 +196,6 @@ export function SettingsPage() {
 
     // Load analytics settings
     setEnableG100(site?.enableG100 || false);
-
-    // Load panoya customization
-    setPanoyaVariant(site?.panoyaVariant || 'realista');
-    if (site?.panoyaColors) {
-      setPanoyaColors(site.panoyaColors);
-    } else {
-      setPanoyaColors({ primary: '#FFBF00', secondary: '#C2A561', accent: '#2F6E8D' });
-    }
 
     setSaved(false);
   }
@@ -231,6 +240,28 @@ export function SettingsPage() {
     setSaved(false);
   };
 
+  const updatePanoya = <K extends keyof PanoyaSettings>(
+    key: K,
+    value: PanoyaSettings[K]
+  ) => {
+    setConfig((prev) => ({
+      ...prev,
+      panoya: { ...prev.panoya!, [key]: value },
+    }));
+    setSaved(false);
+  };
+
+  const updatePanoyaColors = (key: 'primary' | 'secondary' | 'accent', value: string) => {
+    setConfig((prev) => ({
+      ...prev,
+      panoya: {
+        ...prev.panoya!,
+        colors: { ...prev.panoya!.colors!, [key]: value },
+      },
+    }));
+    setSaved(false);
+  };
+
   const handleSave = async () => {
     if (!selectedSiteId || !db) {
       setError('Selecciona un sitio para guardar');
@@ -245,8 +276,6 @@ export function SettingsPage() {
       await updateDoc(siteRef, {
         'settings.banner': config,
         enableG100: enableG100,
-        panoyaVariant: panoyaVariant,
-        panoyaColors: panoyaColors,
         updatedAt: serverTimestamp()
       });
 
@@ -406,6 +435,32 @@ export function SettingsPage() {
               }
             />
           </div>
+
+          {/* Blocking Mode */}
+          <div className="mt-6 pt-6 border-t border-stone-200">
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="blocking-mode"
+                checked={config.blocking === true}
+                onChange={(e) => updateConfig('blocking', e.target.checked)}
+                className="mt-1 w-5 h-5 text-amber-500 border-stone-300 rounded focus:ring-amber-500"
+              />
+              <div className="flex-1">
+                <label htmlFor="blocking-mode" className="block text-sm font-medium text-stone-700 cursor-pointer">
+                  Modo bloqueante
+                </label>
+                <p className="text-xs text-stone-500 mt-1">
+                  Si está activado, el usuario no podrá navegar por la web hasta que tome una decisión sobre las cookies.
+                  Se mostrará una capa oscura de fondo que impide la interacción con el sitio.
+                </p>
+                <p className="text-xs text-amber-600 mt-2">
+                  ⚠️ Recomendación GDPR: El modo bloqueante puede considerarse coercitivo en algunos contextos.
+                  Consulta con tu asesor legal antes de activarlo.
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Panoya Icon Customization Section */}
@@ -422,6 +477,66 @@ export function SettingsPage() {
             </div>
           </div>
 
+          {/* Basic Configuration */}
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 pb-6 border-b border-stone-200">
+            {/* Enabled */}
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="panoya-enabled"
+                checked={config.panoya?.enabled !== false}
+                onChange={(e) => updatePanoya('enabled', e.target.checked)}
+                className="w-5 h-5 text-amber-500 border-stone-300 rounded focus:ring-amber-500"
+              />
+              <label htmlFor="panoya-enabled" className="text-sm font-medium text-stone-700">
+                Mostrar botón flotante
+              </label>
+            </div>
+
+            {/* Position */}
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-2">Posición</label>
+              <select
+                value={config.panoya?.position || 'bottom-left'}
+                onChange={(e) => updatePanoya('position', e.target.value as any)}
+                className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                disabled={config.panoya?.enabled === false}
+              >
+                <option value="bottom-left">Abajo Izquierda</option>
+                <option value="bottom-right">Abajo Derecha</option>
+                <option value="top-left">Arriba Izquierda</option>
+                <option value="top-right">Arriba Derecha</option>
+              </select>
+            </div>
+
+            {/* Icon */}
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-2">Icono (Emoji)</label>
+              <input
+                type="text"
+                value={config.panoya?.icon || '🌽'}
+                onChange={(e) => updatePanoya('icon', e.target.value)}
+                className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-2xl text-center"
+                placeholder="🌽"
+                maxLength={2}
+                disabled={config.panoya?.enabled === false}
+              />
+            </div>
+
+            {/* Size */}
+            <div>
+              <label className="block text-sm font-medium text-stone-700 mb-2">Tamaño</label>
+              <input
+                type="text"
+                value={config.panoya?.size || '56px'}
+                onChange={(e) => updatePanoya('size', e.target.value)}
+                className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                placeholder="56px"
+                disabled={config.panoya?.enabled === false}
+              />
+            </div>
+          </div>
+
           {/* Variant Selector */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-stone-700 mb-3">Estilo de la Panoya</label>
@@ -429,9 +544,9 @@ export function SettingsPage() {
               {/* Realista */}
               <button
                 type="button"
-                onClick={() => { setPanoyaVariant('realista'); setSaved(false); }}
+                onClick={() => updatePanoya('variant', 'realista')}
                 className={`p-4 rounded-lg border-2 transition-all ${
-                  panoyaVariant === 'realista'
+                  config.panoya?.variant === 'realista'
                     ? 'border-amber-500 bg-amber-50'
                     : 'border-stone-200 hover:border-stone-300'
                 }`}
@@ -439,14 +554,14 @@ export function SettingsPage() {
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-16 h-16 flex items-center justify-center">
                     <svg viewBox="0 0 1024 1024" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill={panoyaColors.accent} opacity="0.8"/>
-                      <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill={panoyaColors.primary}/>
-                      <circle cx="512" cy="400" r="15" fill={panoyaColors.secondary}/>
-                      <circle cx="480" cy="450" r="15" fill={panoyaColors.secondary}/>
-                      <circle cx="544" cy="450" r="15" fill={panoyaColors.secondary}/>
+                      <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill={config.panoya?.colors?.accent || '#FFA500'} opacity="0.8"/>
+                      <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill={config.panoya?.colors?.primary || '#FFBF00'}/>
+                      <circle cx="512" cy="400" r="15" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
+                      <circle cx="480" cy="450" r="15" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
+                      <circle cx="544" cy="450" r="15" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
                     </svg>
                   </div>
-                  <span className={`text-sm font-medium ${panoyaVariant === 'realista' ? 'text-amber-700' : 'text-stone-600'}`}>
+                  <span className={`text-sm font-medium ${config.panoya?.variant === 'realista' ? 'text-amber-700' : 'text-stone-600'}`}>
                     Realista
                   </span>
                   <span className="text-xs text-stone-500">Detallada y clásica</span>
@@ -456,9 +571,9 @@ export function SettingsPage() {
               {/* Minimalista */}
               <button
                 type="button"
-                onClick={() => { setPanoyaVariant('minimalista'); setSaved(false); }}
+                onClick={() => updatePanoya('variant', 'minimalista')}
                 className={`p-4 rounded-lg border-2 transition-all ${
-                  panoyaVariant === 'minimalista'
+                  config.panoya?.variant === 'minimalista'
                     ? 'border-amber-500 bg-amber-50'
                     : 'border-stone-200 hover:border-stone-300'
                 }`}
@@ -466,11 +581,11 @@ export function SettingsPage() {
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-16 h-16 flex items-center justify-center">
                     <svg viewBox="0 0 128 128" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill={panoyaColors.accent}/>
-                      <ellipse cx="64" cy="60" rx="25" ry="45" fill={panoyaColors.primary}/>
+                      <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill={config.panoya?.colors?.accent || '#FFA500'}/>
+                      <ellipse cx="64" cy="60" rx="25" ry="45" fill={config.panoya?.colors?.primary || '#FFBF00'}/>
                     </svg>
                   </div>
-                  <span className={`text-sm font-medium ${panoyaVariant === 'minimalista' ? 'text-amber-700' : 'text-stone-600'}`}>
+                  <span className={`text-sm font-medium ${config.panoya?.variant === 'minimalista' ? 'text-amber-700' : 'text-stone-600'}`}>
                     Minimalista
                   </span>
                   <span className="text-xs text-stone-500">Limpia y moderna</span>
@@ -480,9 +595,9 @@ export function SettingsPage() {
               {/* Geométrica */}
               <button
                 type="button"
-                onClick={() => { setPanoyaVariant('geometrica'); setSaved(false); }}
+                onClick={() => updatePanoya('variant', 'geometrica')}
                 className={`p-4 rounded-lg border-2 transition-all ${
-                  panoyaVariant === 'geometrica'
+                  config.panoya?.variant === 'geometrica'
                     ? 'border-amber-500 bg-amber-50'
                     : 'border-stone-200 hover:border-stone-300'
                 }`}
@@ -490,12 +605,12 @@ export function SettingsPage() {
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-16 h-16 flex items-center justify-center">
                     <svg viewBox="0 0 128 128" width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M64 15 L84 45 L64 75 L44 45 Z" fill={panoyaColors.primary}/>
-                      <path d="M64 45 L84 75 L64 105 L44 75 Z" fill={panoyaColors.primary} opacity="0.7"/>
-                      <path d="M64 105 L72 120 L56 120 Z" fill={panoyaColors.secondary}/>
+                      <path d="M64 15 L84 45 L64 75 L44 45 Z" fill={config.panoya?.colors?.primary || '#FFBF00'}/>
+                      <path d="M64 45 L84 75 L64 105 L44 75 Z" fill={config.panoya?.colors?.primary || '#FFBF00'} opacity="0.7"/>
+                      <path d="M64 105 L72 120 L56 120 Z" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
                     </svg>
                   </div>
-                  <span className={`text-sm font-medium ${panoyaVariant === 'geometrica' ? 'text-amber-700' : 'text-stone-600'}`}>
+                  <span className={`text-sm font-medium ${config.panoya?.variant === 'geometrica' ? 'text-amber-700' : 'text-stone-600'}`}>
                     Geométrica
                   </span>
                   <span className="text-xs text-stone-500">Angular y tech</span>
@@ -514,14 +629,14 @@ export function SettingsPage() {
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
-                    value={panoyaColors.primary}
-                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, primary: e.target.value }); setSaved(false); }}
+                    value={config.panoya?.colors?.primary || '#FFBF00'}
+                    onChange={(e) => updatePanoyaColors('primary', e.target.value)}
                     className="w-12 h-12 border-2 border-stone-200 rounded-lg cursor-pointer"
                   />
                   <input
                     type="text"
-                    value={panoyaColors.primary}
-                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, primary: e.target.value }); setSaved(false); }}
+                    value={config.panoya?.colors?.primary || '#FFBF00'}
+                    onChange={(e) => updatePanoyaColors('primary', e.target.value)}
                     className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
                     placeholder="#FFBF00"
                   />
@@ -534,14 +649,14 @@ export function SettingsPage() {
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
-                    value={panoyaColors.secondary}
-                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, secondary: e.target.value }); setSaved(false); }}
+                    value={config.panoya?.colors?.secondary || '#C2A561'}
+                    onChange={(e) => updatePanoyaColors('secondary', e.target.value)}
                     className="w-12 h-12 border-2 border-stone-200 rounded-lg cursor-pointer"
                   />
                   <input
                     type="text"
-                    value={panoyaColors.secondary}
-                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, secondary: e.target.value }); setSaved(false); }}
+                    value={config.panoya?.colors?.secondary || '#C2A561'}
+                    onChange={(e) => updatePanoyaColors('secondary', e.target.value)}
                     className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
                     placeholder="#C2A561"
                   />
@@ -554,14 +669,14 @@ export function SettingsPage() {
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
-                    value={panoyaColors.accent}
-                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, accent: e.target.value }); setSaved(false); }}
+                    value={config.panoya?.colors?.accent || '#2F6E8D'}
+                    onChange={(e) => updatePanoyaColors('accent', e.target.value)}
                     className="w-12 h-12 border-2 border-stone-200 rounded-lg cursor-pointer"
                   />
                   <input
                     type="text"
-                    value={panoyaColors.accent}
-                    onChange={(e) => { setPanoyaColors({ ...panoyaColors, accent: e.target.value }); setSaved(false); }}
+                    value={config.panoya?.colors?.accent || '#2F6E8D'}
+                    onChange={(e) => updatePanoyaColors('accent', e.target.value)}
                     className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 font-mono text-sm"
                     placeholder="#2F6E8D"
                   />
@@ -573,10 +688,7 @@ export function SettingsPage() {
             <div className="flex justify-end pt-2">
               <button
                 type="button"
-                onClick={() => {
-                  setPanoyaColors({ primary: '#FFBF00', secondary: '#C2A561', accent: '#2F6E8D' });
-                  setSaved(false);
-                }}
+                onClick={() => updatePanoya('colors', { primary: '#FFBF00', secondary: '#C2A561', accent: '#2F6E8D' })}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm text-stone-600 bg-stone-100 rounded-lg hover:bg-stone-200 transition-colors"
               >
                 <RotateCcw size={14} />
@@ -590,26 +702,26 @@ export function SettingsPage() {
             <label className="block text-sm font-medium text-stone-700 mb-3">Vista Previa</label>
             <div className="flex items-center justify-center p-8 bg-stone-50 rounded-lg border-2 border-stone-200">
               <div className="w-32 h-32 flex items-center justify-center">
-                {panoyaVariant === 'realista' && (
+                {config.panoya?.variant === 'realista' && (
                   <svg viewBox="0 0 1024 1024" width="128" height="128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill={panoyaColors.accent} opacity="0.8"/>
-                    <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill={panoyaColors.primary}/>
-                    <circle cx="512" cy="400" r="15" fill={panoyaColors.secondary}/>
-                    <circle cx="480" cy="450" r="15" fill={panoyaColors.secondary}/>
-                    <circle cx="544" cy="450" r="15" fill={panoyaColors.secondary}/>
+                    <path d="M512 900C300 900 200 700 200 400s150-300 312-350c162 50 312 50 312 350s-100 500-312 500z" fill={config.panoya?.colors?.accent || '#FFA500'} opacity="0.8"/>
+                    <path d="M512 800c-80 0-120-100-120-300s40-400 120-400 120 200 120 400-40-300-120-300z" fill={config.panoya?.colors?.primary || '#FFBF00'}/>
+                    <circle cx="512" cy="400" r="15" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
+                    <circle cx="480" cy="450" r="15" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
+                    <circle cx="544" cy="450" r="15" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
                   </svg>
                 )}
-                {panoyaVariant === 'minimalista' && (
+                {config.panoya?.variant === 'minimalista' && (
                   <svg viewBox="0 0 128 128" width="128" height="128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill={panoyaColors.accent}/>
-                    <ellipse cx="64" cy="60" rx="25" ry="45" fill={panoyaColors.primary}/>
+                    <path d="M64 120c-30 0-50-40-50-80S34 10 64 10s50 30 50 30-20 80-50 80z" fill={config.panoya?.colors?.accent || '#FFA500'}/>
+                    <ellipse cx="64" cy="60" rx="25" ry="45" fill={config.panoya?.colors?.primary || '#FFBF00'}/>
                   </svg>
                 )}
-                {panoyaVariant === 'geometrica' && (
+                {config.panoya?.variant === 'geometrica' && (
                   <svg viewBox="0 0 128 128" width="128" height="128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M64 15 L84 45 L64 75 L44 45 Z" fill={panoyaColors.primary}/>
-                    <path d="M64 45 L84 75 L64 105 L44 75 Z" fill={panoyaColors.primary} opacity="0.7"/>
-                    <path d="M64 105 L72 120 L56 120 Z" fill={panoyaColors.secondary}/>
+                    <path d="M64 15 L84 45 L64 75 L44 45 Z" fill={config.panoya?.colors?.primary || '#FFBF00'}/>
+                    <path d="M64 45 L84 75 L64 105 L44 75 Z" fill={config.panoya?.colors?.primary || '#FFBF00'} opacity="0.7"/>
+                    <path d="M64 105 L72 120 L56 120 Z" fill={config.panoya?.colors?.secondary || '#3D2B1F'}/>
                   </svg>
                 )}
               </div>

@@ -72,8 +72,11 @@ export interface Organization {
 
 /**
  * Roles a nivel de plataforma (global)
+ * - superadmin: Acceso completo a toda la plataforma
+ * - accepted: Usuario aceptado, puede tener permisos a nivel org/site
+ * - pending: Usuario en espera de aprobación
  */
-export type GlobalRole = 'superadmin' | 'pending';
+export type GlobalRole = 'superadmin' | 'accepted' | 'pending';
 
 /**
  * Roles a nivel de organización
@@ -145,8 +148,27 @@ export interface EffectivePermissions {
 /**
  * Configuración del banner de cookies
  */
+/**
+ * Configuración del botón flotante (panoya)
+ */
+export interface PanoyaSettings {
+  enabled: boolean;
+  position: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right';
+  size: string; // e.g., "56px"
+  icon: string; // e.g., "🌽"
+  variant?: 'realista' | 'minimalista' | 'geometrica';
+  colors?: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+  showFootprint?: boolean;
+}
+
 export interface BannerSettings {
   layout: 'modal' | 'bar' | 'corner';
+  // Modo bloqueante: overlay que impide navegación hasta tomar decisión
+  blocking?: boolean;
   colors: {
     primary: string;
     secondary: string;
@@ -166,6 +188,8 @@ export interface BannerSettings {
   categories: CookieCategory[];
   // CSS personalizado para el banner
   customCSS?: string;
+  // Configuración del botón flotante (panoya)
+  panoya?: PanoyaSettings;
 }
 
 /**
@@ -462,6 +486,7 @@ export const DEFAULT_COOKIE_CATEGORIES: CookieCategory[] = [
  */
 export const DEFAULT_BANNER_SETTINGS: BannerSettings = {
   layout: 'modal',
+  blocking: false, // No bloqueante por defecto
   colors: {
     primary: '#FFBF00',
     secondary: '#E5E7EB',
@@ -482,6 +507,19 @@ export const DEFAULT_BANNER_SETTINGS: BannerSettings = {
   },
   categories: DEFAULT_COOKIE_CATEGORIES,
   customCSS: '',
+  panoya: {
+    enabled: true,
+    position: 'bottom-left',
+    size: '56px',
+    icon: '🌽',
+    variant: 'realista',
+    colors: {
+      primary: '#FFBF00',
+      secondary: '#C2A561',
+      accent: '#2F6E8D',
+    },
+    showFootprint: false,
+  },
 };
 
 /**

@@ -921,6 +921,105 @@ app.post('/api/consent/sync', async (req, res) => {
 });
 
 // ============================================
+// RUTA: REGISTRO DE EVENTOS ANALÍTICOS (ANÓNIMOS)
+// ============================================
+// Endpoint para eventos estadísticos anónimos:
+// - "bounce": Usuario vio el banner pero no tomó decisión (timeout 10s)
+// - "pages_until_decision": Métricas de navegación antes de decidir
+//
+// Estos eventos NO incluyen footprintId ni datos personales.
+// Se guardan en colección separada "analytics" con TTL de 90 días.
+// ============================================
+app.post('/api/analytics/event', rateLimitMiddleware, async (req, res) => {
+  const {
+    type,        // 'bounce' | 'pages_until_decision'
+    siteId,
+    metadata
+  } = req.body;
+
+  // Validación básica
+  if (!type || !siteId || !metadata) {
+    return res.status(400).json({
+      error: 'Datos incompletos',
+      code: 'MISSING_FIELDS',
+      required: ['type', 'siteId', 'metadata']
+    });
+  }
+
+  // Validar tipo de evento
+  const validTypes = ['bounce', 'pages_until_decision'];
+  if (!validTypes.includes(type)) {
+    return res.status(400).json({
+      error: 'Tipo de evento inválido',
+      code: 'INVALID_EVENT_TYPE',
+      validTypes
+    });
+  }
+
+  // Validar metadata según tipo
+  if (type === 'bounce') {
+    if (!metadata.layout || !metadata.timeVisible) {
+      return res.status(400).json({
+        error: 'Metadata incompleta para bounce',
+        code: 'INVALID_BOUNCE_METADATA',
+        required: ['layout', 'timeVisible', 'domain', 'url']
+      });
+    }
+  } else if (type === 'pages_until_decision') {
+    if (typeof metadata.pagesVisited !== 'number' || typeof metadata.timeUntilDecision !== 'number') {
+      return res.status(400).json({
+        error: 'Metadata incompleta para pages_until_decision',
+        code: 'INVALID_PAGES_METADATA',
+        required: ['pagesVisited', 'timeUntilDecision', 'finalAction']
+      });
+    }
+  }
+
+  if (!db) {
+    console.log('📊 Analytics event (local):', { type, siteId, metadata });
+    return res.status(201).json({
+      status: 'ok',
+      message: 'Evento registrado (modo local)'
+    });
+  }
+
+  try {
+    // Crear documento de evento analítico
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 días
+
+    const analyticsEvent = {
+      type,
+      siteId,
+      metadata: {
+        ...metadata,
+        userAgent: req.headers['user-agent'] || 'unknown',
+        timestamp: now.toISOString()
+      },
+      createdAt: now,
+      deleteAt: expiresAt // TTL automático de Firestore
+    };
+
+    const docRef = await db.collection('analytics').add(analyticsEvent);
+
+    console.log(`📊 Evento analítico registrado: ${type} (${siteId})`);
+
+    return res.status(201).json({
+      status: 'ok',
+      message: 'Evento analítico registrado',
+      docId: docRef.id
+    });
+  } catch (err) {
+    console.error('Error guardando evento analítico:', err);
+    return res.status(500).json({
+      error: 'Error interno',
+      code: 'FIRESTORE_ERROR',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+});
+
+// ============================================
 // RUTA: RECALCULAR ESTADÍSTICAS DE UN SITIO
 // ============================================
 // Recalcula los totales de consentimientos para un sitio específico

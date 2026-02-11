@@ -86,6 +86,9 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.auth.uid == userId
                     && (request.resource.data.role == 'pending' || request.resource.data.globalRole == 'pending');
 
+      // Admins pueden crear usuarios (para invitaciones)
+      allow create: if isAdmin();
+
       // Usuarios pueden actualizar su propio lastLogin y onboardingCompleted
       allow update: if isAuthenticated() && request.auth.uid == userId
                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLogin', 'onboardingCompleted']);
@@ -162,6 +165,33 @@ service cloud.firestore {
       // La eliminación se hace automáticamente vía TTL de Firestore (3 años)
       allow update: if false;
       allow delete: if false;
+    }
+
+    // ============================================
+    // ANALYTICS COLLECTION (Eventos analíticos anónimos)
+    // ============================================
+    // Eventos estadísticos sin datos personales:
+    // - bounce: Usuario vio el banner pero no decidió
+    // - pages_until_decision: Métricas de navegación antes de decidir
+    //
+    // CARACTERÍSTICAS:
+    // - Sin footprintId ni datos personales
+    // - TTL de 90 días (deleteAt)
+    // - Solo escritura desde API (no SDK directo)
+    // - Lectura solo para admins con acceso al sitio
+    // ============================================
+    match /analytics/{eventId} {
+      // CREACIÓN: Solo desde API backend (Admin SDK bypasea estas reglas)
+      // Si se intenta crear desde el cliente, requerir autenticación admin
+      allow create: if isAdmin();
+
+      // LECTURA: Solo admins con acceso al sitio
+      allow read: if isAdmin()
+                  || (isAuthorized() && resource.data.siteId != null && hasSiteAccess(resource.data.siteId));
+
+      // INMUTABILIDAD: Los eventos analíticos no se modifican
+      allow update: if false;
+      allow delete: if false; // TTL automático los elimina
     }
 
     // ============================================
