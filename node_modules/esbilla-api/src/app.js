@@ -1112,6 +1112,14 @@ const invitationsRouter = require('./enterprise/routes/invitations.js');
 app.use('/api/invitations', invitationsRouter);
 
 // ============================================
+// RUTA: GTM GATEWAY MANAGEMENT
+// ============================================
+// Automatización de dominios personalizados para GTM Gateway
+// Gestiona certificados SSL y DNS para subdominios de clientes
+const gtmGatewayRouter = require('./routes/gtm-gateway.js');
+app.use('/api/gtm-gateway', gtmGatewayRouter);
+
+// ============================================
 // GTM GATEWAY PROXY (v1.8+)
 // ============================================
 // Proxy de Google Tag Manager desde dominio de Esbilla
@@ -1123,7 +1131,7 @@ app.use('/api/invitations', invitationsRouter);
 // Cache en memoria para gtm.js (reduce egress y latencia)
 const gtmCache = new Map();
 const GTM_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
-const GTM_CACHE_MAX_SIZE = 100; // Máximo 100 containers en cache
+const GTM_CACHE_MAX_SIZE = 500; // Máximo 500 containers en cache (~40 MB RAM)
 
 /**
  * Limpia entradas expiradas del cache GTM
@@ -1327,7 +1335,7 @@ app.get('/gtm.js', gtmRateLimitMiddleware, async (req, res) => {
       console.log(`[GTM Proxy] Cache HIT para ${clientDomain} (${containerId})`);
       res.set({
         'Content-Type': 'application/javascript; charset=utf-8',
-        'Cache-Control': 'public, max-age=300', // 5 min browser cache
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400', // 1h cache + 24h stale - balance freshness y egress
         'X-Cache': 'HIT',
         'X-GTM-Site-Id': siteId || 'unknown'
       });
@@ -1403,7 +1411,7 @@ app.get('/gtm.js', gtmRateLimitMiddleware, async (req, res) => {
     // Enviar respuesta con compresión automática (middleware compression)
     res.set({
       'Content-Type': 'application/javascript; charset=utf-8',
-      'Cache-Control': 'public, max-age=300', // 5 min browser cache
+      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400', // 1h cache + 24h stale - balance freshness y egress
       'X-Cache': 'MISS',
       'X-GTM-Site-Id': siteId || 'unknown'
     });

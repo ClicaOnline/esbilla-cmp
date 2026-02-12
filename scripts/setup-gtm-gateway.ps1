@@ -135,78 +135,139 @@ Write-Info ""
 Read-Host "Presiona Enter cuando hayas configurado $gatewayDomain"
 
 Write-Info "[PASO] Paso 3: Crear Serverless NEG para Cloud Run..."
-try {
-    gcloud compute network-endpoint-groups describe $NEG_NAME --region=$Region --format="get(name)" 2>$null | Out-Null
-    Write-Warning "⚠️  NEG $NEG_NAME ya existe, saltando..."
-} catch {
+
+# Intentar obtener NEG existente
+$existingNeg = gcloud compute network-endpoint-groups describe $NEG_NAME --region=$Region --format="get(name)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingNeg) {
+    Write-Warning "[INFO] NEG $NEG_NAME ya existe, saltando..."
+} else {
+    Write-Info "Creando NEG..."
     gcloud compute network-endpoint-groups create $NEG_NAME `
         --region=$Region `
         --network-endpoint-type=serverless `
         --cloud-run-service=$CloudRunService
-    Write-Success "✅ NEG creado"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo crear el NEG"
+        exit 1
+    }
+
+    Write-Success "[OK] NEG creado: $NEG_NAME"
 }
 Write-Info ""
 
 Write-Info "[PASO]  Paso 4: Crear Backend Service..."
-try {
-    gcloud compute backend-services describe $BACKEND_SERVICE_NAME --global --format="get(name)" 2>$null | Out-Null
-    Write-Warning "⚠️  Backend Service $BACKEND_SERVICE_NAME ya existe, saltando..."
-} catch {
+
+# Intentar obtener Backend Service existente
+$existingBackend = gcloud compute backend-services describe $BACKEND_SERVICE_NAME --global --format="get(name)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingBackend) {
+    Write-Warning "[INFO] Backend Service $BACKEND_SERVICE_NAME ya existe, saltando..."
+} else {
+    Write-Info "Creando Backend Service..."
+    # NOTA: NO especificar --protocol para Serverless NEG (Cloud Run)
+    # El protocol se determina automaticamente sin generar port_name
     gcloud compute backend-services create $BACKEND_SERVICE_NAME `
         --global `
-        --load-balancing-scheme=EXTERNAL_MANAGED `
-        --protocol=HTTPS
+        --load-balancing-scheme=EXTERNAL_MANAGED
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo crear el Backend Service"
+        exit 1
+    }
 
     gcloud compute backend-services add-backend $BACKEND_SERVICE_NAME `
         --global `
         --network-endpoint-group=$NEG_NAME `
         --network-endpoint-group-region=$Region
 
-    Write-Success "✅ Backend Service creado"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo anadir backend al servicio"
+        exit 1
+    }
+
+    Write-Success "[OK] Backend Service creado: $BACKEND_SERVICE_NAME"
 }
 Write-Info ""
 
 Write-Info "[PASO]  Paso 5: Crear URL Map..."
-try {
-    gcloud compute url-maps describe $URL_MAP_NAME --global --format="get(name)" 2>$null | Out-Null
-    Write-Warning "⚠️  URL Map $URL_MAP_NAME ya existe, actualizando..."
-} catch {
+
+# Intentar obtener URL Map existente
+$existingUrlMap = gcloud compute url-maps describe $URL_MAP_NAME --global --format="get(name)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingUrlMap) {
+    Write-Warning "[INFO] URL Map $URL_MAP_NAME ya existe, saltando..."
+} else {
+    Write-Info "Creando URL Map..."
     gcloud compute url-maps create $URL_MAP_NAME `
         --default-service=$BACKEND_SERVICE_NAME `
         --global
-    Write-Success "✅ URL Map creado"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo crear el URL Map"
+        exit 1
+    }
+
+    Write-Success "[OK] URL Map creado: $URL_MAP_NAME"
 }
 Write-Info ""
 
 Write-Info "[PASO] Paso 6: Crear Certificate Map..."
-try {
-    gcloud certificate-manager maps describe $CERT_MAP_NAME --format="get(name)" 2>$null | Out-Null
-    Write-Warning "⚠️  Certificate Map $CERT_MAP_NAME ya existe"
-} catch {
+
+# Intentar obtener Certificate Map existente
+$existingCertMap = gcloud certificate-manager maps describe $CERT_MAP_NAME --format="get(name)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingCertMap) {
+    # Certificate Map ya existe
+    Write-Warning "[INFO] Certificate Map $CERT_MAP_NAME ya existe"
+} else {
+    # Crear nuevo Certificate Map
+    Write-Info "Creando Certificate Map..."
     gcloud certificate-manager maps create $CERT_MAP_NAME `
         --description="Certificate map for GTM Gateway multi-domain SSL"
-    Write-Success "✅ Certificate Map creado"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo crear el Certificate Map"
+        exit 1
+    }
+
+    Write-Success "[OK] Certificate Map creado: $CERT_MAP_NAME"
 }
 Write-Info ""
 
 Write-Info "[PASO] Paso 7: Crear Target HTTPS Proxy..."
-try {
-    gcloud compute target-https-proxies describe $HTTPS_PROXY_NAME --global --format="get(name)" 2>$null | Out-Null
-    Write-Warning "⚠️  HTTPS Proxy $HTTPS_PROXY_NAME ya existe, saltando..."
-} catch {
+
+# Intentar obtener HTTPS Proxy existente
+$existingProxy = gcloud compute target-https-proxies describe $HTTPS_PROXY_NAME --global --format="get(name)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingProxy) {
+    Write-Warning "[INFO] HTTPS Proxy $HTTPS_PROXY_NAME ya existe, saltando..."
+} else {
+    Write-Info "Creando Target HTTPS Proxy..."
     gcloud compute target-https-proxies create $HTTPS_PROXY_NAME `
         --url-map=$URL_MAP_NAME `
-        --certificate-map="//certificatemanager.googleapis.com/projects/$ProjectId/locations/global/certificateMaps/$CERT_MAP_NAME" `
+        --certificate-map=$CERT_MAP_NAME `
         --global
-    Write-Success "✅ Target HTTPS Proxy creado"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo crear el HTTPS Proxy"
+        exit 1
+    }
+
+    Write-Success "[OK] Target HTTPS Proxy creado: $HTTPS_PROXY_NAME"
 }
 Write-Info ""
 
 Write-Info "[PASO] Paso 8: Crear Global Forwarding Rule..."
-try {
-    gcloud compute forwarding-rules describe $FORWARDING_RULE_NAME --global --format="get(name)" 2>$null | Out-Null
-    Write-Warning "⚠️  Forwarding Rule $FORWARDING_RULE_NAME ya existe, saltando..."
-} catch {
+
+# Intentar obtener Forwarding Rule existente
+$existingRule = gcloud compute forwarding-rules describe $FORWARDING_RULE_NAME --global --format="get(name)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingRule) {
+    Write-Warning "[INFO] Forwarding Rule $FORWARDING_RULE_NAME ya existe, saltando..."
+} else {
+    Write-Info "Creando Forwarding Rule..."
     gcloud compute forwarding-rules create $FORWARDING_RULE_NAME `
         --global `
         --load-balancing-scheme=EXTERNAL_MANAGED `
@@ -214,7 +275,13 @@ try {
         --address=$IP_NAME `
         --target-https-proxy=$HTTPS_PROXY_NAME `
         --ports=443
-    Write-Success "✅ Forwarding Rule creado"
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo crear el Forwarding Rule"
+        exit 1
+    }
+
+    Write-Success "[OK] Forwarding Rule creado: $FORWARDING_RULE_NAME"
 }
 Write-Info ""
 

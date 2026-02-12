@@ -107,22 +107,23 @@ Write-Info ""
 Write-Info "[PASO] Paso 2: Crear certificado SSL (ACME - Let's Encrypt)..."
 
 # Verificar si el certificado ya existe
-try {
-    $existingCert = gcloud certificate-manager certificates describe $CERT_NAME --format="get(name)" 2>$null
-    if ($existingCert) {
-        Write-Warning "⚠️  Certificado $CERT_NAME ya existe"
-        $recreate = Read-Host "Recrear certificado? (s/N)"
-        if ($recreate -eq 's' -or $recreate -eq 'S') {
-            Write-Info "Eliminando certificado existente..."
-            gcloud certificate-manager certificates delete $CERT_NAME --quiet
-            Start-Sleep -Seconds 2
-        } else {
-            Write-Info "Usando certificado existente"
-            $CERT_EXISTS = $true
-        }
+$existingCert = gcloud certificate-manager certificates describe $CERT_NAME --format="get(name)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingCert) {
+    Write-Warning "[WARN] Certificado $CERT_NAME ya existe"
+    $recreate = Read-Host "Recrear certificado? (s/N)"
+    if ($recreate -eq 's' -or $recreate -eq 'S') {
+        Write-Info "Eliminando certificado existente..."
+        gcloud certificate-manager certificates delete $CERT_NAME --quiet
+        Start-Sleep -Seconds 2
+        $CERT_EXISTS = $false
+    } else {
+        Write-Info "Usando certificado existente"
+        $CERT_EXISTS = $true
     }
-} catch {
+} else {
     # El certificado no existe, continuar
+    $CERT_EXISTS = $false
 }
 
 if (-not $CERT_EXISTS) {
@@ -143,17 +144,17 @@ Write-Info ""
 Write-Info "[PASO]  Paso 3: Crear entrada en Certificate Map..."
 
 # Verificar si la entrada ya existe
-try {
-    $existingEntry = gcloud certificate-manager maps entries describe $MAP_ENTRY_NAME --map=$CertMapName --format="get(name)" 2>$null
-    if ($existingEntry) {
-        Write-Warning "⚠️  Entrada $MAP_ENTRY_NAME ya existe en el Certificate Map"
-        Write-Info "Actualizando entrada existente..."
+$existingEntry = gcloud certificate-manager maps entries describe $MAP_ENTRY_NAME --map=$CertMapName --format="get(name)" 2>$null
 
-        gcloud certificate-manager maps entries delete $MAP_ENTRY_NAME --map=$CertMapName --quiet
-        Start-Sleep -Seconds 2
-    }
-} catch {
+if ($LASTEXITCODE -eq 0 -and $existingEntry) {
+    Write-Warning "[WARN] Entrada $MAP_ENTRY_NAME ya existe en el Certificate Map"
+    Write-Info "Actualizando entrada existente..."
+
+    gcloud certificate-manager maps entries delete $MAP_ENTRY_NAME --map=$CertMapName --quiet
+    Start-Sleep -Seconds 2
+} else {
     # La entrada no existe, continuar
+    Write-Info "Creando nueva entrada en Certificate Map..."
 }
 
 # Crear entrada en el map
@@ -180,25 +181,24 @@ $maxAttempts = 60  # 60 intentos x 30s = 30 minutos
 while ($attempts -lt $maxAttempts) {
     $attempts++
 
-    try {
-        $certStatus = gcloud certificate-manager certificates describe $CERT_NAME --format="get(managed.state)" 2>$null
+    $certStatus = gcloud certificate-manager certificates describe $CERT_NAME --format="get(managed.state)" 2>$null
 
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "[WARN] Error obteniendo estado del certificado (intento $attempts/$maxAttempts)"
+    } else {
         Write-Info "   Intento $attempts/$maxAttempts - Estado: $certStatus"
 
         if ($certStatus -eq "ACTIVE") {
-            Write-Success "✅ Certificado SSL aprovisionado correctamente!"
+            Write-Success "[OK] Certificado SSL aprovisionado correctamente!"
             break
         } elseif ($certStatus -eq "FAILED") {
-            Write-Error "❌ Error: El certificado falló en aprovisionar"
+            Write-Error "[ERROR] El certificado fallo en aprovisionar"
             Write-Info "Verifica que:"
-            Write-Info "   1. El registro DNS A apunta a la IP correcta"
-            Write-Info "   2. El dominio es accesible públicamente"
+            Write-Info "   1. El registro DNS apunta correctamente"
+            Write-Info "   2. El dominio es accesible publicamente"
             Write-Info "   3. No hay firewalls bloqueando el puerto 80/443"
             exit 1
         }
-
-    } catch {
-        Write-Warning "⚠️  Error obteniendo estado del certificado: $_"
     }
 
     Start-Sleep -Seconds 30

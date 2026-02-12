@@ -25,8 +25,10 @@ import {
   Code,
   Users,
   Building2,
-  AlertTriangle
+  AlertTriangle,
+  Globe
 } from 'lucide-react';
+import GTMGatewayPanel from '../components/GTMGatewayPanel';
 
 interface SiteFormData {
   name: string;
@@ -78,6 +80,10 @@ export function SitesPage() {
   const [showUsersModal, setShowUsersModal] = useState(false);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   const [selectedUserRole, setSelectedUserRole] = useState<'site_admin' | 'site_viewer'>('site_viewer');
+
+  // GTM Gateway modal
+  const [showGTMGatewayModal, setShowGTMGatewayModal] = useState(false);
+  const [gtmGatewaySite, setGtmGatewaySite] = useState<Site | null>(null);
 
   useEffect(() => {
     loadSites();
@@ -523,6 +529,11 @@ export function SitesPage() {
     setShowUsersModal(true);
   }
 
+  function openGTMGatewayModal(site: Site) {
+    setGtmGatewaySite(site);
+    setShowGTMGatewayModal(true);
+  }
+
   async function handleAddUserToSite(userId: string) {
     if (!selectedSiteId || !db || !user) return;
 
@@ -727,6 +738,13 @@ export function SitesPage() {
                         title={t.sites.integration}
                       >
                         <Code size={18} />
+                      </button>
+                      <button
+                        onClick={() => openGTMGatewayModal(site)}
+                        className="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
+                        title="GTM Gateway"
+                      >
+                        <Globe size={18} />
                       </button>
                       <button
                         onClick={() => openEditModal(site)}
@@ -1311,6 +1329,25 @@ export function SitesPage() {
             </div>
           );
         })()}
+
+        {/* GTM Gateway Modal */}
+        {showGTMGatewayModal && gtmGatewaySite && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="max-w-2xl w-full">
+              <GTMGatewayPanel
+                siteId={gtmGatewaySite.id}
+                siteName={gtmGatewaySite.name}
+                currentDomain={gtmGatewaySite.gtmGatewayDomain}
+                onClose={() => {
+                  setShowGTMGatewayModal(false);
+                  setGtmGatewaySite(null);
+                  // Recargar sitios para actualizar el estado
+                  loadSites();
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

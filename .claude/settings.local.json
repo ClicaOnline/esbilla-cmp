@@ -54,7 +54,8 @@
       "Bash(then git mv src/pages/WaitingList.tsx src/enterprise/pages/WaitingList.tsx)",
       "Bash(fi:*)",
       "Bash(if [ -f src/pages/Waitlist.tsx ])",
-      "Bash(then git mv src/pages/Waitlist.tsx src/enterprise/pages/Waitlist.tsx)"
+      "Bash(then git mv src/pages/Waitlist.tsx src/enterprise/pages/Waitlist.tsx)",
+      "Bash(powershell.exe:*)"
     ]
   }
 }

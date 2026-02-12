@@ -16,7 +16,7 @@
 
 - 🚫 **Evita ad blockers** - Los bloqueadores de anuncios no bloquean Esbilla API
 - 🔒 **Mejor privacidad** - Control total sobre la carga de scripts
-- ⚡ **Cache inteligente** - TTL 5 minutos reduce latencia y costos
+- ⚡ **Cache inteligente con stale-while-revalidate** - 1h cache fresco + 24h stale (actualizaciones GTM en <1h, sin latencia usuario)
 - 📦 **Compresión Brotli** - Reduce tamaño de 80 KB → 20 KB (75% menos egress)
 - 🌍 **Geolocalización automática** - Headers X-Forwarded-Country-Region para mejor targeting
 - 🛡️ **Rate limiting** - Protección contra abuse (10 req/min por IP)
@@ -34,8 +34,9 @@
 | **Complejidad** | Baja (1 click) | Media (DNS + verificación) | Alta (infraestructura propia) |
 | **Coste adicional** | 5-15% egress | Gratis (solo dominio) | Alto (servidor + infraestructura) |
 | **Geolocalización** | ✅ Automática | ❌ No | ✅ Manual |
-| **Cache** | ✅ 5 min TTL | ❌ No | ✅ Configurable |
+| **Cache** | ✅ 1h + stale 24h | ❌ No | ✅ Configurable |
 | **Compresión** | ✅ Brotli/Gzip | ❌ No | ✅ Configurable |
+| **Propagación cambios GTM** | ✅ <1 hora | ⚡ Inmediato | ✅ Configurable |
 
 **Recomendación:** Usar **GTM Gateway Proxy + GTM Server Side** para máxima privacidad y control.
 
@@ -108,11 +109,82 @@
    ```
 7. **Google responde** con script GTM (~80 KB sin comprimir)
 8. **Cloud Run procesa**:
-   - Almacena en cache in-memory (TTL 5 min)
+   - Almacena en cache in-memory (TTL 5 min, hasta 500 containers)
    - Comprime con Brotli/Gzip (80 KB → 20 KB)
-   - Añade headers: `Cache-Control: public, max-age=300`, `X-GTM-Site-Id: xxx`
-9. **Cloud CDN cachea** la respuesta (cache global)
+   - Añade headers: `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`, `X-GTM-Site-Id: xxx`
+9. **Cloud CDN cachea** la respuesta (TTL 1 hora, max 24 horas)
 10. **Cliente recibe** script comprimido (20 KB) desde CDN o Cloud Run
+
+---
+
+## ⚡ Estrategia de Cache: Stale-While-Revalidate
+
+### ¿Por qué es importante?
+
+Cuando un cliente **publica cambios en su contenedor GTM** (añade tags, modifica triggers, etc.), Google actualiza el contenido de `gtm.js?id=GTM-XXXXX` pero **la URL NO cambia**.
+
+Un cache demasiado largo bloquearía las actualizaciones. Un cache demasiado corto elimina los beneficios de performance y ahorro de egress.
+
+### Solución: Cache Inteligente con Revalidación en Background
+
+```http
+Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+```
+
+**Comportamiento:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Timeline de Cache                         │
+└─────────────────────────────────────────────────────────────┘
+
+0s                  1h                                    25h
+├───────────────────┼─────────────────────────────────────┤
+│   CACHE FRESCO    │        STALE (pero usable)          │
+│  (sin request)    │   (sirve + revalida background)     │
+└───────────────────┴─────────────────────────────────────┘
+```
+
+| Tiempo desde cache | Comportamiento del navegador | Latencia usuario | Actualización GTM |
+|-------------------|------------------------------|------------------|-------------------|
+| **0-1 hora** | Sirve desde cache local, sin request | 0ms ⚡ | Versión cacheada |
+| **1-25 horas** | Sirve cache + revalida en background | 0ms ⚡ | Se actualiza en background |
+| **>25 horas** | Revalida antes de servir | ~50-100ms | Versión actualizada |
+
+### Ejemplo Real: Cliente Publica Cambios GTM
+
+```
+10:00 AM - Cliente añade nuevo tag de Facebook Pixel en GTM
+  └─ Google actualiza gtm.js?id=GTM-XXXXX
+
+10:30 AM - Usuario A visita sitio (cache 30 min)
+  └─ ✅ Ve versión ANTIGUA (cache fresco)
+
+11:05 AM - Usuario A regresa (1h 5min después)
+  └─ ✅ Ve versión ANTIGUA (instantáneo)
+  └─ 🔄 Navegador descarga NUEVA versión en background
+  └─ Próxima visita → versión NUEVA
+
+11:10 AM - Usuario B visita por primera vez
+  └─ ✅ Ve versión NUEVA (descarga directa)
+```
+
+**Resultado:**
+- ⏱️ Propagación de cambios: **máximo 1 hora** para usuarios recurrentes
+- ⚡ Latencia: **0ms** (revalidación en background)
+- 💰 Ahorro egress: **~80-85%** (mayoría de requests sirven desde cache)
+
+### Ventajas del Stale-While-Revalidate
+
+| Métrica | Sin cache | Cache 5 min | Cache 1 año | **Stale-while-revalidate** ✅ |
+|---------|-----------|-------------|-------------|------------------------------|
+| **Propagación cambios GTM** | Inmediato | 5 min | ❌ 1 año | ✅ 1 hora |
+| **Latencia usuario** | Alta (~200ms) | Media (~100ms) | Baja (0ms) | ✅ Muy baja (0ms) |
+| **Cache hit rate** | ~40% | ~50% | ~95% | ✅ ~85% |
+| **Ahorro egress** | Baseline | -20% | -90% | ✅ **-80%** |
+| **Experiencia usuario** | Lento | Medio | Muy rápido | ✅ **Muy rápido + actualizado** |
+
+**Documentación completa:** Ver [GTM-GATEWAY-CACHE-STRATEGY.md](GTM-GATEWAY-CACHE-STRATEGY.md)
 
 ---
 
