@@ -4,33 +4,9 @@ const path = require('path');
 const crypto = require('crypto');
 const compression = require('compression');
 
-// Inicialización de Firebase Admin
-const admin = require('firebase-admin');
-const { getFirestore } = require('firebase-admin/firestore');
-
-// Configuración de la BBDD
-const PROJECT_ID = process.env.GCLOUD_PROJECT || 'esbilla-cmp';
-// NOTA: Los IDs de bases de datos nombradas NO llevan paréntesis
-// Solo '(default)' usa paréntesis para la base de datos por defecto
-const DATABASE_ID = process.env.FIRESTORE_DATABASE_ID || 'esbilla-cmp';
-
-// Inicializar Firebase solo si nun ta yá inicializáu
-let db = null;
-if (!admin.apps.length) {
-  // En Cloud Run, les credenciales cárguense automáticamente
-  // En local, pue usase GOOGLE_APPLICATION_CREDENTIALS o un ficheru JSON
-  if (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.K_SERVICE) {
-    admin.initializeApp({ projectId: PROJECT_ID });
-    // Usar la BBDD específica si nun ye la default
-    db = getFirestore(admin.app(), DATABASE_ID);
-    console.log(`🔥 Firestore conectáu: proyecto=${PROJECT_ID}, database=${DATABASE_ID}`);
-  } else {
-    // Fallback pa desarrollo local sin credenciales
-    console.warn('⚠️ Firebase nun ta configuráu. Los logs de consentimientu nun se guardarán.');
-  }
-} else {
-  db = getFirestore(admin.app(), DATABASE_ID);
-}
+// Inicialización de Firebase Admin (shared instance)
+const admin = require('../firebase-admin');
+const db = admin.db;
 
 const app = express();
 
