@@ -27,7 +27,7 @@ function Write-Error { Write-Host $args -ForegroundColor Red }
 function Write-Info { Write-Host $args -ForegroundColor Cyan }
 function Write-Warning { Write-Host $args -ForegroundColor Yellow }
 
-Write-Info "🔐 Añadiendo dominio al GTM Gateway: $Domain"
+Write-Info "[SETUP] Añadiendo dominio al GTM Gateway: $Domain"
 Write-Info ""
 
 # Verificar gcloud
@@ -55,7 +55,7 @@ if ($Domain -notmatch '^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z
     exit 1
 }
 
-Write-Info "📋 Configuración:"
+Write-Info "[CONFIG] Configuración:"
 Write-Info "   Proyecto: $ProjectId"
 Write-Info "   Dominio: $Domain"
 Write-Info "   Certificate Map: $CertMapName"
@@ -66,7 +66,7 @@ $SAFE_DOMAIN = $Domain -replace '\.', '-'
 $CERT_NAME = "cert-$SAFE_DOMAIN"
 $MAP_ENTRY_NAME = "entry-$SAFE_DOMAIN"
 
-Write-Info "🔍 Paso 1: Verificar registro DNS..."
+Write-Info "[PASO] Paso 1: Verificar registro DNS..."
 
 # Resolver DNS (usando nslookup en Windows)
 try {
@@ -89,7 +89,7 @@ try {
 }
 Write-Info ""
 
-Write-Info "📜 Paso 2: Crear certificado SSL (ACME - Let's Encrypt)..."
+Write-Info "[PASO] Paso 2: Crear certificado SSL (ACME - Let's Encrypt)..."
 
 # Verificar si el certificado ya existe
 try {
@@ -125,7 +125,7 @@ if (-not $CERT_EXISTS) {
 }
 Write-Info ""
 
-Write-Info "🗺️  Paso 3: Crear entrada en Certificate Map..."
+Write-Info "[PASO]  Paso 3: Crear entrada en Certificate Map..."
 
 # Verificar si la entrada ya existe
 try {
@@ -155,7 +155,7 @@ if ($LASTEXITCODE -eq 0) {
 }
 Write-Info ""
 
-Write-Info "⏳ Paso 4: Esperando aprovisionamiento de certificado SSL..."
+Write-Info "[ESPERA] Paso 4: Esperando aprovisionamiento de certificado SSL..."
 Write-Info "   Esto puede tardar 15-30 minutos (Google valida dominio y emite certificado)"
 Write-Info ""
 
@@ -199,19 +199,19 @@ if ($attempts -ge $maxAttempts) {
 Write-Info ""
 Write-Success "✅ Dominio $Domain añadido al GTM Gateway!"
 Write-Info ""
-Write-Info "📋 Resumen:"
+Write-Info "[CONFIG] Resumen:"
 Write-Info "   Dominio: $Domain"
 Write-Info "   Certificado: $CERT_NAME"
 Write-Info "   Map Entry: $MAP_ENTRY_NAME"
 Write-Info ""
-Write-Info "🔍 Verificar:"
+Write-Info "[PASO] Verificar:"
 Write-Info "   gcloud certificate-manager certificates describe $CERT_NAME"
 Write-Info "   gcloud certificate-manager maps entries describe $MAP_ENTRY_NAME --map=$CertMapName"
 Write-Info ""
-Write-Info "🧪 Probar:"
+Write-Info "[TEST] Probar:"
 Write-Info "   curl https://$Domain/gtm.js?id=GTM-XXXXX"
 Write-Info ""
 Write-Info "📝 Siguiente paso:"
 Write-Info "   Configurar gtmGatewayDomain='$Domain' en el Dashboard para el site del cliente"
 Write-Info ""
-Write-Success "¡Listo! 🌽"
+Write-Success "¡Listo! Esbilla"
