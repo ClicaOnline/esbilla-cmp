@@ -10,10 +10,10 @@ const router = express.Router();
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const dns = require('dns').promises;
-const admin = require('../firebase-admin');
+const admin = require('../../firebase-admin');
 
 const execAsync = promisify(exec);
-const db = admin.firestore();
+const db = admin.db;
 
 // Configuración
 const PROJECT_ID = process.env.GCLOUD_PROJECT || 'esbilla-cmp';

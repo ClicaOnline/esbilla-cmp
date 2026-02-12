@@ -57,7 +57,8 @@
       "Bash(then git mv src/pages/Waitlist.tsx src/enterprise/pages/Waitlist.tsx)",
       "Bash(powershell.exe:*)",
       "Bash(npm audit:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(timeout 5 node:*)"
     ]
   }
 }
