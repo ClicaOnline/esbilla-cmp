@@ -27,7 +27,7 @@ function Write-Error { Write-Host $args -ForegroundColor Red }
 function Write-Info { Write-Host $args -ForegroundColor Cyan }
 function Write-Warning { Write-Host $args -ForegroundColor Yellow }
 
-Write-Info "[SETUP] Añadiendo dominio al GTM Gateway: $Domain"
+Write-Info "[SETUP] Anadiendo dominio al GTM Gateway: $Domain"
 Write-Info ""
 
 # Verificar gcloud
@@ -76,9 +76,9 @@ try {
         Write-Success "✅ DNS resuelve a: $resolvedIp"
     } else {
         Write-Warning "⚠️  No se pudo resolver DNS para $Domain"
-        Write-Warning "   Asegúrate de configurar el registro A apuntando a la IP del Load Balancer"
+        Write-Warning "   Asegurate de configurar el registro A apuntando a la IP del Load Balancer"
 
-        $continue = Read-Host "¿Continuar de todas formas? (s/N)"
+        $continue = Read-Host "Continuar de todas formas? (s/N)"
         if ($continue -ne 's' -and $continue -ne 'S') {
             Write-Info "Abortado por el usuario"
             exit 0
@@ -96,7 +96,7 @@ try {
     $existingCert = gcloud certificate-manager certificates describe $CERT_NAME --format="get(name)" 2>$null
     if ($existingCert) {
         Write-Warning "⚠️  Certificado $CERT_NAME ya existe"
-        $recreate = Read-Host "¿Recrear certificado? (s/N)"
+        $recreate = Read-Host "Recrear certificado? (s/N)"
         if ($recreate -eq 's' -or $recreate -eq 'S') {
             Write-Info "Eliminando certificado existente..."
             gcloud certificate-manager certificates delete $CERT_NAME --quiet
@@ -191,13 +191,13 @@ while ($attempts -lt $maxAttempts) {
 
 if ($attempts -ge $maxAttempts) {
     Write-Warning "⚠️  Timeout esperando certificado SSL"
-    Write-Info "El certificado seguirá provisionándose en background"
+    Write-Info "El certificado seguirá provisionandose en background"
     Write-Info "Verifica el estado con:"
     Write-Info "   gcloud certificate-manager certificates describe $CERT_NAME"
 }
 
 Write-Info ""
-Write-Success "✅ Dominio $Domain añadido al GTM Gateway!"
+Write-Success "✅ Dominio $Domain anadido al GTM Gateway!"
 Write-Info ""
 Write-Info "[CONFIG] Resumen:"
 Write-Info "   Dominio: $Domain"
