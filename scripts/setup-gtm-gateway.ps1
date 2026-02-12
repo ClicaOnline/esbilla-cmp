@@ -76,19 +76,30 @@ gcloud services enable run.googleapis.com
 Write-Success "✅ APIs habilitadas"
 Write-Info ""
 
-Write-Info "[PASO] Paso 2: Reservar IP global estática..."
-try {
-    $existingIp = gcloud compute addresses describe $IP_NAME --global --format="get(address)" 2>$null
-    if ($existingIp) {
-        Write-Warning "⚠️  IP $IP_NAME ya existe: $existingIp"
+Write-Info "[PASO] Paso 2: Reservar IP global estatica..."
+
+# Intentar obtener IP existente
+$existingIp = gcloud compute addresses describe $IP_NAME --global --format="get(address)" 2>$null
+
+if ($LASTEXITCODE -eq 0 -and $existingIp) {
+    # IP ya existe
+    $GLOBAL_IP = $existingIp
+    Write-Warning "[INFO] IP $IP_NAME ya existe: $GLOBAL_IP"
+} else {
+    # Crear nueva IP
+    Write-Info "Creando nueva IP global..."
+    gcloud compute addresses create $IP_NAME --global --quiet
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "[ERROR] No se pudo crear la IP global"
+        exit 1
     }
-} catch {
-    gcloud compute addresses create $IP_NAME --global
-    Start-Sleep -Seconds 2
+
+    Start-Sleep -Seconds 3
+    $GLOBAL_IP = gcloud compute addresses describe $IP_NAME --global --format="get(address)"
 }
 
-$GLOBAL_IP = gcloud compute addresses describe $IP_NAME --global --format="get(address)"
-Write-Success "✅ IP global reservada: $GLOBAL_IP"
+Write-Success "[OK] IP global reservada: $GLOBAL_IP"
 Write-Info ""
 
 Write-Info "[INFO] IMPORTANTE: Configura este registro DNS para cada dominio de cliente:"
