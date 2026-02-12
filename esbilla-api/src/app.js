@@ -1105,10 +1105,10 @@ app.post('/api/sites/:siteId/recalculate-stats', async (req, res) => {
 });
 
 // ============================================
-// RUTA: INVITACIONES (SPRINT 4)
+// RUTA: INVITACIONES (SPRINT 4) - ENTERPRISE EDITION
 // ============================================
 // Gestión de invitaciones por email para onboarding colaborativo
-const invitationsRouter = require('./routes/invitations.js');
+const invitationsRouter = require('./enterprise/routes/invitations.js');
 app.use('/api/invitations', invitationsRouter);
 
 // ============================================

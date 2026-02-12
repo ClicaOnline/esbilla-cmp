@@ -18,6 +18,13 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - Carga modular de integraciones bajo demanda
 - Mejor rendimiento en Core Web Vitals
 
+### Arquitectura
+- **Single Source of Truth**: El plugin actúa como "launcher" del Pegoyu
+- Configuración avanzada (GTM Gateway, templates, estilos) se gestiona desde el Dashboard
+- El Site ID es el único dato crítico necesario en el plugin
+- API devuelve configuración completa cuando el Pegoyu la solicita
+- No hay sincronización bidireccional entre plugin y dashboard
+
 ## [1.2.0] - 2026-02-06
 
 ### Añadido

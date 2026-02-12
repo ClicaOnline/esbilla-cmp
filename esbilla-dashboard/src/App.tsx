@@ -24,24 +24,24 @@ const LoadingFallback = () => (
 
 // Auth pages - Solo LoginPage cargado inmediatamente (es la entrada principal)
 import { LoginPage } from './pages/Login';
-const RegisterPage = lazy(() => import('./pages/Register').then(m => ({ default: m.RegisterPage })));
+const RegisterPage = lazy(() => import('./enterprise/pages/Register').then(m => ({ default: m.RegisterPage })));
 const VerifyEmailPage = lazy(() => import('./pages/VerifyEmail').then(m => ({ default: m.VerifyEmailPage })));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPassword').then(m => ({ default: m.ForgotPasswordPage })));
 const AuthActionPage = lazy(() => import('./pages/AuthAction').then(m => ({ default: m.AuthActionPage })));
-const PendingApprovalPage = lazy(() => import('./pages/PendingApproval').then(m => ({ default: m.PendingApprovalPage })));
-const OnboardingSetupPage = lazy(() => import('./pages/OnboardingSetup').then(m => ({ default: m.OnboardingSetupPage })));
-const AcceptInvitePage = lazy(() => import('./pages/AcceptInvite').then(m => ({ default: m.AcceptInvitePage })));
+const PendingApprovalPage = lazy(() => import('./enterprise/pages/PendingApproval').then(m => ({ default: m.PendingApprovalPage })));
+const OnboardingSetupPage = lazy(() => import('./enterprise/pages/OnboardingSetup').then(m => ({ default: m.OnboardingSetupPage })));
+const AcceptInvitePage = lazy(() => import('./enterprise/pages/AcceptInvite').then(m => ({ default: m.AcceptInvitePage })));
 const NoAccountPage = lazy(() => import('./pages/NoAccount').then(m => ({ default: m.NoAccountPage })));
 
 // Dashboard pages - Todos lazy loaded
 const DashboardPage = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.DashboardPage })));
 const SitesPage = lazy(() => import('./pages/Sites').then(m => ({ default: m.SitesPage })));
 const FootprintPage = lazy(() => import('./pages/Footprint').then(m => ({ default: m.FootprintPage })));
-const UsersPage = lazy(() => import('./pages/Users').then(m => ({ default: m.UsersPage })));
+const UsersPage = lazy(() => import('./enterprise/pages/Users').then(m => ({ default: m.UsersPage })));
 const SettingsPage = lazy(() => import('./pages/Settings').then(m => ({ default: m.SettingsPage })));
 const UrlStatsPage = lazy(() => import('./pages/UrlStats').then(m => ({ default: m.UrlStatsPage })));
-const OrganizationsPage = lazy(() => import('./pages/Organizations').then(m => ({ default: m.OrganizationsPage })));
-const WaitlistPage = lazy(() => import('./pages/Waitlist').then(m => ({ default: m.WaitlistPage })));
+const OrganizationsPage = lazy(() => import('./enterprise/pages/Organizations').then(m => ({ default: m.OrganizationsPage })));
+const WaitlistPage = lazy(() => import('./enterprise/pages/Waitlist').then(m => ({ default: m.WaitlistPage })));
 const DistributorsPage = lazy(() => import('./pages/Distributors').then(m => ({ default: m.DistributorsPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFoundPage })));
 

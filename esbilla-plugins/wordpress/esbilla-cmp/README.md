@@ -6,16 +6,28 @@ Plugin de WordPress para integrar Esbilla CMP (Consent Management Platform) en t
 
 Esbilla CMP es una plataforma de gestión de consentimiento RGPD/ePrivacy de código abierto. Este plugin facilita la integración del Pegoyu de Esbilla en sitios WordPress.
 
+### Arquitectura: Single Source of Truth
+
+El plugin de WordPress actúa como **launcher** del Pegoyu. La configuración avanzada (GTM Gateway, templates personalizados, estilos) se gestiona **exclusivamente desde el Dashboard** en [app.esbilla.com](https://app.esbilla.com).
+
+**Flujo de configuración:**
+1. Plugin de WordPress → Inyecta el Pegoyu con el Site ID
+2. Pegoyu → Solicita configuración a la API con el Site ID
+3. API → Devuelve configuración completa desde Firestore (GTM Gateway, scripts, estilos, etc.)
+4. Pegoyu → Renderiza el banner con la configuración del Dashboard
+
+**No hay sincronización bidireccional** entre el plugin y el dashboard. El Site ID es la única conexión necesaria.
+
 ### Características
 
 - ✅ **3 Modos de Implementación**:
   - **Manual**: Control total modificando scripts manualmente
-  - **Simplificado**: Configuración rápida con carga automática de scripts
-  - **Google Tag Manager**: Integración avanzada vía GTM
+  - **Simplificado**: Configuración rápida con carga automática de scripts (IDs gestionados en Dashboard)
+  - **Google Tag Manager**: Integración avanzada vía GTM (GTM Gateway gestionado en Dashboard)
 
 - 🌍 **Multi-idioma**: Soporta 10 idiomas (Asturianu, Español, Galego, Euskara, Català, English, Français, Português, Italiano, Deutsch)
 
-- 🚀 **Fácil configuración**: Interfaz intuitiva en el panel de WordPress
+- 🚀 **Fácil configuración**: Site ID + activación del plugin = listo
 
 - 🔒 **RGPD/ePrivacy**: Cumplimiento normativo automático
 
@@ -99,12 +111,14 @@ Plataformas soportadas:
 - Zendesk
 
 #### Modo Google Tag Manager
-- Introduces tu GTM Container ID (GTM-XXXXXXX)
-- Configuras tus tags en GTM
-- Esbilla proporciona variables para controlar la activación
+- Selecciona el modo GTM en el plugin
+- **Importante**: La configuración del GTM Container ID y GTM Gateway se gestiona desde el **Dashboard** ([app.esbilla.com](https://app.esbilla.com)), no desde el plugin
+- El plugin solo inyecta el Pegoyu, que luego carga la configuración GTM desde la API
+- Configuras tus tags en GTM y Esbilla proporciona variables para controlar la activación
 
 4. Marca **"Habilitar Esbilla CMP"**
 5. Guarda los cambios
+6. **Ve al Dashboard** para configurar GTM Container ID, GTM Gateway y otros ajustes avanzados
 
 ## Preguntas Frecuentes
 
@@ -119,8 +133,17 @@ Sí, necesitas crear una cuenta en [app.esbilla.com](https://app.esbilla.com) pa
 ### ¿Qué modo debo escoger?
 
 - **Manual**: Si quieres control total y tienes scripts personalizados
-- **Simplificado**: Si usas plataformas comunes (GA4, Facebook, etc.)
-- **GTM**: Si ya usas Google Tag Manager y tienes configuración compleja
+- **Simplificado**: Si usas plataformas comunes (GA4, Facebook, etc.) - Los IDs se configuran en el Dashboard
+- **GTM**: Si ya usas Google Tag Manager y tienes configuración compleja - El GTM Container ID y GTM Gateway se configuran en el Dashboard
+
+### ¿Dónde configuro los IDs de plataformas y el GTM Gateway?
+
+**En el Dashboard** ([app.esbilla.com](https://app.esbilla.com)). El plugin de WordPress solo necesita el Site ID. Toda la configuración avanzada (IDs de plataformas, GTM Container ID, GTM Gateway, templates, estilos) se gestiona centralizadamente en el Dashboard. Esto permite:
+
+- **Una única fuente de verdad**: No hay desincronización entre sistemas
+- **Cambios instantáneos**: Actualiza la configuración sin tocar WordPress
+- **Multi-sitio coherente**: Gestiona múltiples sitios desde un solo panel
+- **Menos mantenimiento**: El plugin actúa como launcher, la lógica está en el Dashboard
 
 ### ¿Funciona con Page Builders?
 

@@ -1658,9 +1658,9 @@
     } else if (variant === 'geometrica') {
       return `
         <svg viewBox="0 0 128 128" width="32" height="32" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
-          <path d="M64 15 L84 45 L64 75 L44 45 Z" fill="${primary}"/>
-          <path d="M64 45 L84 75 L64 105 L44 75 Z" fill="${primary}" opacity="0.7"/>
-          <path d="M64 105 L72 120 L56 120 Z" fill="${secondary}"/>
+          <path d="M64 15 L84 45 L64 75 L44 45 Z" fill="${secondary}"/>
+          <path d="M64 45 L84 75 L64 105 L44 75 Z" fill="${secondary}" opacity="0.7"/>
+          <path d="M64 105 L72 120 L56 120 Z" fill="${primary}"/>
         </svg>
       `;
     }

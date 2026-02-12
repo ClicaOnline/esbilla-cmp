@@ -246,9 +246,10 @@ export function SitesPage() {
       domains: site.domains.join(', '),
       organizationId: site.organizationId || '',
       gtmServerUrl: site.scriptConfig?.gtm?.serverUrl || '',
-      gtmGatewayEnabled: site.scriptConfig?.gtm?.gatewayEnabled || false,
-      gtmGatewayDomain: site.scriptConfig?.gtm?.gatewayDomain || '',
-      gtmContainerId: site.scriptConfig?.gtm?.containerId || '',
+      // GTM Gateway: prioritize root fields (new location) over scriptConfig (legacy)
+      gtmGatewayEnabled: (site as any).gtmGatewayEnabled ?? site.scriptConfig?.gtm?.gatewayEnabled ?? false,
+      gtmGatewayDomain: (site as any).gtmGatewayDomain ?? site.scriptConfig?.gtm?.gatewayDomain ?? '',
+      gtmContainerId: (site as any).gtmContainerId ?? site.scriptConfig?.gtm?.containerId ?? '',
       googleAnalytics: site.scriptConfig?.analytics?.googleAnalytics || '',
       hotjar: site.scriptConfig?.analytics?.hotjar || '',
       facebookPixel: site.scriptConfig?.marketing?.facebookPixel || '',
@@ -308,6 +309,17 @@ export function SitesPage() {
           updatedAt: new Date()
         };
 
+        // GTM Gateway fields at root level (for API query efficiency)
+        if (formData.gtmGatewayEnabled) {
+          updateData.gtmGatewayEnabled = true;
+          updateData.gtmGatewayDomain = formData.gtmGatewayDomain || null;
+          updateData.gtmContainerId = formData.gtmContainerId || null;
+        } else {
+          updateData.gtmGatewayEnabled = false;
+          updateData.gtmGatewayDomain = null;
+          updateData.gtmContainerId = null;
+        }
+
         // Only include scriptConfig if it has values
         if (Object.keys(scriptConfig).length > 0) {
           updateData.scriptConfig = scriptConfig;
@@ -340,6 +352,17 @@ export function SitesPage() {
           createdAt: new Date(),
           createdBy: user.uid,
         };
+
+        // GTM Gateway fields at root level (for API query efficiency)
+        if (formData.gtmGatewayEnabled) {
+          newSite.gtmGatewayEnabled = true;
+          newSite.gtmGatewayDomain = formData.gtmGatewayDomain || null;
+          newSite.gtmContainerId = formData.gtmContainerId || null;
+        } else {
+          newSite.gtmGatewayEnabled = false;
+          newSite.gtmGatewayDomain = null;
+          newSite.gtmContainerId = null;
+        }
 
         // Add scriptConfig if it has values
         if (Object.keys(scriptConfig).length > 0) {

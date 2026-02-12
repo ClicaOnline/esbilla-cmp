@@ -84,13 +84,50 @@ Para añadir un nuevo idioma:
 
 ## Arquitectura
 
+### Single Source of Truth (Arquitectura de Configuración)
+
+El plugin de WordPress sigue una arquitectura de **Single Source of Truth** donde:
+
+- **Plugin de WordPress**: Actúa como **launcher** del Pegoyu
+  - Responsabilidad: Inyectar el script del Pegoyu con el Site ID
+  - NO gestiona: Configuración avanzada de plataformas, GTM Gateway, templates, estilos
+
+- **Dashboard (app.esbilla.com)**: Es la **única fuente de verdad** para la configuración
+  - Responsabilidad: Gestionar toda la configuración de banners, plataformas, GTM Gateway, etc.
+  - Base de datos: Firestore
+
+- **API**: Intermedia entre Pegoyu y Dashboard
+  - Responsabilidad: Servir configuración completa al Pegoyu cuando la solicita
+  - Cacheo: 5 minutos para reducir lecturas de Firestore
+
+**Flujo de configuración:**
+```
+WordPress Plugin → Inyecta Pegoyu con Site ID
+                          ↓
+               Pegoyu carga en navegador
+                          ↓
+            Solicita configuración a API (GET /api/config/:siteId)
+                          ↓
+          API consulta Firestore (con caché 5 min)
+                          ↓
+         Devuelve configuración completa (GTM, scripts, estilos, textos)
+                          ↓
+           Pegoyu renderiza banner con configuración
+```
+
+**Ventajas:**
+- ✅ No hay sincronización bidireccional
+- ✅ Cambios en Dashboard son instantáneos (tras expirar caché)
+- ✅ Un Site ID gestiona múltiples configuraciones
+- ✅ Menor mantenimiento del plugin de WordPress
+
 ### Flujo de Inicialización
 
 1. WordPress carga `esbilla-cmp.php`
 2. Se define la clase `Esbilla_CMP` (singleton)
 3. Se cargan las dependencias (`includes/`)
 4. Se registran los hooks de admin y público
-5. En el frontend, `Esbilla_SDK::inject_sdk()` inyecta el script en `<head>`
+5. En el frontend, `Esbilla_SDK::inject_sdk()` inyecta el script en `<head>` con el Site ID
 
 ### Hooks Disponibles
 
