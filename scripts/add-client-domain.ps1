@@ -67,16 +67,31 @@ $CERT_NAME = "cert-$SAFE_DOMAIN"
 $MAP_ENTRY_NAME = "entry-$SAFE_DOMAIN"
 
 Write-Info "[PASO] Paso 1: Verificar registro DNS..."
+Write-Info ""
+Write-Info "El cliente debe haber configurado:"
+Write-Info "   Tipo: CNAME"
+Write-Info "   Host: gtm (o el que corresponda)"
+Write-Info "   Valor: gtm-gateway.esbilla.com (tu dominio gateway)"
+Write-Info "   Ejemplo: $Domain → gtm-gateway.esbilla.com"
+Write-Info ""
 
 # Resolver DNS (usando nslookup en Windows)
 try {
     $dnsResult = nslookup $Domain 2>&1 | Select-String "Address"
     if ($dnsResult) {
         $resolvedIp = ($dnsResult -split '\s+')[-1]
-        Write-Success "✅ DNS resuelve a: $resolvedIp"
+        Write-Success "[OK] DNS resuelve a: $resolvedIp"
+
+        # Verificar si es CNAME
+        $cnameResult = nslookup -type=CNAME $Domain 2>&1
+        if ($cnameResult -match "canonical name") {
+            Write-Success "[OK] Configurado como CNAME (recomendado)"
+        } else {
+            Write-Warning "[INFO] Configurado como A record (funciona, pero CNAME es mejor)"
+        }
     } else {
-        Write-Warning "⚠️  No se pudo resolver DNS para $Domain"
-        Write-Warning "   Asegurate de configurar el registro A apuntando a la IP del Load Balancer"
+        Write-Warning "[WARN] No se pudo resolver DNS para $Domain"
+        Write-Warning "   El cliente debe configurar el CNAME apuntando a tu gateway"
 
         $continue = Read-Host "Continuar de todas formas? (s/N)"
         if ($continue -ne 's' -and $continue -ne 'S') {
@@ -85,7 +100,7 @@ try {
         }
     }
 } catch {
-    Write-Warning "⚠️  Error verificando DNS: $_"
+    Write-Warning "[WARN] Error verificando DNS: $_"
 }
 Write-Info ""
 
@@ -212,6 +227,8 @@ Write-Info "[TEST] Probar:"
 Write-Info "   curl https://$Domain/gtm.js?id=GTM-XXXXX"
 Write-Info ""
 Write-Info "[INFO] Siguiente paso:"
-Write-Info "   Configurar gtmGatewayDomain='$Domain' en el Dashboard para el site del cliente"
+Write-Info "   1. Verificar que el cliente configuro el CNAME correctamente"
+Write-Info "   2. Configurar gtmGatewayDomain='$Domain' en el Dashboard"
+Write-Info "   3. El cliente puede empezar a usar: https://$Domain/gtm.js?id=GTM-XXX"
 Write-Info ""
 Write-Success "Listo! Esbilla CMP"
