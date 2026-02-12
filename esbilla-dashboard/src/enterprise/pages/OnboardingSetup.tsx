@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
+import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../i18n';
 import { Check, Copy, ExternalLink, Building, Globe as GlobeIcon, FileText } from 'lucide-react';
 import { doc, setDoc, serverTimestamp, writeBatch, getDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { isSaasMode } from '../utils/featureFlags';
-import { getPlan, type PlanId } from '../config/plans';
+import { db } from '../../lib/firebase';
+import { isSaasMode } from '../../utils/featureFlags';
+import { getPlan, type PlanId } from '../../config/plans';
 
 type Step = 1 | 2 | 3;
 

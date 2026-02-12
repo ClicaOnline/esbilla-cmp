@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
+import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../i18n';
 import { Mail, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
 interface InvitationData {

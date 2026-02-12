@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Layout } from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
-import type { Organization, Site, DashboardUser } from '../types';
-import { generateOrgId } from '../types';
+import { db } from '../../lib/firebase';
+import { Layout } from '../../components/Layout';
+import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../i18n';
+import type { Organization, Site, DashboardUser } from '../../types';
+import { generateOrgId } from '../../types';
 import {
   Building2, Plus, Edit2, Trash2, X, Copy, Check,
   CreditCard, Globe2, Users, AlertTriangle, Mail, Eye, EyeOff
 } from 'lucide-react';
-import { usePagination } from '../hooks/usePagination';
-import { useSearch } from '../hooks/useSearch';
-import { Pagination } from '../components/shared/Pagination';
-import { SearchInput } from '../components/shared/SearchInput';
-import { PageSizeSelector } from '../components/shared/PageSizeSelector';
-import { UserSearchSelector } from '../components/shared/UserSearchSelector';
-import { BadgeEstado } from '../components/BadgeEstado';
+import { usePagination } from '../../hooks/usePagination';
+import { useSearch } from '../../hooks/useSearch';
+import { Pagination } from '../../components/shared/Pagination';
+import { SearchInput } from '../../components/shared/SearchInput';
+import { PageSizeSelector } from '../../components/shared/PageSizeSelector';
+import { UserSearchSelector } from '../../components/shared/UserSearchSelector';
+import { BadgeEstado } from '../../components/BadgeEstado';
 
 // Generate a UUID tracking ID for the organization
 function generateTrackingId(): string {

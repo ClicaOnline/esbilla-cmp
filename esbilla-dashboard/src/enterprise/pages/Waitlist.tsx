@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Layout } from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
-import type { WaitingListEntry } from '../types';
-import { usePagination } from '../hooks/usePagination';
-import { useSearch } from '../hooks/useSearch';
-import { Pagination } from '../components/shared/Pagination';
-import { SearchInput } from '../components/shared/SearchInput';
-import { PageSizeSelector } from '../components/shared/PageSizeSelector';
-import { BadgeEstado } from '../components/BadgeEstado';
+import { db } from '../../lib/firebase';
+import { Layout } from '../../components/Layout';
+import { useAuth } from '../../context/AuthContext';
+import type { WaitingListEntry } from '../../types';
+import { usePagination } from '../../hooks/usePagination';
+import { useSearch } from '../../hooks/useSearch';
+import { Pagination } from '../../components/shared/Pagination';
+import { SearchInput } from '../../components/shared/SearchInput';
+import { PageSizeSelector } from '../../components/shared/PageSizeSelector';
+import { BadgeEstado } from '../../components/BadgeEstado';
 import {
   Mail, Calendar, Building2, Globe2, Trash2, Edit2,
   Save, X, Filter, Download

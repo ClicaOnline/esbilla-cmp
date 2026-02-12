@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
+import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../i18n';
 import { Clock, RefreshCw } from 'lucide-react';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../../lib/firebase';
 
 export function PendingApprovalPage() {
   const navigate = useNavigate();

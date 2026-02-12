@@ -124,7 +124,7 @@ export default function GTMGatewayPanel({ siteId, siteName, currentDomain, onClo
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json(); // Consumir respuesta
         await fetchStatus(); // Refrescar estado
         setError(null);
       } else {

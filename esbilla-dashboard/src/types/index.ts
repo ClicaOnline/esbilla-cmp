@@ -323,6 +323,9 @@ export interface Site {
   // Autenticación del SDK
   apiKey: string;
 
+  // GTM Gateway Proxy (opcional)
+  gtmGatewayDomain?: string;  // Dominio personalizado para proxy GTM (ej: gtm.ejemplo.com)
+
   // Estadísticas (denormalizadas para consultas rápidas)
   stats?: {
     totalConsents: number;

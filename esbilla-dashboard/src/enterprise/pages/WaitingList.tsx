@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Layout } from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
-import type { WaitingListEntry } from '../types';
+import { db } from '../../lib/firebase';
+import { Layout } from '../../components/Layout';
+import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../i18n';
+import type { WaitingListEntry } from '../../types';
 import { Navigate } from 'react-router-dom';
 import { Download, Search, Filter, Mail, CheckCircle2, XCircle, Clock, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { usePagination } from '../hooks/usePagination';
+import { usePagination } from '../../hooks/usePagination';
 
 export function WaitingListPage() {
   const { isSuperAdmin } = useAuth();

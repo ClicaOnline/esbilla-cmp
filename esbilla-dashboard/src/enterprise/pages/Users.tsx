@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, setDoc, serverTimestamp, where } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { Layout } from '../components/Layout';
-import { useAuth } from '../context/AuthContext';
-import { useI18n } from '../i18n';
+import { db } from '../../lib/firebase';
+import { Layout } from '../../components/Layout';
+import { useAuth } from '../../context/AuthContext';
+import { useI18n } from '../../i18n';
 import type {
   Site,
   Organization,
@@ -14,12 +14,12 @@ import type {
   OrganizationRole,
   DistributorRole,
   GlobalRole
-} from '../types';
-import { usePagination } from '../hooks/usePagination';
-import { useSearch } from '../hooks/useSearch';
-import { Pagination } from '../components/shared/Pagination';
-import { SearchInput } from '../components/shared/SearchInput';
-import { PageSizeSelector } from '../components/shared/PageSizeSelector';
+} from '../../types';
+import { usePagination } from '../../hooks/usePagination';
+import { useSearch } from '../../hooks/useSearch';
+import { Pagination } from '../../components/shared/Pagination';
+import { SearchInput } from '../../components/shared/SearchInput';
+import { PageSizeSelector } from '../../components/shared/PageSizeSelector';
 import {
   Shield, Eye, Clock, Trash2, Check, X, Crown,
   Globe2, Plus, Building2, ChevronDown, UserPlus, Mail, Save, Store, CheckCircle, AlertCircle
