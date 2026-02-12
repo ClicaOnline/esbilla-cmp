@@ -40,7 +40,7 @@ WORKDIR /app
 
 # Copiar ficheros de dependencies de la API
 COPY esbilla-api/package.json ./
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Copiar el códigu de la API
 COPY esbilla-api/ ./
@@ -48,8 +48,8 @@ COPY esbilla-api/ ./
 # Copiar el dashboard compiláu dende'l stage anterior
 COPY --from=dashboard-builder /build/dist ./public/dashboard
 
-# Esposición del puertu
-EXPOSE 3000
+# Esposición del puertu (Cloud Run usa PORT env var, default 8080)
+EXPOSE 8080
 
 # Execución del servidor
 CMD ["node", "src/index.js"]
