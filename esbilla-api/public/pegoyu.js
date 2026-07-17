@@ -639,12 +639,11 @@
 
         newScript.setAttribute('data-esbilla-dynamic', category);
         document.head.appendChild(newScript);
+        container.removeChild(element);
       } else {
-        // Inyectar noscript u otros elementos
+        // Inyectar noscript u otros elementos (appendChild ya lo mueve fuera de container)
         document.head.appendChild(element);
       }
-
-      container.removeChild(element);
     }
   }
 
