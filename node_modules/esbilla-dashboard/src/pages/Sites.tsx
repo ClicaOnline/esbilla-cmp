@@ -45,6 +45,7 @@ interface SiteFormData {
   facebookPixel?: string;
   linkedinInsight?: string;
   tiktokPixel?: string;
+  googleAds?: string;
 }
 
 export function SitesPage() {
@@ -65,7 +66,8 @@ export function SitesPage() {
     hotjar: '',
     facebookPixel: '',
     linkedinInsight: '',
-    tiktokPixel: ''
+    tiktokPixel: '',
+    googleAds: ''
   });
   const [saving, setSaving] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -260,7 +262,8 @@ export function SitesPage() {
       hotjar: site.scriptConfig?.analytics?.hotjar || '',
       facebookPixel: site.scriptConfig?.marketing?.facebookPixel || '',
       linkedinInsight: site.scriptConfig?.marketing?.linkedinInsight || '',
-      tiktokPixel: site.scriptConfig?.marketing?.tiktokPixel || ''
+      tiktokPixel: site.scriptConfig?.marketing?.tiktokPixel || '',
+      googleAds: site.scriptConfig?.marketing?.googleAds || ''
     });
     setShowModal(true);
   }
@@ -299,11 +302,12 @@ export function SitesPage() {
         if (formData.googleAnalytics) scriptConfig.analytics.googleAnalytics = formData.googleAnalytics;
         if (formData.hotjar) scriptConfig.analytics.hotjar = formData.hotjar;
       }
-      if (formData.facebookPixel || formData.linkedinInsight || formData.tiktokPixel) {
+      if (formData.facebookPixel || formData.linkedinInsight || formData.tiktokPixel || formData.googleAds) {
         scriptConfig.marketing = {};
         if (formData.facebookPixel) scriptConfig.marketing.facebookPixel = formData.facebookPixel;
         if (formData.linkedinInsight) scriptConfig.marketing.linkedinInsight = formData.linkedinInsight;
         if (formData.tiktokPixel) scriptConfig.marketing.tiktokPixel = formData.tiktokPixel;
+        if (formData.googleAds) scriptConfig.marketing.googleAds = formData.googleAds;
       }
 
       if (editingSite) {
@@ -1163,6 +1167,18 @@ export function SitesPage() {
                           value={formData.tiktokPixel || ''}
                           onChange={(e) => setFormData({ ...formData, tiktokPixel: e.target.value })}
                           placeholder="ABCDEFGHIJK"
+                          className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-stone-600 mb-1">
+                          Google Ads (Conversion ID)
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.googleAds || ''}
+                          onChange={(e) => setFormData({ ...formData, googleAds: e.target.value })}
+                          placeholder="AW-123456789"
                           className="w-full px-3 py-1.5 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                         />
                       </div>

@@ -196,9 +196,17 @@ class Esbilla_SDK {
             $script_config['functional']['zendesk'] = $this->options['zendesk_id'];
         }
 
-        // Agregar configuración al data-script-config
+        // Pasar la configuración al Pegoyu vía window.esbillaConfig (el mismo mecanismo
+        // que usa enableG100). El SDK fusiona window.esbillaConfig con la config de
+        // Firestore antes de cargar los scripts, así que esto SÍ llega al Pegoyu
+        // (a diferencia de un atributo data-* en el <script>, que el SDK no lee).
         if (!empty($script_config)) {
-            $attributes['data-script-config'] = wp_json_encode($script_config);
+            ?>
+            <script>
+            window.esbillaConfig = window.esbillaConfig || {};
+            window.esbillaConfig.scriptConfig = <?php echo wp_json_encode($script_config); ?>;
+            </script>
+            <?php
         }
 
         // Lazy load del Pegoyu después del LCP para no impactar Core Web Vitals
@@ -208,11 +216,7 @@ class Esbilla_SDK {
             function loadEsbillaPegoyu() {
                 var script = document.createElement('script');
                 <?php foreach ($attributes as $key => $value): ?>
-                <?php if ($key === 'data-script-config'): ?>
                 script.setAttribute('<?php echo esc_js($key); ?>', '<?php echo esc_js($value); ?>');
-                <?php else: ?>
-                script.setAttribute('<?php echo esc_js($key); ?>', '<?php echo esc_js($value); ?>');
-                <?php endif; ?>
                 <?php endforeach; ?>
                 script.defer = true;
                 document.head.appendChild(script);
