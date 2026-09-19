@@ -1003,7 +1003,7 @@ class Esbilla_Admin {
                name="esbilla_settings[custom_css]"
                rows="12"
                class="large-text code"
-               placeholder="/* Ejemplo de personalización */&#10;#esbilla-banner {&#10;  border-radius: 16px;&#10;  box-shadow: 0 8px 32px rgba(0,0,0,0.12);&#10;}&#10;&#10;#esbilla-banner-title {&#10;  font-size: 1.5rem;&#10;  color: #1e40af;&#10;}&#10;&#10;.esbilla-btn.btn-primary {&#10;  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);&#10;}"><?php echo esc_textarea($value); ?></textarea>
+               placeholder="/* Ejemplo de personalización */&#10;#esbilla-banner {&#10;  border-radius: 16px;&#10;  box-shadow: 0 8px 32px rgba(0,0,0,0.12);&#10;}&#10;&#10;#esbilla-banner-title {&#10;  font-size: 1.5rem;&#10;  color: #1e40af;&#10;}&#10;&#10;.esbilla-btn.esbilla-btn-primary {&#10;  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);&#10;}"><?php echo esc_textarea($value); ?></textarea>
         <p class="description">
             <?php esc_html_e('Código CSS para personalizar el banner de cookies.', 'esbilla-cmp'); ?>
         </p>

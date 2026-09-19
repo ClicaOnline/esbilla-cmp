@@ -17,17 +17,17 @@
   --esbilla-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
-.btn-primary {
+.esbilla-btn-primary {
   background: var(--esbilla-primary);
   border-color: var(--esbilla-primary);
   color: white;
 }
 
-.btn-primary:hover {
+.esbilla-btn-primary:hover {
   background: var(--esbilla-primary-hover);
 }
 
-.btn-secondary {
+.esbilla-btn-secondary {
   border-color: var(--esbilla-border);
 }
 

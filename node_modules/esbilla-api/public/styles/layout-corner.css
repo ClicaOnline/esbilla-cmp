@@ -37,13 +37,13 @@
   flex-direction: column;
 }
 
-.btn-primary,
-.btn-secondary {
+.esbilla-btn-primary,
+.esbilla-btn-secondary {
   width: 100%;
   padding: 12px 20px;
 }
 
-.btn-link {
+.esbilla-btn-link {
   width: 100%;
 }
 

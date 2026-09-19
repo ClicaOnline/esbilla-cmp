@@ -25,9 +25,9 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
       <div id="esbilla-banner-title" class="esbilla-title">...</div>
       <p id="esbilla-banner-description" class="esbilla-text">...</p>
       <div id="esbilla-banner-actions" class="esbilla-actions">
-        <button id="esbilla-btn-accept" class="esbilla-btn btn-primary">...</button>
-        <button id="esbilla-btn-settings" class="esbilla-btn btn-secondary">...</button>
-        <button id="esbilla-btn-reject" class="esbilla-btn btn-link">...</button>
+        <button id="esbilla-btn-accept" class="esbilla-btn esbilla-btn-primary">...</button>
+        <button id="esbilla-btn-settings" class="esbilla-btn esbilla-btn-secondary">...</button>
+        <button id="esbilla-btn-reject" class="esbilla-btn esbilla-btn-link">...</button>
       </div>
     </div>
   </div>
@@ -60,9 +60,9 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
 | Clase | Descripción |
 |---|---|
 | `.esbilla-btn` | Clase base de todos los botones |
-| `.btn-primary` | Estilo del botón primario (aceptar) |
-| `.btn-secondary` | Estilo del botón secundario (personalizar) |
-| `.btn-link` | Estilo del botón de texto (rechazar) |
+| `.esbilla-btn-primary` | Estilo del botón primario (aceptar) |
+| `.esbilla-btn-secondary` | Estilo del botón secundario (personalizar) |
+| `.esbilla-btn-link` | Estilo del botón de texto (rechazar) |
 | `.esbilla-hidden` | Clase para ocultar elementos |
 
 ---
@@ -91,7 +91,7 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
 }
 
 /* Botón de aceptar con gradiente */
-.esbilla-btn.btn-primary {
+.esbilla-btn.esbilla-btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
   font-weight: 600;
@@ -100,7 +100,7 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.esbilla-btn.btn-primary:hover {
+.esbilla-btn.esbilla-btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
 }
@@ -140,19 +140,19 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
   font-weight: 500;
 }
 
-.esbilla-btn.btn-primary {
+.esbilla-btn.esbilla-btn-primary {
   background: #111827;
   border: none;
   color: #ffffff;
 }
 
-.esbilla-btn.btn-secondary {
+.esbilla-btn.esbilla-btn-secondary {
   background: transparent;
   border: 1px solid #d1d5db;
   color: #374151;
 }
 
-.esbilla-btn.btn-link {
+.esbilla-btn.esbilla-btn-link {
   background: transparent;
   color: #6b7280;
   text-decoration: underline;
@@ -178,22 +178,22 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
 }
 
 /* Botones adaptados al modo oscuro */
-.esbilla-btn.btn-primary {
+.esbilla-btn.esbilla-btn-primary {
   background: #3b82f6;
   color: #ffffff;
 }
 
-.esbilla-btn.btn-primary:hover {
+.esbilla-btn.esbilla-btn-primary:hover {
   background: #2563eb;
 }
 
-.esbilla-btn.btn-secondary {
+.esbilla-btn.esbilla-btn-secondary {
   background: #374151;
   color: #f9fafb;
   border: 1px solid #4b5563;
 }
 
-.esbilla-btn.btn-link {
+.esbilla-btn.esbilla-btn-link {
   color: #9ca3af;
 }
 ```
@@ -222,24 +222,24 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
 }
 
 /* Botón con color corporativo */
-.esbilla-btn.btn-primary {
+.esbilla-btn.esbilla-btn-primary {
   background: #fbbf24;
   color: #1e3a8a;
   font-weight: 700;
   border-radius: 8px;
 }
 
-.esbilla-btn.btn-primary:hover {
+.esbilla-btn.esbilla-btn-primary:hover {
   background: #f59e0b;
 }
 
-.esbilla-btn.btn-secondary {
+.esbilla-btn.esbilla-btn-secondary {
   background: transparent;
   color: #ffffff;
   border: 2px solid #ffffff;
 }
 
-.esbilla-btn.btn-link {
+.esbilla-btn.esbilla-btn-link {
   color: #dbeafe;
 }
 ```
@@ -291,11 +291,11 @@ Todos los elementos del banner tienen IDs y clases específicas que puedes usar 
 
 ```css
 /* Cambiar el color principal del botón */
-.esbilla-btn.btn-primary {
+.esbilla-btn.esbilla-btn-primary {
   background: #10b981;
 }
 
-.esbilla-btn.btn-primary:hover {
+.esbilla-btn.esbilla-btn-primary:hover {
   background: #059669;
 }
 
@@ -381,7 +381,7 @@ Usa IDs para mayor especificidad cuando necesites sobrescribir estilos base:
 }
 
 /* ❌ Evitar - puede no sobrescribir estilos base */
-.btn-primary {
+.esbilla-btn-primary {
   background: #10b981;
 }
 ```

@@ -1334,7 +1334,7 @@ Más información: ${config.legal.privacyPolicyUrl || '[URL política]'}`}
               <textarea
                 value={config.customCSS || ''}
                 onChange={(e) => updateCustomCSS(e.target.value)}
-                placeholder={`/* Ejemplo de personalización */\n#esbilla-banner {\n  border-radius: 16px;\n  box-shadow: 0 8px 32px rgba(0,0,0,0.12);\n}\n\n#esbilla-banner-title {\n  font-size: 1.5rem;\n  color: #1e40af;\n}\n\n.esbilla-btn.btn-primary {\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n}`}
+                placeholder={`/* Ejemplo de personalización */\n#esbilla-banner {\n  border-radius: 16px;\n  box-shadow: 0 8px 32px rgba(0,0,0,0.12);\n}\n\n#esbilla-banner-title {\n  font-size: 1.5rem;\n  color: #1e40af;\n}\n\n.esbilla-btn.esbilla-btn-primary {\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n}`}
                 rows={12}
                 className="w-full px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y font-mono text-sm"
               />

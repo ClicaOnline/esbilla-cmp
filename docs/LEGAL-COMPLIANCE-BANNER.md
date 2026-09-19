@@ -160,9 +160,9 @@ Al aceptar, das tu consentimiento para el uso de cookies en todos estos sitios.
       <a href="#" id="esbilla-legal-link" class="esbilla-legal-link">{{legalLinkText}}</a>
     </p>
     <div id="esbilla-banner-actions" class="esbilla-actions">
-      <button id="esbilla-btn-accept" class="esbilla-btn btn-primary">{{accept}}</button>
-      <button id="esbilla-btn-settings" class="esbilla-btn btn-secondary">{{settings}}</button>
-      <button id="esbilla-btn-reject" class="esbilla-btn btn-link">{{reject}}</button>
+      <button id="esbilla-btn-accept" class="esbilla-btn esbilla-btn-primary">{{accept}}</button>
+      <button id="esbilla-btn-settings" class="esbilla-btn esbilla-btn-secondary">{{settings}}</button>
+      <button id="esbilla-btn-reject" class="esbilla-btn esbilla-btn-link">{{reject}}</button>
     </div>
   </div>
 </div>

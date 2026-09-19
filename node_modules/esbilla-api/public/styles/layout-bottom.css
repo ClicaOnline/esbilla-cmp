@@ -57,8 +57,8 @@
   gap: 8px;
 }
 
-.btn-primary,
-.btn-secondary {
+.esbilla-btn-primary,
+.esbilla-btn-secondary {
   padding: 10px 20px;
   font-size: 14px;
 }
