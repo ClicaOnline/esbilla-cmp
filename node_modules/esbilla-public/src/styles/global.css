@@ -1,16 +1,10 @@
 @import "tailwindcss";
+@import "@fontsource-variable/nunito/wght.css";
+@import "@fontsource-variable/nunito/wght-italic.css";
 
 @font-face {
   font-family: 'Instrument Serif';
   src: url('/fonts/instrument-serif-v5-latin-regular.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap; /* CLAVE pa que PageSpeed nun se quexe */
-}
-
-@font-face {
-  font-family: 'Inter';
-  src: url('/fonts/inter-v20-latin-200.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap; /* CLAVE pa que PageSpeed nun se quexe */
@@ -26,7 +20,7 @@
 
   /* Fontes artesanes */
   --font-artesana: "Instrument Serif", serif;
-  --font-moderna: "Inter", sans-serif;
+  --font-moderna: "Nunito Variable", "Nunito", sans-serif;
 }
 
 @layer base {

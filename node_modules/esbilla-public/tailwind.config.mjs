@@ -11,7 +11,7 @@ export default {
 			},
 			fontFamily: {
 				'artesana': ['Instrument Serif', 'serif'],
-				'moderna': ['Inter', 'sans-serif'],
+				'moderna': ['Nunito Variable', 'Nunito', 'sans-serif'],
 			},
 		},
 	},
